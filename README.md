@@ -1,2 +1,0 @@
-# Dynamic
-An animation program

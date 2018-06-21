@@ -1,0 +1,47 @@
+{
+	"name": "MirowareDynamic",
+	"version": "0.0.1",
+	"description": "Dynamic lets you create HTML5 animations with ease.",
+	"main": "main.js",
+	"scripts": {
+		"start": "electron .",
+		"build": "node ./build/build.js",
+		"pack": "asar pack . ./dist/app.asar --unpack-dir \"{node_modules,dist,build}/**\" && rd \"./dist/app.asar.unpacked\" /s /q"
+	},
+	"author": {
+		"name": "Grant Gryczan",
+		"email": "grantgryczan@gmail.com"
+	},
+	"build": {
+		"appId": "com.miroware.Dynamic",
+		"productName": "Miroware Dynamic",
+		"fileAssociations": [
+			{
+				"ext": "mwd",
+				"name": "Miroware Dynamic File",
+				"description": "Miroware Dynamic File"
+			}
+		],
+		"mac": {
+			"category": "public.app-category.utilities"
+		},
+		"win": {
+			"target": "nsis"
+		},
+		"nsis": {
+			"perMachine": true,
+			"uninstallDisplayName": "Miroware Dynamic"
+		},
+		"linux": {
+			"synopsis": "Dynamic lets you create HTML5 animations with ease.",
+			"description": "Dynamic lets you create HTML5 animations with ease.",
+			"category": "Utility"
+		}
+	},
+	"dependencies": {
+		"electron": "^2.0.2"
+	},
+	"devDependencies": {
+		"electron-builder": "^19.45.5"
+	}
+}
