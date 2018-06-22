@@ -49,7 +49,7 @@ electron.app.once("ready", () => {
 					show: false
 				});
 				noClosedIntent = true;
-				win.webContents.once("did-finish-load", function() {
+				win.webContents.once("did-finish-load", () => {
 					win.show();
 					while(filesToOpen.length) {
 						win.webContents.send("argv", filesToOpen.pop());
