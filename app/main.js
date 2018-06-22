@@ -56,13 +56,13 @@ electron.app.once("ready", () => {
 					}
 					addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
 				});
-				win.setMenu(null);
+				//win.setMenu(null);
 				win.maximize();
 				win.loadURL(`${rootURL}/main/index.html`);
 			});
 			noClosedIntent = false;
 			win.destroy();
-		}, 5120);
+		}, 640);
 	});
 	win.setMenu(null);
 	win.loadURL(`${rootURL}/splash/index.html`);
