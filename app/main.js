@@ -62,7 +62,7 @@ electron.app.once("ready", () => {
 			});
 			noClosedIntent = false;
 			win.destroy();
-		}, 640);
+		}, 2560);
 	});
 	win.setMenu(null);
 	win.loadURL(`${rootURL}/splash/index.html`);
