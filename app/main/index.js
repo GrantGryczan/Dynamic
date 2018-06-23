@@ -231,8 +231,8 @@
 	const container = document.querySelector("#container");
 	const tabs = document.querySelector("#tabs");
 	const newProj = document.querySelector("#newproj");
+	const probject = {}; // the object of projects, the probject
 	let probjectID = 0;
-	const probject = {};
 	const _name = Symbol("name");
 	class Project {
 		constructor(proj) {
