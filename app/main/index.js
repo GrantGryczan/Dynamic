@@ -274,28 +274,38 @@
 	const select = id => {
 		sel = id;
 		for(const tab of tabs.children) {
-			tab.classList.remove("active");
+			tab.classList.remove("current");
 		}
 		if(saveProj.disabled = saveProjAs.disabled = id === "home") {
-			homeTab.classList.add("active");
+			homeTab.classList.add("current");
 		} else {
-			proj[id].tab.classList.add("active");
+			proj[id].tab.classList.add("current");
 		}
 	};
 	select("home");
-	let downTarget = null;
+	let mouseTarget = null;
+	let initialTabPos;
+	let tabOffset;
 	window.addEventListener("mousedown", evt => {
-		downTarget = evt.target;
-		if(evt.target.classList.contains("tab")) {
-			if(evt.target === homeTab) {
+		mouseTarget = evt.target;
+		if(mouseTarget.classList.contains("tab")) {
+			if(mouseTarget === homeTab) {
 				select("home");
 			} else {
-				select(evt.target[_proj].id);
+				select(mouseTarget[_proj].id);
+				const prevTabPos = mouseTarget.offsetLeft;
+				tabOffset = evt.clientX - prevTabPos;
+				mouseTarget.style.left = "";
+				mouseTarget.style.left = `${prevTabPos - (initialTabPos = mouseTarget.offsetLeft)}px`;
 			}
 		}
 	});
 	window.addEventListener("mouseup", evt => {
-		if(evt.target === downTarget) {
+		if(mouseTarget && mouseTarget.classList.contains("tab")) {
+			if(mouseTarget !== homeTab) {
+				
+			}
+		} else if(evt.target === mouseTarget) {
 			if(evt.target.parentNode === toolbar) {
 				if(evt.target === newProj) {
 					select(new Project().id);
@@ -307,6 +317,12 @@
 					
 				}
 			}
+		}
+		mouseTarget = null;
+	});
+	window.addEventListener("mousemove", evt => {
+		if(mouseTarget && mouseTarget.classList.contains("tab") && mouseTarget !== homeTab) {
+			mouseTarget.style.left = `${evt.clientX - (initialTabPos + tabOffset)}px`;
 		}
 	});
 })();
