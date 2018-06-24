@@ -55,6 +55,7 @@
 		Miro.prepare(elem);
 		return elem.childNodes.length === 1 ? elem.firstChild : elem;
 	};
+	const mdcTypes = ["checkbox", "radio", "select", "slider", "text-field"];
 	const _disabled = Symbol("disabled");
 	const _prevDisabled = Symbol("prevDisabled");
 	Miro.formState = (form, state) => {
@@ -252,10 +253,12 @@
 			this[_saved] = !!project.saved;
 			tabs.appendChild(this.tab = html`
 				<div class="tab">
-					<span class="label">$${this[_name] = typeof project.name === "string" ? project.name : "New Project"}</span>
+					<div class="label">$${this[_name] = typeof project.name === "string" ? project.name : "New Project"}</div>
+					<div class="close material-icons"></div>
 				</div>
 			`);
 			this.tab[_proj] = this;
+			this.data = {};
 			const id = String(++projID);
 			(proj[id] = this).id = id;
 		}
@@ -284,6 +287,19 @@
 		}
 	};
 	select("home");
+	const close = async id => {
+		if(!proj[id].saved && await new Miro.dialog("Confirm", html`
+			Are you sure you want to close <span class="bold">${proj[id].name}</span>?<br>
+			Your unsaved changes will be lost.
+		`, ["Yes", "No"]) === 1) {
+			return;
+		}
+		if(id === sel) {
+			select("home");
+		}
+		proj[id].tab.remove();
+		delete proj[id];
+	};
 	let mouseTarget;
 	let down = false;
 	let initialTabPos;
@@ -391,6 +407,10 @@
 					
 				} else if(mouseTarget === exportProj) {
 					
+				}
+			} else if(mouseTarget.classList.contains("close")) {
+				if(mouseTarget.parentNode.classList.contains("tab")) {
+					close(mouseTarget.parentNode[_proj].id);
 				}
 			}
 		}

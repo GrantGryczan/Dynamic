@@ -8,6 +8,9 @@ body {
 .spaced + .spaced {
 	margin-left: 6px;
 }
+.bold {
+	font-weight: bold;
+}
 .double-fab .material-icons:first-child {
 	position: relative;
 	left: 11px;
@@ -29,6 +32,21 @@ body {
 	overflow-y: auto;
 	background-color: #d0d0d0;
 }
+.mdc-dialog__surface {
+	width: auto;
+	min-width: 280px;
+	max-width: 880px;
+	max-height: 100%;
+	margin: 15px;
+	word-break: break-word;
+	word-wrap: break-word;
+}
+.mdc-dialog__body {
+	overflow-y: auto;
+}
+.mdc-dialog__header, .mdc-dialog__footer {
+	flex-shrink: 0;
+}
 #tabs {
 	display: flex;
 	width: 100%;
@@ -39,11 +57,11 @@ body {
 .tab {
 	position: relative;
 	left: 0;
-	width: 160px;
-	min-width: 20px;
+	width: 172px;
+	min-width: 36px;
 	margin-right: 1px;
-	padding: 2px 12px 0 12px;
-	border-radius: 8px 8px 0 0;
+	padding: 0 4px;
+	border-radius: 6px 6px 0 0;
 	overflow: hidden;
 	background-color: #e0e0e0;
 	text-align: center;
@@ -57,6 +75,8 @@ body {
 	z-index: 2;
 }
 .tab .label {
+	padding-top: 4px;
+	overflow: hidden;
 	pointer-events: none;
 	font-size: 14px;
 }
@@ -64,11 +84,35 @@ body {
 	color: #ff0000;
 	content: "*"
 }
+.tab .close {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	border-radius: 50%;
+	background-color: inherit;
+	transform: scale(0);
+	transition: transform 0.08s ease-out;
+	font-size: 18px;
+}
+.tab .close::after {
+	opacity: 0.25;
+	content: "close";
+}
+.tab:hover .close {
+	transform: scale(1);
+}
+.tab .close:hover::after {
+	opacity: 0.625;
+}
+.tab .close:active::after {
+	opacity: 1;
+}
 #homeTab {
 	width: initial;
-	padding: 2px 10px 0 10px;
+	padding: 0 4px;
 }
 #homeTab .label {
+	padding-top: 3px;
 	font-size: 20px;
 }
 .smooth {
