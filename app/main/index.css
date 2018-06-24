@@ -130,7 +130,7 @@ body {
 	height: 36px;
 	border-radius: 8px;
 	box-shadow: none;
-	background-color: #6d6d6d;
+	background-color: #6e00db;
 }
 #toolbar button * {
 	pointer-events: none;
