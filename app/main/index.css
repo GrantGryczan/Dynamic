@@ -37,25 +37,38 @@ body {
 	user-select: none;
 }
 .tab {
+	position: relative;
 	width: 160px;
+	min-width: 20px;
 	margin-right: 1px;
 	padding: 3px 12px 0 12px;
 	border-radius: 8px 8px 0 0;
+	overflow: hidden;
 	background-color: #e0e0e0;
 	text-align: center;
+	white-space: nowrap;
+}
+.tab:not(.active):hover {
+	background-color: #e6e6e6;
 }
 .tab.active {
 	background-color: #f0f0f0;
 	z-index: 2;
 }
-#home {
-	width: initial;
-}
-#home span {
-	font-size: 20px;
-}
-.tab span {
+.tab .label {
+	pointer-events: none;
 	font-size: 14px;
+}
+.tab:not(.saved) .label::before {
+	color: #ff0000;
+	content: "*"
+}
+#homeTab {
+	width: initial;
+	padding: 3px 10px 0 10px;
+}
+#homeTab .label {
+	font-size: 20px;
 }
 #toolbar {
 	width: 100%;

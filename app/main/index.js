@@ -230,22 +230,33 @@
 	Miro.prepare(document);
 	const container = document.querySelector("#container");
 	const tabs = document.querySelector("#tabs");
-	const newProj = document.querySelector("#newproj");
-	const probject = {}; // the object of projects, the probject
-	let probjectID = 0;
+	const homeTab = tabs.querySelector("#homeTab");
+	const toolbar = document.querySelector("#toolbar");
+	const newProj = toolbar.querySelector("#newProj");
+	const openProj = toolbar.querySelector("#openProj");
+	const saveProj = toolbar.querySelector("#saveProj");
+	const saveProjAs = toolbar.querySelector("#saveProjAs");
+	const proj = {}; // the object of projects, the probject
+	let projID = 0;
+	let sel;
+	const _proj = Symbol("proj");
 	const _name = Symbol("name");
+	const _saved = Symbol("name");
 	class Project {
-		constructor(proj) {
-			if(!(proj instanceof Object)) {
-				proj = {};
+		constructor(project) {
+			if(!(project instanceof Object)) {
+				project = {};
 			}
-			this.location = typeof proj.location === "string" ? proj.location : null;
-			this.saved = !!proj.saved;
+			this.location = typeof project.location === "string" ? project.location : null;
+			this[_saved] = !!project.saved;
 			tabs.appendChild(this.tab = html`
 				<div class="tab">
-					<span class="label">$${this[_name] = typeof proj.name === "string" ? proj.name : "New Project"}</span>
+					<span class="label">$${this[_name] = typeof project.name === "string" ? project.name : "New Project"}</span>
 				</div>
 			`);
+			this.tab[_proj] = this;
+			const id = String(++projID);
+			(proj[id] = this).id = id;
 		}
 		get name() {
 			return this[_name];
@@ -253,11 +264,49 @@
 		set name(value) {
 			this[_name] = this.tab.firstChild.textContent = value;
 		}
+		get saved() {
+			return this[_saved];
+		}
+		set saved(value) {
+			this.tab.classList[(saveProj.disabled = saveProjAs.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
+		}
 	}
-	window.addEventListener("click", evt => {
-		if(evt.target === newProj) {
-			const id = String(++probjectID);
-			probject[id] = new Project();
+	const select = id => {
+		sel = id;
+		for(const tab of tabs.children) {
+			tab.classList.remove("active");
+		}
+		if(saveProj.disabled = saveProjAs.disabled = id === "home") {
+			homeTab.classList.add("active");
+		} else {
+			proj[id].tab.classList.add("active");
+		}
+	};
+	select("home");
+	let downTarget = null;
+	window.addEventListener("mousedown", evt => {
+		downTarget = evt.target;
+		if(evt.target.classList.contains("tab")) {
+			if(evt.target === homeTab) {
+				select("home");
+			} else {
+				select(evt.target[_proj].id);
+			}
+		}
+	});
+	window.addEventListener("mouseup", evt => {
+		if(evt.target === downTarget) {
+			if(evt.target.parentNode === toolbar) {
+				if(evt.target === newProj) {
+					select(new Project().id);
+				} else if(evt.target === openProj) {
+					
+				} else if(evt.target === saveProj) {
+					
+				} else if(evt.target === saveProjAs) {
+					
+				}
+			}
 		}
 	});
 })();
