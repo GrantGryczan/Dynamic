@@ -283,15 +283,18 @@
 		}
 	};
 	select("home");
-	let mouseTarget = null;
+	let mouseTarget;
+	let down = false;
 	let initialTabPos;
 	let tabOffset;
 	window.addEventListener("mousedown", evt => {
+		down = true;
 		mouseTarget = evt.target;
 		if(mouseTarget.classList.contains("tab")) {
 			if(mouseTarget === homeTab) {
 				select("home");
 			} else {
+				mouseTarget.classList.remove("smooth");
 				select(mouseTarget[_proj].id);
 				const prevTabPos = mouseTarget.offsetLeft;
 				tabOffset = evt.clientX - prevTabPos;
@@ -300,10 +303,39 @@
 			}
 		}
 	});
+	window.addEventListener("mousemove", evt => {
+		if(down && mouseTarget.classList.contains("tab") && mouseTarget !== homeTab) {
+			mouseTarget.style.left = `${evt.clientX - initialTabPos - tabOffset}px`;
+			let passedTarget = false;
+			const tabWidth = mouseTarget.offsetWidth + 1;
+			for(let i = 1; i < tabs.children.length; i++) {
+				if(tabs.children[i] === mouseTarget) {
+					passedTarget = true;
+				} else if(passedTarget) {
+					if(tabs.children[i].style.left && mouseTarget.offsetLeft < tabs.children[i].offsetLeft + tabWidth) {
+						tabs.children[i].style.left = "";
+					} else if(mouseTarget.offsetLeft >= tabs.children[i].offsetLeft) {
+						tabs.children[i].style.left = `-${tabWidth}px`;
+					}
+				} else {
+					if(tabs.children[i].style.left && mouseTarget.offsetLeft > tabs.children[i].offsetLeft - tabWidth) {
+						tabs.children[i].style.left = "";
+					} else if(mouseTarget.offsetLeft <= tabs.children[i].offsetLeft) {
+						tabs.children[i].style.left = `${tabWidth}px`;
+					}
+				}
+			}
+		}
+	});
+	const resetTabPos = () => {
+		mouseTarget.style.left = "";
+		setTimeout(mouseTarget.classList.remove.bind(mouseTarget.classList, "smooth"), 150);
+	};
 	window.addEventListener("mouseup", evt => {
 		if(mouseTarget && mouseTarget.classList.contains("tab")) {
 			if(mouseTarget !== homeTab) {
-				
+				mouseTarget.classList.add("smooth");
+				setTimeout(resetTabPos);
 			}
 		} else if(evt.target === mouseTarget) {
 			if(evt.target.parentNode === toolbar) {
@@ -318,11 +350,6 @@
 				}
 			}
 		}
-		mouseTarget = null;
-	});
-	window.addEventListener("mousemove", evt => {
-		if(mouseTarget && mouseTarget.classList.contains("tab") && mouseTarget !== homeTab) {
-			mouseTarget.style.left = `${evt.clientX - (initialTabPos + tabOffset)}px`;
-		}
+		down = false;
 	});
 })();

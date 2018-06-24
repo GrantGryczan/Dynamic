@@ -38,6 +38,7 @@ body {
 }
 .tab {
 	position: relative;
+	left: 0;
 	width: 160px;
 	min-width: 20px;
 	margin-right: 1px;
@@ -69,6 +70,9 @@ body {
 }
 #homeTab .label {
 	font-size: 20px;
+}
+.smooth {
+	transition: left 0.15s ease-out;
 }
 #toolbar {
 	width: 100%;
