@@ -245,15 +245,24 @@
 	const _name = Symbol("name");
 	const _saved = Symbol("name");
 	class Project {
-		constructor(project) {
-			if(!(project instanceof Object)) {
-				project = {};
+		constructor(thisProject) {
+			if(!(thisProject instanceof Object)) {
+				thisProject = {};
 			}
-			this.location = typeof project.location === "string" ? project.location : null;
-			this[_saved] = !!project.saved;
+			this.location = typeof thisProject.location === "string" ? thisProject.location : null;
+			this[_saved] = !!thisProject.saved;
+			if(typeof thisProject.name === "string") {
+				this[_name] = thisProject.name;
+			} else {
+				const projects = Object.values(proj);
+				let i = 0;
+				do {
+					this[_name] = `Project ${++i}`;
+				} while(projects.some(project => project.name === this[_name]));
+			}
 			tabs.appendChild(this.tab = html`
 				<div class="tab">
-					<div class="label">$${this[_name] = typeof project.name === "string" ? project.name : "New Project"}</div>
+					<div class="label">$${this[_name]}</div>
 					<div class="close material-icons"></div>
 				</div>
 			`);
