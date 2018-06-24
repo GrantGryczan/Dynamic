@@ -1,4 +1,4 @@
-(() => {
+//(() => {
 	global.Miro = {};
 	Miro.magic = {};
 	Miro.magic.magic = Miro.magic;
@@ -161,8 +161,8 @@
 				let submitted = false;
 				let formState = true;
 				if(!(submitted = !footerElem.querySelector("button[type='submit']"))) {
-					surfaceElem.addEventListener("submit", evt => {
-						evt.preventDefault();
+					surfaceElem.addEventListener("submit", event => {
+						event.preventDefault();
 						submitted = true;
 						setTimeout(() => {
 							formState = !surfaceElem[_disabled];
@@ -181,15 +181,15 @@
 					resolve(value);
 				};
 				this[_close] = close;
-				const dialogButton = async evt => {
-					if(!submitted && evt.target.type === "submit") {
+				const dialogButton = async event => {
+					if(!submitted && event.target.type === "submit") {
 						await Miro.wait();
 						if(!submitted) {
 							return;
 						}
 					}
 					dialog.close();
-					close(buttons.indexOf(evt.target));
+					close(buttons.indexOf(event.target));
 				};
 				for(const elem of buttons) {
 					elem.addEventListener("click", dialogButton);
@@ -229,6 +229,12 @@
 	}
 	Miro.dialog = MiroDialog;
 	Miro.prepare(document);
+	const fs = require("fs-extra");
+	const zlib = require("zlib");
+	const electron = require("electron");
+	const slashes = /[\\\/]/g;
+	const win = electron.remote.getCurrentWindow();
+	electron.webFrame.setVisualZoomLevelLimits(1, 1);
 	const container = document.querySelector("#container");
 	const tabs = document.querySelector("#tabs");
 	const homeTab = tabs.querySelector("#homeTab");
@@ -238,22 +244,27 @@
 	const saveProj = toolbar.querySelector("#saveProj");
 	const saveProjAs = toolbar.querySelector("#saveProjAs");
 	const exportProj = toolbar.querySelector("#exportProj");
+	const pages = document.querySelector("#pages");
 	const proj = {}; // the object of projects, the probject
 	let projID = 0;
 	let sel;
+	const baseData = {
+		service: "Miroware Dynamic",
+		version: 0
+	};
 	const _proj = Symbol("proj");
+	const _saved = Symbol("saved");
 	const _name = Symbol("name");
-	const _saved = Symbol("name");
+	const _location = Symbol("location");
 	class Project {
 		constructor(thisProject) {
 			if(!(thisProject instanceof Object)) {
 				thisProject = {};
 			}
-			this.location = typeof thisProject.location === "string" ? thisProject.location : null;
-			this[_saved] = !!thisProject.saved;
+			const validLocation = typeof thisProject.location === "string";
 			if(typeof thisProject.name === "string") {
 				this[_name] = thisProject.name;
-			} else {
+			} else if(!validLocation) {
 				const projects = Object.values(proj);
 				let i = 0;
 				do {
@@ -261,27 +272,52 @@
 				} while(projects.some(project => project.name === this[_name]));
 			}
 			tabs.appendChild(this.tab = html`
-				<div class="tab">
+				<div class="tab${(this[_saved] = !!thisProject.saved) ? " saved" : ""}">
 					<div class="label">$${this[_name]}</div>
 					<div class="close material-icons"></div>
 				</div>
 			`);
 			this.tab[_proj] = this;
-			this.data = {};
+			this.location = validLocation ? thisProject.location : null;
+			this.data = thisProject.data || {
+				...baseData
+			};
 			const id = String(++projID);
 			(proj[id] = this).id = id;
+		}
+		get location() {
+			return this[_location];
+		}
+		set location(value) {
+			if(value) {
+				this[_location] = this.tab.title = value;
+				this.name = this[_location].slice(this[_location].replace(slashes, "/").lastIndexOf("/") + 1);
+			}
 		}
 		get name() {
 			return this[_name];
 		}
 		set name(value) {
-			this[_name] = this.tab.firstChild.textContent = value;
+			this[_name] = this.tab.querySelector(".label").textContent = value;
 		}
 		get saved() {
 			return this[_saved];
 		}
 		set saved(value) {
-			this.tab.classList[(saveProj.disabled = saveProjAs.disabled = exportProj.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
+			this.tab.classList[(saveProj.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
+		}
+		async close() {
+			if(!this.saved && await new Miro.dialog("Confirm", html`
+				Are you sure you want to close <span class="bold">${this.name}</span>?<br>
+				Your unsaved changes will be lost.
+			`, ["Yes", "No"]) === 1) {
+				return;
+			}
+			if(this.id === sel) {
+				select("home");
+			}
+			this.tab.remove();
+			delete proj[this.id];
 		}
 	}
 	const select = id => {
@@ -289,51 +325,138 @@
 		for(const tab of tabs.children) {
 			tab.classList.remove("current");
 		}
-		if(saveProj.disabled = saveProjAs.disabled = exportProj.disabled = id === "home") {
+		if(saveProjAs.disabled = exportProj.disabled = id === "home") {
+			saveProj.disabled = true;
 			homeTab.classList.add("current");
 		} else {
+			saveProj.disabled = proj[id].saved;
 			proj[id].tab.classList.add("current");
 		}
 	};
 	select("home");
-	const close = async id => {
-		if(!proj[id].saved && await new Miro.dialog("Confirm", html`
-			Are you sure you want to close <span class="bold">${proj[id].name}</span>?<br>
-			Your unsaved changes will be lost.
-		`, ["Yes", "No"]) === 1) {
-			return;
+	const selectProject = project => {
+		if(project) {
+			select(project.id);
 		}
-		if(id === sel) {
-			select("home");
-		}
-		proj[id].tab.remove();
-		delete proj[id];
 	};
+	const fileOptions = {
+		properties: ["openFile", "createDirectory"],
+		filters: [{
+			name: "Miroware Dynamic Files",
+			extensions: ["mwd"]
+		}, {
+			name: "All Files",
+			extensions: ["*"]
+		}]
+	};
+	const loadIndeterminate = value => {
+		if(value) {
+			tabs.classList.add("disabled");
+			toolbar.classList.add("disabled");
+			pages.classList.add("disabled");
+			proj[sel].tab.classList.add("indeterminate");
+			win.setProgressBar(0, {
+				mode: "indeterminate"
+			});
+		} else {
+			proj[sel].tab.classList.remove("indeterminate");
+			tabs.classList.remove("disabled");
+			toolbar.classList.remove("disabled");
+			pages.classList.remove("disabled");
+			win.setProgressBar(-1);
+		}
+	};
+	const zip = data => new Promise((resolve, reject) => {
+		zlib.gzip(data, (err, result) => {
+			if(err) {
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		});
+	});
+	const unzip = data => new Promise((resolve, reject) => {
+		zlib.unzip(data, (err, result) => {
+			if(err) {
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		});
+	});
+	const save = async as => {
+		if(proj[sel] && (as || !proj[sel].saved) && (proj[sel].location = (!as && proj[sel].location) || electron.remote.dialog.showSaveDialog(win, fileOptions))) {
+			loadIndeterminate(true);
+			try {
+				await fs.writeFile(proj[sel].location, await zip(JSON.stringify(proj[sel].data)));
+			} catch(err) {
+				new Miro.dialog("Error", `An error occurred while trying to save.\n${err.message}`);
+				loadIndeterminate(false);
+				return;
+			}
+			loadIndeterminate(false);
+			proj[sel].saved = true;
+		}
+	};
+	const open = async location => {
+		if(!location) {
+			location = electron.remote.dialog.showOpenDialog(win, fileOptions);
+			if(location) {
+				location = location[0];
+			}
+		}
+		if(location) {
+			loadIndeterminate(true);
+			let data;
+			try {
+				if((data = JSON.parse(await unzip(await fs.readFile(location)))).service !== "Miroware Dynamic") {
+					throw null;
+				}
+			} catch(err) {
+				new Miro.dialog("Error", "That is not a valid MWD file.");
+				loadIndeterminate(false);
+				return false;
+			}
+			loadIndeterminate(false);
+			return new Project({
+				saved: true,
+				location,
+				data
+			});
+		} else {
+			return false;
+		}
+	};
+	electron.ipcRenderer.on("argv", (event, location) => {
+		open(location);
+	});
 	let mouseTarget;
 	let down = false;
 	let initialTabPos;
 	let tabOffset;
-	window.addEventListener("mousedown", evt => {
-		down = true;
-		mouseTarget = evt.target;
-		if(mouseTarget.classList.contains("tab")) {
-			if(mouseTarget === homeTab) {
-				select("home");
-			} else {
-				select(mouseTarget[_proj].id);
-				const prevTabPos = mouseTarget.offsetLeft;
-				tabOffset = evt.clientX - prevTabPos;
-				mouseTarget.style.left = "";
-				mouseTarget.style.left = `${prevTabPos - (initialTabPos = mouseTarget.offsetLeft)}px`;
-				for(let i = 1; i < tabs.children.length; i++) {
-					tabs.children[i].classList[tabs.children[i] === mouseTarget ? "remove" : "add"]("smooth");
+	window.addEventListener("mousedown", event => {
+		if(event.button === 0 && !down) {
+			down = true;
+			mouseTarget = event.target;
+			if(mouseTarget.classList.contains("tab")) {
+				if(mouseTarget === homeTab) {
+					select("home");
+				} else {
+					select(mouseTarget[_proj].id);
+					const prevTabPos = mouseTarget.offsetLeft;
+					tabOffset = event.clientX - prevTabPos;
+					mouseTarget.style.left = "";
+					mouseTarget.style.left = `${prevTabPos - (initialTabPos = mouseTarget.offsetLeft)}px`;
+					for(let i = 1; i < tabs.children.length; i++) {
+						tabs.children[i].classList[tabs.children[i] === mouseTarget ? "remove" : "add"]("smooth");
+					}
 				}
 			}
 		}
 	});
-	window.addEventListener("mousemove", evt => {
+	window.addEventListener("mousemove", event => {
 		if(down && mouseTarget.classList.contains("tab") && mouseTarget !== homeTab) {
-			mouseTarget.style.left = `${evt.clientX - initialTabPos - tabOffset}px`;
+			mouseTarget.style.left = `${event.clientX - initialTabPos - tabOffset}px`;
 			const tabWidth = mouseTarget.offsetWidth + 1;
 			let afterTarget = false;
 			for(let i = 1; i < tabs.children.length; i++) {
@@ -368,61 +491,63 @@
 		mouseTarget.style.left = "";
 		setTimeout(makeTabRough, 150);
 	};
-	window.addEventListener("mouseup", evt => {
-		if(mouseTarget && mouseTarget.classList.contains("tab")) {
-			if(mouseTarget !== homeTab) {
-				let afterTarget = false;
-				let shifted;
-				let shiftedAfterTarget = 2;
-				for(let i = 1; i < tabs.children.length; i++) {
-					if(tabs.children[i] === mouseTarget) {
-						afterTarget = true;
-					} else if(tabs.children[i].style.left) {
-						shifted = i;
-						if(afterTarget) {
-							shifted++;
-						} else {
-							shiftedAfterTarget = 1;
+	window.addEventListener("mouseup", event => {
+		if(event.button === 0) {
+			if(mouseTarget && mouseTarget.classList.contains("tab")) {
+				if(mouseTarget !== homeTab) {
+					let afterTarget = false;
+					let shifted;
+					let shiftedAfterTarget = 2;
+					for(let i = 1; i < tabs.children.length; i++) {
+						if(tabs.children[i] === mouseTarget) {
+							afterTarget = true;
+						} else if(tabs.children[i].style.left) {
+							shifted = i;
+							if(afterTarget) {
+								shifted++;
+							} else {
+								shiftedAfterTarget = 1;
+								break;
+							}
+						} else if(afterTarget) {
 							break;
 						}
-					} else if(afterTarget) {
-						break;
 					}
-				}
-				const tabWidth = mouseTarget.offsetWidth + 1;
-				if(shifted) {
-					const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
-					mouseTarget.style.left = `${mouseTarget.offsetLeft - newPos}px`;
-					for(let i = 1; i < tabs.children.length; i++) {
-						if(tabs.children[i] !== mouseTarget) {
-							tabs.children[i].classList.remove("smooth");
-							tabs.children[i].style.left = "";
+					const tabWidth = mouseTarget.offsetWidth + 1;
+					if(shifted) {
+						const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
+						mouseTarget.style.left = `${mouseTarget.offsetLeft - newPos}px`;
+						for(let i = 1; i < tabs.children.length; i++) {
+							if(tabs.children[i] !== mouseTarget) {
+								tabs.children[i].classList.remove("smooth");
+								tabs.children[i].style.left = "";
+							}
 						}
+						tabs.insertBefore(mouseTarget, tabs.children[shifted]);
 					}
-					tabs.insertBefore(mouseTarget, tabs.children[shifted]);
+					mouseTarget.classList.add("smooth");
+					setTimeout(resetTabPos);
 				}
-				mouseTarget.classList.add("smooth");
-				setTimeout(resetTabPos);
+			} else if(event.target === mouseTarget) {
+				if(mouseTarget.parentNode === toolbar) {
+					if(mouseTarget === newProj) {
+						select(new Project().id);
+					} else if(mouseTarget === openProj) {
+						open().then(selectProject);
+					} else if(mouseTarget === saveProj) {
+						save();
+					} else if(mouseTarget === saveProjAs) {
+						save(true);
+					} else if(mouseTarget === exportProj) {
+						
+					}
+				} else if(mouseTarget.classList.contains("close")) {
+					if(mouseTarget.parentNode.classList.contains("tab")) {
+						mouseTarget.parentNode[_proj].close();
+					}
+				}
 			}
-		} else if(evt.target === mouseTarget) {
-			if(mouseTarget.parentNode === toolbar) {
-				if(mouseTarget === newProj) {
-					select(new Project().id);
-				} else if(mouseTarget === openProj) {
-					
-				} else if(mouseTarget === saveProj) {
-					
-				} else if(mouseTarget === saveProjAs) {
-					
-				} else if(mouseTarget === exportProj) {
-					
-				}
-			} else if(mouseTarget.classList.contains("close")) {
-				if(mouseTarget.parentNode.classList.contains("tab")) {
-					close(mouseTarget.parentNode[_proj].id);
-				}
-			}
+			down = false;
 		}
-		down = false;
 	});
-})();
+//})();

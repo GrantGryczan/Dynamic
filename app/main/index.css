@@ -11,6 +11,9 @@ body {
 .bold {
 	font-weight: bold;
 }
+.disabled {
+	pointer-events: none;
+}
 .double-fab .material-icons:first-child {
 	position: relative;
 	left: 11px;
@@ -57,7 +60,7 @@ body {
 .tab {
 	position: relative;
 	left: 0;
-	width: 172px;
+	width: 256px;
 	min-width: 36px;
 	margin-right: 1px;
 	padding: 0 4px;
@@ -74,10 +77,25 @@ body {
 	background-color: #f0f0f0;
 	z-index: 2;
 }
+@keyframes indeterminate {
+	0% {
+		background-position-x: -132px;
+	}
+	100% {
+		background-position-x: 264px;
+	}
+}
+.tab.indeterminate {
+	background-image: linear-gradient(to right, rgba(128, 0, 255, 0.3), rgba(128, 0, 255, 0.3));
+	background-repeat: no-repeat;
+	background-size: 50% 100%;
+	animation: indeterminate 1.5s infinite linear;
+}
 .tab .label {
 	padding-top: 4px;
 	overflow: hidden;
 	pointer-events: none;
+	text-overflow: ellipsis;
 	font-size: 14px;
 }
 .tab:not(.saved) .label::before {
