@@ -236,6 +236,7 @@
 	const openProj = toolbar.querySelector("#openProj");
 	const saveProj = toolbar.querySelector("#saveProj");
 	const saveProjAs = toolbar.querySelector("#saveProjAs");
+	const exportProj = toolbar.querySelector("#exportProj");
 	const proj = {}; // the object of projects, the probject
 	let projID = 0;
 	let sel;
@@ -268,7 +269,7 @@
 			return this[_saved];
 		}
 		set saved(value) {
-			this.tab.classList[(saveProj.disabled = saveProjAs.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
+			this.tab.classList[(saveProj.disabled = saveProjAs.disabled = exportProj.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
 		}
 	}
 	const select = id => {
@@ -276,7 +277,7 @@
 		for(const tab of tabs.children) {
 			tab.classList.remove("current");
 		}
-		if(saveProj.disabled = saveProjAs.disabled = id === "home") {
+		if(saveProj.disabled = saveProjAs.disabled = exportProj.disabled = id === "home") {
 			homeTab.classList.add("current");
 		} else {
 			proj[id].tab.classList.add("current");
@@ -294,58 +295,101 @@
 			if(mouseTarget === homeTab) {
 				select("home");
 			} else {
-				mouseTarget.classList.remove("smooth");
 				select(mouseTarget[_proj].id);
 				const prevTabPos = mouseTarget.offsetLeft;
 				tabOffset = evt.clientX - prevTabPos;
 				mouseTarget.style.left = "";
 				mouseTarget.style.left = `${prevTabPos - (initialTabPos = mouseTarget.offsetLeft)}px`;
+				for(let i = 1; i < tabs.children.length; i++) {
+					tabs.children[i].classList[tabs.children[i] === mouseTarget ? "remove" : "add"]("smooth");
+				}
 			}
 		}
 	});
 	window.addEventListener("mousemove", evt => {
 		if(down && mouseTarget.classList.contains("tab") && mouseTarget !== homeTab) {
 			mouseTarget.style.left = `${evt.clientX - initialTabPos - tabOffset}px`;
-			let passedTarget = false;
 			const tabWidth = mouseTarget.offsetWidth + 1;
+			let afterTarget = false;
 			for(let i = 1; i < tabs.children.length; i++) {
 				if(tabs.children[i] === mouseTarget) {
-					passedTarget = true;
-				} else if(passedTarget) {
-					if(tabs.children[i].style.left && mouseTarget.offsetLeft < tabs.children[i].offsetLeft + tabWidth) {
-						tabs.children[i].style.left = "";
-					} else if(mouseTarget.offsetLeft >= tabs.children[i].offsetLeft) {
-						tabs.children[i].style.left = `-${tabWidth}px`;
-					}
+					afterTarget = true;
 				} else {
-					if(tabs.children[i].style.left && mouseTarget.offsetLeft > tabs.children[i].offsetLeft - tabWidth) {
-						tabs.children[i].style.left = "";
-					} else if(mouseTarget.offsetLeft <= tabs.children[i].offsetLeft) {
-						tabs.children[i].style.left = `${tabWidth}px`;
+					if(afterTarget) {
+						if(mouseTarget.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
+							if(!tabs.children[i].style.left) {
+								tabs.children[i].style.left = `-${tabWidth}px`;
+							}
+						} else if(tabs.children[i].style.left) {
+							tabs.children[i].style.left = "";
+						}
+					} else {
+						if(mouseTarget.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
+							if(!tabs.children[i].style.left) {
+								tabs.children[i].style.left = `${tabWidth}px`;
+							}
+						} else if(tabs.children[i].style.left) {
+							tabs.children[i].style.left = "";
+						}
 					}
 				}
 			}
 		}
 	});
+	const makeTabRough = () => {
+		mouseTarget.classList.remove("smooth");
+	};
 	const resetTabPos = () => {
 		mouseTarget.style.left = "";
-		setTimeout(mouseTarget.classList.remove.bind(mouseTarget.classList, "smooth"), 150);
+		setTimeout(makeTabRough, 150);
 	};
 	window.addEventListener("mouseup", evt => {
 		if(mouseTarget && mouseTarget.classList.contains("tab")) {
 			if(mouseTarget !== homeTab) {
+				let afterTarget = false;
+				let shifted;
+				let shiftedAfterTarget = 2;
+				for(let i = 1; i < tabs.children.length; i++) {
+					if(tabs.children[i] === mouseTarget) {
+						afterTarget = true;
+					} else if(tabs.children[i].style.left) {
+						shifted = i;
+						if(afterTarget) {
+							shifted++;
+						} else {
+							shiftedAfterTarget = 1;
+							break;
+						}
+					} else if(afterTarget) {
+						break;
+					}
+				}
+				const tabWidth = mouseTarget.offsetWidth + 1;
+				if(shifted) {
+					const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
+					mouseTarget.style.left = `${mouseTarget.offsetLeft - newPos}px`;
+					for(let i = 1; i < tabs.children.length; i++) {
+						if(tabs.children[i] !== mouseTarget) {
+							tabs.children[i].classList.remove("smooth");
+							tabs.children[i].style.left = "";
+						}
+					}
+					tabs.insertBefore(mouseTarget, tabs.children[shifted]);
+				}
 				mouseTarget.classList.add("smooth");
 				setTimeout(resetTabPos);
 			}
 		} else if(evt.target === mouseTarget) {
-			if(evt.target.parentNode === toolbar) {
-				if(evt.target === newProj) {
+			if(mouseTarget.parentNode === toolbar) {
+				if(mouseTarget === newProj) {
 					select(new Project().id);
-				} else if(evt.target === openProj) {
+				} else if(mouseTarget === openProj) {
 					
-				} else if(evt.target === saveProj) {
+				} else if(mouseTarget === saveProj) {
 					
-				} else if(evt.target === saveProjAs) {
+				} else if(mouseTarget === saveProjAs) {
+					
+				} else if(mouseTarget === exportProj) {
 					
 				}
 			}
