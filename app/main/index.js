@@ -236,15 +236,15 @@
 	const win = electron.remote.getCurrentWindow();
 	electron.webFrame.setVisualZoomLevelLimits(1, 1);
 	const container = document.querySelector("#container");
-	const tabs = document.querySelector("#tabs");
+	const tabs = container.querySelector("#tabs");
 	const homeTab = tabs.querySelector("#homeTab");
-	const toolbar = document.querySelector("#toolbar");
+	const toolbar = container.querySelector("#toolbar");
 	const newProj = toolbar.querySelector("#newProj");
 	const openProj = toolbar.querySelector("#openProj");
 	const saveProj = toolbar.querySelector("#saveProj");
 	const saveProjAs = toolbar.querySelector("#saveProjAs");
 	const exportProj = toolbar.querySelector("#exportProj");
-	const pages = document.querySelector("#pages");
+	const homePage = container.querySelector("#homePage");
 	const proj = {}; // the object of projects, the probject
 	let projID = 0;
 	let sel;
@@ -279,6 +279,38 @@
 			`);
 			this.tab[_proj] = this;
 			this.location = validLocation ? thisProject.location : null;
+			this.page = html`
+				<div class="page">
+					<div id="topPanels">
+						<div id="assetContainer" class="panel">
+							<div id="assetContents" class="contents">
+								<div>
+									<span class="label spaced">Assets</span><button id="createObj" class="mdc-fab spaced" title="Create Object" type="button">
+										<span class="mdc-fab__icon material-icons">add</span>
+									</button><button id="importImage" class="mdc-fab spaced" title="Import Image" type="button">
+										<span class="mdc-fab__icon material-icons">photo_library</span>
+									</button><button id="importAudio" class="mdc-fab spaced" title="Import Audio" type="button">
+										<span class="mdc-fab__icon material-icons">library_music</span>
+									</button><button id="createGroup" class="mdc-fab spaced" title="Create Group" type="button">
+										<span class="mdc-fab__icon material-icons">create_new_folder</span>
+									</button>
+								</div>
+								<div id="assets"></div>
+							</div>
+							<div id="assetHandle"></div>
+						</div>
+						<div id="contentContainer"></div>
+						<div id="propertiesContainer" class="panel">
+							<div id="propertiesContents" class="contents"></div>
+							<div id="propertiesHandle"></div>
+						</div>
+					</div>
+					<div id="timelineContainer" class="panel">
+						<div id="timelineContents" class="contents"></div>
+						<div id="timelineHandle"></div>
+					</div>
+				</div>
+			`;
 			this.data = thisProject.data || {
 				...baseData
 			};
@@ -321,6 +353,11 @@
 		}
 	}
 	const select = id => {
+		if(proj[sel]) {
+			proj[sel].page.remove();
+		} else if(sel === "home") {
+			homePage.remove();
+		}
 		sel = id;
 		for(const tab of tabs.children) {
 			tab.classList.remove("current");
@@ -328,9 +365,11 @@
 		if(saveProjAs.disabled = exportProj.disabled = id === "home") {
 			saveProj.disabled = true;
 			homeTab.classList.add("current");
+			container.appendChild(homePage);
 		} else {
 			saveProj.disabled = proj[id].saved;
 			proj[id].tab.classList.add("current");
+			container.appendChild(proj[id].page);
 		}
 	};
 	select("home");
@@ -353,16 +392,16 @@
 		if(value) {
 			tabs.classList.add("disabled");
 			toolbar.classList.add("disabled");
-			pages.classList.add("disabled");
+			proj[sel].page.classList.add("disabled");
 			proj[sel].tab.classList.add("indeterminate");
 			win.setProgressBar(0, {
 				mode: "indeterminate"
 			});
 		} else {
-			proj[sel].tab.classList.remove("indeterminate");
 			tabs.classList.remove("disabled");
 			toolbar.classList.remove("disabled");
-			pages.classList.remove("disabled");
+			proj[sel].page.classList.remove("disabled");
+			proj[sel].tab.classList.remove("indeterminate");
 			win.setProgressBar(-1);
 		}
 	};
