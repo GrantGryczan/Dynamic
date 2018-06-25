@@ -10,6 +10,14 @@
 		<link rel="stylesheet" href="./index.css">
 	</head>
 	<body class="mdc-typography">
+		<div id="titleBar">
+			<div class="label"></div>
+			<div id="windowActions">
+				<button id="minimizeWindow" class="material-icons">minimize</button>
+				<button id="maximizeWindow" class="material-icons"></button>
+				<button id="closeWindow" class="material-icons">close</button>
+			</div>
+		</div>
 		<div id="container">
 			<div id="tabs">
 				<div id="homeTab" class="tab saved">
@@ -17,6 +25,7 @@
 				</div>
 			</div>
 			<div id="toolbar" class="mdc-elevation--z2">
+				<div id="loading"></div>
 				<button id="newProj" class="mdc-fab spaced" title="New Project">
 					<span class="mdc-fab__icon material-icons">add</span>
 				</button><button id="openProj" class="mdc-fab spaced" title="Open Project">
@@ -29,11 +38,7 @@
 					<span class="mdc-fab__icon material-icons">save_alt</span>
 				</button>
 			</div>
-			<div id="pages">
-				<div id="homePage" class="page">
-					Soon...
-				</div>
-			</div>
+			<div id="homePage" class="page"></div>
 		</div>
 		<script src="../js/material.js"></script> <!-- https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js -->
 		<script src="./index.js"></script>

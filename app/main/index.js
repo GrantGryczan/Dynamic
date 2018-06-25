@@ -235,6 +235,29 @@
 	const slashes = /[\\\/]/g;
 	const win = electron.remote.getCurrentWindow();
 	electron.webFrame.setVisualZoomLevelLimits(1, 1);
+	let riggedMaximize = false;
+	const setRiggedMaximizeToFalse = () => {
+		riggedMaximize = false;
+	};
+	win.on("maximize", () => {
+		if(!riggedMaximize) {
+			maximizeWindow.textContent = "fullscreen_exit";
+			riggedMaximize = true;
+			win.unmaximize();
+			win.maximize();
+			setTimeout(setRiggedMaximizeToFalse);
+		}
+	});
+	win.on("unmaximize", () => {
+		if(!riggedMaximize) {
+			maximizeWindow.textContent = "fullscreen";
+		}
+	});
+	const titleBar = document.querySelector("#titleBar");
+	const windowActions = titleBar.querySelector("#windowActions");
+	const minimizeWindow = windowActions.querySelector("#minimizeWindow");
+	const maximizeWindow = windowActions.querySelector("#maximizeWindow");
+	const closeWindow = windowActions.querySelector("#closeWindow");
 	const container = document.querySelector("#container");
 	const tabs = container.querySelector("#tabs");
 	const homeTab = tabs.querySelector("#homeTab");
@@ -245,6 +268,8 @@
 	const saveProjAs = toolbar.querySelector("#saveProjAs");
 	const exportProj = toolbar.querySelector("#exportProj");
 	const homePage = container.querySelector("#homePage");
+	maximizeWindow.textContent = win.isMaximized() ? "fullscreen_exit" : "fullscreen";
+	titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.userAgent.match(/ Dynamic\/([^ ]+) /)[1]}`;
 	const proj = {}; // the object of projects, the probject
 	let projID = 0;
 	let sel;
@@ -287,12 +312,12 @@
 								<div>
 									<span class="label spaced">Assets</span><button id="createObj" class="mdc-fab spaced" title="Create Object" type="button">
 										<span class="mdc-fab__icon material-icons">add</span>
+									</button><button id="createGroup" class="mdc-fab spaced" title="Create Group" type="button">
+										<span class="mdc-fab__icon material-icons">create_new_folder</span>
 									</button><button id="importImage" class="mdc-fab spaced" title="Import Image" type="button">
 										<span class="mdc-fab__icon material-icons">photo_library</span>
 									</button><button id="importAudio" class="mdc-fab spaced" title="Import Audio" type="button">
 										<span class="mdc-fab__icon material-icons">library_music</span>
-									</button><button id="createGroup" class="mdc-fab spaced" title="Create Group" type="button">
-										<span class="mdc-fab__icon material-icons">create_new_folder</span>
 									</button>
 								</div>
 								<div id="assets"></div>
@@ -392,16 +417,20 @@
 		if(value) {
 			tabs.classList.add("disabled");
 			toolbar.classList.add("disabled");
-			proj[sel].page.classList.add("disabled");
-			proj[sel].tab.classList.add("indeterminate");
+			if(proj[sel]) {
+				proj[sel].page.classList.add("disabled");
+			}
+			document.body.classList.add("indeterminate");
 			win.setProgressBar(0, {
 				mode: "indeterminate"
 			});
 		} else {
 			tabs.classList.remove("disabled");
 			toolbar.classList.remove("disabled");
-			proj[sel].page.classList.remove("disabled");
-			proj[sel].tab.classList.remove("indeterminate");
+			if(proj[sel]) {
+				proj[sel].page.classList.remove("disabled");
+			}
+			document.body.classList.remove("indeterminate");
 			win.setProgressBar(-1);
 		}
 	};
@@ -568,7 +597,19 @@
 					setTimeout(resetTabPos);
 				}
 			} else if(event.target === mouseTarget) {
-				if(mouseTarget.parentNode === toolbar) {
+				if(mouseTarget.parentNode === windowActions) {
+					if(mouseTarget === minimizeWindow) {
+						win.minimize();
+					} else if(mouseTarget === maximizeWindow) {
+						if(win.isMaximized()) {
+							win.unmaximize();
+						} else {
+							win.maximize();
+						}
+					} else if(mouseTarget === closeWindow) {
+						win.close();
+					}
+				} else if(mouseTarget.parentNode === toolbar) {
 					if(mouseTarget === newProj) {
 						select(new Project().id);
 					} else if(mouseTarget === openProj) {
@@ -587,6 +628,26 @@
 				}
 			}
 			down = false;
+		}
+	});
+	window.addEventListener("keydown", event => {
+		console.log(event.keyCode);
+		if(event.ctrlKey || event.metaKey) {
+			if(event.shiftKey) {
+				if(event.keyCode === 73) { // ctrl+shift+I
+					win.toggleDevTools();
+				} else if(event.keyCode === 83) { // ctrl+shift+S
+					save(true);
+				}
+			} else if(event.keyCode === 83) { // ctrl+S
+				save();
+			} else if(event.keyCode === 87) { // ctrl+W
+				if(proj[sel]) {
+					proj[sel].close();
+				} else {
+					win.close();
+				}
+			}
 		}
 	});
 //})();
