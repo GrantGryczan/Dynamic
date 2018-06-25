@@ -38,7 +38,37 @@
 					<span class="mdc-fab__icon material-icons">save_alt</span>
 				</button>
 			</div>
-			<div id="homePage" class="page"></div>
+			<div id="homePage" class="page hidden"></div>
+			<div id="projectPage" class="page hidden">
+				<div id="topPanels">
+					<div id="assetContainer" class="panel">
+						<div class="contents">
+							<div>
+								<span class="label spaced">Assets</span><button id="createObj" class="mdc-fab spaced" title="Create Object" type="button">
+									<span class="mdc-fab__icon material-icons">add</span>
+								</button><button id="createGroup" class="mdc-fab spaced" title="Create Group" type="button">
+									<span class="mdc-fab__icon material-icons">create_new_folder</span>
+								</button><button id="importImage" class="mdc-fab spaced" title="Import Image" type="button">
+									<span class="mdc-fab__icon material-icons">photo_library</span>
+								</button><button id="importAudio" class="mdc-fab spaced" title="Import Audio" type="button">
+									<span class="mdc-fab__icon material-icons">library_music</span>
+								</button>
+							</div>
+							<div id="assets"></div>
+						</div>
+						<div class="handle horizontal"></div>
+					</div>
+					<div id="contentContainer"></div>
+					<div id="propertyContainer" class="panel">
+						<div class="contents"></div>
+						<div class="handle horizontal"></div>
+					</div>
+				</div>
+				<div id="timelineContainer" class="panel">
+					<div class="contents"></div>
+					<div class="handle vertical"></div>
+				</div>
+			</div>
 		</div>
 		<script src="../js/material.js"></script> <!-- https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js -->
 		<script src="../js/script.js"></script>

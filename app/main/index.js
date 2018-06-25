@@ -2,13 +2,37 @@
 	const fs = require("fs-extra");
 	const zlib = require("zlib");
 	const electron = require("electron");
+	let storage;
+	try {
+		storage = JSON.parse(localStorage.data);
+	} catch(err) {
+		storage = {};
+	}
+	const store = () => {
+		try {
+			localStorage.data = JSON.stringify(storage);
+		} catch(err) {
+			Miro.dialog("Error", "An error occurred while trying to save your user data.");
+		}
+	};
 	const slashes = /[\\\/]/g;
 	const win = electron.remote.getCurrentWindow();
 	electron.webFrame.setVisualZoomLevelLimits(1, 1);
 	const titleBar = document.querySelector("#titleBar");
+	titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.userAgent.match(/ Dynamic\/([^ ]+) /)[1]}`;
+	if(win.isFullScreen()) {
+		titleBar.classList.add("hidden");
+	}
 	const windowActions = titleBar.querySelector("#windowActions");
 	const minimizeWindow = windowActions.querySelector("#minimizeWindow");
 	const maximizeWindow = windowActions.querySelector("#maximizeWindow");
+	maximizeWindow.textContent = win.isMaximized() ? "fullscreen_exit" : "fullscreen";
+	win.on("maximize", () => {
+		maximizeWindow.textContent = "fullscreen_exit";
+	});
+	win.on("unmaximize", () => {
+		maximizeWindow.textContent = "fullscreen";
+	});
 	const closeWindow = windowActions.querySelector("#closeWindow");
 	const container = document.querySelector("#container");
 	const tabs = container.querySelector("#tabs");
@@ -20,17 +44,24 @@
 	const saveProjAs = toolbar.querySelector("#saveProjAs");
 	const exportProj = toolbar.querySelector("#exportProj");
 	const homePage = container.querySelector("#homePage");
-	titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.userAgent.match(/ Dynamic\/([^ ]+) /)[1]}`;
-	maximizeWindow.textContent = win.isMaximized() ? "fullscreen_exit" : "fullscreen";
-	win.on("maximize", () => {
-		maximizeWindow.textContent = "fullscreen_exit";
-	});
-	win.on("unmaximize", () => {
-		maximizeWindow.textContent = "fullscreen";
-	});
-	if(win.isFullScreen()) {
-		titleBar.classList.add("hidden");
+	const projectPage = container.querySelector("#projectPage");
+	const assetContainer = container.querySelector("#assetContainer");
+	const propertyContainer = container.querySelector("#propertyContainer");
+	const timelineContainer = container.querySelector("#timelineContainer");
+	if(storage.containerSizes instanceof Object) {
+		if(storage.containerSizes.assetContainer) {
+			assetContainer.style.width = `${storage.containerSizes.assetContainer}px`;
+		}
+		if(storage.containerSizes.propertyContainer) {
+			propertyContainer.style.width = `${storage.containerSizes.propertyContainer}px`;
+		}
+		if(storage.containerSizes.timelineContainer) {
+			timelineContainer.style.height = `${storage.containerSizes.timelineContainer}px`;
+		}
+	} else {
+		storage.containerSizes = {};
 	}
+	store();
 	const proj = {}; // the object of projects, the probject
 	let projID = 0;
 	let sel;
@@ -65,38 +96,6 @@
 			`);
 			this.tab[_proj] = this;
 			this.location = validLocation ? thisProject.location : null;
-			this.page = html`
-				<div class="page">
-					<div id="topPanels">
-						<div id="assetContainer" class="panel">
-							<div id="assetContents" class="contents">
-								<div>
-									<span class="label spaced">Assets</span><button id="createObj" class="mdc-fab spaced" title="Create Object" type="button">
-										<span class="mdc-fab__icon material-icons">add</span>
-									</button><button id="createGroup" class="mdc-fab spaced" title="Create Group" type="button">
-										<span class="mdc-fab__icon material-icons">create_new_folder</span>
-									</button><button id="importImage" class="mdc-fab spaced" title="Import Image" type="button">
-										<span class="mdc-fab__icon material-icons">photo_library</span>
-									</button><button id="importAudio" class="mdc-fab spaced" title="Import Audio" type="button">
-										<span class="mdc-fab__icon material-icons">library_music</span>
-									</button>
-								</div>
-								<div id="assets"></div>
-							</div>
-							<div id="assetHandle"></div>
-						</div>
-						<div id="contentContainer"></div>
-						<div id="propertiesContainer" class="panel">
-							<div id="propertiesContents" class="contents"></div>
-							<div id="propertiesHandle"></div>
-						</div>
-					</div>
-					<div id="timelineContainer" class="panel">
-						<div id="timelineContents" class="contents"></div>
-						<div id="timelineHandle"></div>
-					</div>
-				</div>
-			`;
 			this.data = thisProject.data || {
 				...baseData
 			};
@@ -141,9 +140,9 @@
 	}
 	const select = id => {
 		if(proj[sel]) {
-			proj[sel].page.remove();
+			projectPage.classList.add("hidden");
 		} else if(sel === "home") {
-			homePage.remove();
+			homePage.classList.add("hidden");
 		}
 		sel = id;
 		for(const tab of tabs.children) {
@@ -152,11 +151,11 @@
 		if(saveProjAs.disabled = exportProj.disabled = id === "home") {
 			saveProj.disabled = true;
 			homeTab.classList.add("current");
-			container.appendChild(homePage);
+			homePage.classList.remove("hidden");
 		} else {
 			saveProj.disabled = proj[id].saved;
 			proj[id].tab.classList.add("current");
-			container.appendChild(proj[id].page);
+			projectPage.classList.remove("hidden");
 		}
 	};
 	select("home");
@@ -257,8 +256,8 @@
 	});
 	let mouseTarget;
 	let down = false;
-	let initialTabPos;
-	let tabOffset;
+	let initialTargetPos;
+	let targetOffset;
 	window.addEventListener("mousedown", event => {
 		if(event.button === 0 && !down) {
 			down = true;
@@ -269,43 +268,66 @@
 				} else {
 					select(mouseTarget[_proj].id);
 					const prevTabPos = mouseTarget.offsetLeft;
-					tabOffset = event.clientX - prevTabPos;
+					targetOffset = event.clientX - prevTabPos;
 					mouseTarget.style.left = "";
-					mouseTarget.style.left = `${prevTabPos - (initialTabPos = mouseTarget.offsetLeft)}px`;
+					mouseTarget.style.left = `${prevTabPos - (initialTargetPos = mouseTarget.offsetLeft)}px`;
 					for(let i = 1; i < tabs.children.length; i++) {
 						tabs.children[i].classList[tabs.children[i] === mouseTarget ? "remove" : "add"]("smooth");
 					}
+				}
+			} else if(mouseTarget.classList.contains("handle")) {
+				initialTargetPos = mouseTarget.parentNode[mouseTarget.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
+				if(mouseTarget.parentNode === assetContainer) {
+					targetOffset = mouseTarget.parentNode.offsetWidth - event.clientX;
+				} else if(mouseTarget.parentNode === propertyContainer) {
+					targetOffset = event.clientX - mouseTarget.parentNode.offsetLeft;
+				} else if(mouseTarget.parentNode === timelineContainer) {
+					targetOffset = event.clientY - mouseTarget.parentNode.offsetTop;
 				}
 			}
 		}
 	});
 	window.addEventListener("mousemove", event => {
-		if(down && mouseTarget.classList.contains("tab") && mouseTarget !== homeTab) {
-			mouseTarget.style.left = `${event.clientX - initialTabPos - tabOffset}px`;
-			const tabWidth = mouseTarget.offsetWidth + 1;
-			let afterTarget = false;
-			for(let i = 1; i < tabs.children.length; i++) {
-				if(tabs.children[i] === mouseTarget) {
-					afterTarget = true;
-				} else {
-					if(afterTarget) {
-						if(mouseTarget.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
-							if(!tabs.children[i].style.left) {
-								tabs.children[i].style.left = `-${tabWidth}px`;
+		if(down) {
+			if(mouseTarget.classList.contains("tab")) {
+				if(mouseTarget !== homeTab) {
+					mouseTarget.style.left = `${event.clientX - initialTargetPos - targetOffset}px`;
+					const tabWidth = mouseTarget.offsetWidth + 1;
+					let afterTarget = false;
+					for(let i = 1; i < tabs.children.length; i++) {
+						if(tabs.children[i] === mouseTarget) {
+							afterTarget = true;
+						} else {
+							if(afterTarget) {
+								if(mouseTarget.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
+									if(!tabs.children[i].style.left) {
+										tabs.children[i].style.left = `-${tabWidth}px`;
+									}
+								} else if(tabs.children[i].style.left) {
+									tabs.children[i].style.left = "";
+								}
+							} else {
+								if(mouseTarget.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
+									if(!tabs.children[i].style.left) {
+										tabs.children[i].style.left = `${tabWidth}px`;
+									}
+								} else if(tabs.children[i].style.left) {
+									tabs.children[i].style.left = "";
+								}
 							}
-						} else if(tabs.children[i].style.left) {
-							tabs.children[i].style.left = "";
-						}
-					} else {
-						if(mouseTarget.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
-							if(!tabs.children[i].style.left) {
-								tabs.children[i].style.left = `${tabWidth}px`;
-							}
-						} else if(tabs.children[i].style.left) {
-							tabs.children[i].style.left = "";
 						}
 					}
 				}
+			} else if(mouseTarget.classList.contains("handle")) {
+				let value = targetOffset;
+				if(mouseTarget.parentNode === assetContainer) {
+					value += event.clientX;
+				} else if(mouseTarget.parentNode === propertyContainer) {
+					value += document.body.offsetWidth - event.clientX;
+				} else if(mouseTarget.parentNode === timelineContainer) {
+					value += document.body.offsetHeight - event.clientY;
+				}
+				mouseTarget.parentNode.style[mouseTarget.classList.contains("horizontal") ? "width" : "height"] = `${storage.containerSizes[mouseTarget.parentNode.id] = Math.max(185, value)}px`;
 			}
 		}
 	});
@@ -318,73 +340,84 @@
 	};
 	window.addEventListener("mouseup", event => {
 		if(event.button === 0) {
-			if(mouseTarget && mouseTarget.classList.contains("tab")) {
-				if(mouseTarget !== homeTab) {
-					let afterTarget = false;
-					let shifted;
-					let shiftedAfterTarget = 2;
-					for(let i = 1; i < tabs.children.length; i++) {
-						if(tabs.children[i] === mouseTarget) {
-							afterTarget = true;
-						} else if(tabs.children[i].style.left) {
-							shifted = i;
-							if(afterTarget) {
-								shifted++;
-							} else {
-								shiftedAfterTarget = 1;
+			if(mouseTarget) {
+				if(mouseTarget.classList.contains("tab")) {
+					if(mouseTarget !== homeTab) {
+						let afterTarget = false;
+						let shifted;
+						let shiftedAfterTarget = 2;
+						for(let i = 1; i < tabs.children.length; i++) {
+							if(tabs.children[i] === mouseTarget) {
+								afterTarget = true;
+							} else if(tabs.children[i].style.left) {
+								shifted = i;
+								if(afterTarget) {
+									shifted++;
+								} else {
+									shiftedAfterTarget = 1;
+									break;
+								}
+							} else if(afterTarget) {
 								break;
 							}
-						} else if(afterTarget) {
-							break;
 						}
-					}
-					const tabWidth = mouseTarget.offsetWidth + 1;
-					if(shifted) {
-						const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
-						mouseTarget.style.left = `${mouseTarget.offsetLeft - newPos}px`;
-						for(let i = 1; i < tabs.children.length; i++) {
-							if(tabs.children[i] !== mouseTarget) {
-								tabs.children[i].classList.remove("smooth");
-								tabs.children[i].style.left = "";
+						const tabWidth = mouseTarget.offsetWidth + 1;
+						if(shifted) {
+							const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
+							mouseTarget.style.left = `${mouseTarget.offsetLeft - newPos}px`;
+							for(let i = 1; i < tabs.children.length; i++) {
+								if(tabs.children[i] !== mouseTarget) {
+									tabs.children[i].classList.remove("smooth");
+									tabs.children[i].style.left = "";
+								}
 							}
+							tabs.insertBefore(mouseTarget, tabs.children[shifted]);
 						}
-						tabs.insertBefore(mouseTarget, tabs.children[shifted]);
+						mouseTarget.classList.add("smooth");
+						setTimeout(resetTabPos);
 					}
-					mouseTarget.classList.add("smooth");
-					setTimeout(resetTabPos);
-				}
-			} else if(event.target === mouseTarget) {
-				if(mouseTarget.parentNode === windowActions) {
-					if(mouseTarget === minimizeWindow) {
-						win.minimize();
-					} else if(mouseTarget === maximizeWindow) {
-						if(win.isMaximized()) {
-							win.unmaximize();
-						} else {
-							win.maximize();
+				} else if(mouseTarget.classList.contains("handle")) {
+					store();
+				} else if(event.target === mouseTarget) {
+					if(mouseTarget.parentNode === windowActions) {
+						if(mouseTarget === minimizeWindow) {
+							win.minimize();
+						} else if(mouseTarget === maximizeWindow) {
+							if(win.isMaximized()) {
+								win.unmaximize();
+							} else {
+								win.maximize();
+							}
+						} else if(mouseTarget === closeWindow) {
+							win.close();
 						}
-					} else if(mouseTarget === closeWindow) {
-						win.close();
-					}
-				} else if(mouseTarget.parentNode === toolbar) {
-					if(mouseTarget === newProj) {
-						new Project();
-					} else if(mouseTarget === openProj) {
-						open();
-					} else if(mouseTarget === saveProj) {
-						save();
-					} else if(mouseTarget === saveProjAs) {
-						save(true);
-					} else if(mouseTarget === exportProj) {
-						
-					}
-				} else if(mouseTarget.classList.contains("close")) {
-					if(mouseTarget.parentNode.classList.contains("tab")) {
-						mouseTarget.parentNode[_proj].close();
+					} else if(mouseTarget.parentNode === toolbar) {
+						if(mouseTarget === newProj) {
+							new Project();
+						} else if(mouseTarget === openProj) {
+							open();
+						} else if(mouseTarget === saveProj) {
+							save();
+						} else if(mouseTarget === saveProjAs) {
+							save(true);
+						} else if(mouseTarget === exportProj) {
+							
+						}
+					} else if(mouseTarget.classList.contains("close")) {
+						if(mouseTarget.parentNode.classList.contains("tab")) {
+							mouseTarget.parentNode[_proj].close();
+						}
 					}
 				}
 			}
 			down = false;
+		}
+	});
+	window.addEventListener("dblclick", event => {
+		if(event.target.classList.contains("handle")) {
+			event.target.parentNode.style.width = event.target.parentNode.style.height = "";
+			delete storage.containerSizes[event.target.parentNode.id];
+			store();
 		}
 	});
 	window.addEventListener("keydown", event => {
