@@ -46,6 +46,11 @@
 	const homePage = container.querySelector("#homePage");
 	const projectPage = container.querySelector("#projectPage");
 	const assetContainer = container.querySelector("#assetContainer");
+	const createObj = assetContainer.querySelector("#createObj");
+	const createGroup = assetContainer.querySelector("#createGroup");
+	const importImage = assetContainer.querySelector("#importImage");
+	const importAudioj = assetContainer.querySelector("#importAudio");
+	const assets = assetContainer.querySelector("#assets");
 	const propertyContainer = container.querySelector("#propertyContainer");
 	const timelineContainer = container.querySelector("#timelineContainer");
 	if(storage.containerSizes instanceof Object) {
@@ -127,8 +132,8 @@
 		async close() {
 			if(!this.saved && await new Miro.dialog("Confirm", html`
 				Are you sure you want to close <span class="bold">${this.name}</span>?<br>
-				Your unsaved changes will be lost.
-			`, ["Yes", "No"]) === 1) {
+				All unsaved changes will be lost.
+			`, ["Yes", "No"]) !== 0) {
 				return;
 			}
 			if(this.id === sel) {
@@ -254,13 +259,24 @@
 	electron.ipcRenderer.on("argv", (event, location) => {
 		open(location);
 	});
+	const assetInput = document.createElement("input");
+	assetInput.type = "file";
+	assetInput.multiple = true;
+	assetInput.addEventListener("change", () => {
+		assetInput.files;
+		assetInput.value = null;
+	});
 	let mouseTarget;
 	let down = false;
+	let downX;
+	let downY;
 	let initialTargetPos;
 	let targetOffset;
 	window.addEventListener("mousedown", event => {
 		if(event.button === 0 && !down) {
 			down = true;
+			downX = event.clientX;
+			downY = event.clientY;
 			mouseTarget = event.target;
 			if(mouseTarget.classList.contains("tab")) {
 				if(mouseTarget === homeTab) {
@@ -268,7 +284,7 @@
 				} else {
 					select(mouseTarget[_proj].id);
 					const prevTabPos = mouseTarget.offsetLeft;
-					targetOffset = event.clientX - prevTabPos;
+					targetOffset = downX - prevTabPos;
 					mouseTarget.style.left = "";
 					mouseTarget.style.left = `${prevTabPos - (initialTargetPos = mouseTarget.offsetLeft)}px`;
 					for(let i = 1; i < tabs.children.length; i++) {
@@ -278,11 +294,11 @@
 			} else if(mouseTarget.classList.contains("handle")) {
 				initialTargetPos = mouseTarget.parentNode[mouseTarget.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
 				if(mouseTarget.parentNode === assetContainer) {
-					targetOffset = mouseTarget.parentNode.offsetWidth - event.clientX;
+					targetOffset = mouseTarget.parentNode.offsetWidth - downX;
 				} else if(mouseTarget.parentNode === propertyContainer) {
-					targetOffset = event.clientX - mouseTarget.parentNode.offsetLeft;
+					targetOffset = downX - mouseTarget.parentNode.offsetLeft;
 				} else if(mouseTarget.parentNode === timelineContainer) {
-					targetOffset = event.clientY - mouseTarget.parentNode.offsetTop;
+					targetOffset = downY - mouseTarget.parentNode.offsetTop;
 				}
 			}
 		}
@@ -407,6 +423,16 @@
 						if(mouseTarget.parentNode.classList.contains("tab")) {
 							mouseTarget.parentNode[_proj].close();
 						}
+					} else if(mouseTarget === createObj) {
+						// TODO
+					} else if(mouseTarget === createGroup) {
+						// TODO
+					} else if(mouseTarget === importImage) {
+						assetInput.accept = "image/*";
+						assetInput.click();
+					} else if(mouseTarget === importAudio) {
+						assetInput.accept = "audio/*";
+						assetInput.click();
 					}
 				}
 			}
@@ -414,71 +440,109 @@
 		}
 	});
 	window.addEventListener("dblclick", event => {
-		if(event.target.classList.contains("handle")) {
+		if(downX === event.clientX && downY === event.clientY && event.target.classList.contains("handle")) {
 			event.target.parentNode.style.width = event.target.parentNode.style.height = "";
 			delete storage.containerSizes[event.target.parentNode.id];
 			store();
 		}
 	});
+	const focused = () => !(document.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate"));
 	window.addEventListener("keydown", event => {
 		if(event.ctrlKey || event.metaKey) {
 			if((event.shiftKey && event.keyCode === 9) || (!event.shiftKey && event.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
-				if(sel === "home") {
-					if(Object.keys(proj).length) {
-						select(tabs.lastElementChild[_proj].id);
+				if(focused()) {
+					if(sel === "home") {
+						if(Object.keys(proj).length) {
+							select(tabs.lastElementChild[_proj].id);
+						}
+					} else if(proj[sel].tab.previousElementSibling === homeTab) {
+						select("home");
+					} else {
+						select(proj[sel].tab.previousElementSibling[_proj].id);
 					}
-				} else if(proj[sel].tab.previousElementSibling === homeTab) {
-					select("home");
-				} else {
-					select(proj[sel].tab.previousElementSibling[_proj].id);
 				}
 			} else if(event.shiftKey) {
 				if(event.keyCode === 73) { // ^`shift`+`I`
 					win.toggleDevTools();
 				} else if(event.keyCode === 83) { // ^`shift`+`S`
-					save(true);
+					if(focused()) {
+						save(true);
+					}
 				}
 			} else if(event.keyCode === 9 || event.keyCode === 34) { // ^`tab` || ^`page down`
-				if(sel === "home") {
-					if(Object.keys(proj).length) {
-						select(homeTab.nextElementSibling[_proj].id);
+				if(focused()) {
+					if(sel === "home") {
+						if(Object.keys(proj).length) {
+							select(homeTab.nextElementSibling[_proj].id);
+						}
+					} else if(proj[sel].tab.nextElementSibling) {
+						select(proj[sel].tab.nextElementSibling[_proj].id);
+					} else {
+						select("home");
 					}
-				} else if(proj[sel].tab.nextElementSibling) {
-					select(proj[sel].tab.nextElementSibling[_proj].id);
-				} else {
-					select("home");
 				}
 			} else if(event.keyCode === 57) { // ^`9`
-				if(Object.keys(proj).length) {
-					select(tabs.lastElementChild[_proj].id);
+				if(focused()) {
+					if(Object.keys(proj).length) {
+						select(tabs.lastElementChild[_proj].id);
+					}
 				}
 			} else if(event.keyCode === 78 || event.keyCode === 84) { // ^`N` || ^`T`
-				new Project();
+				if(focused()) {
+					new Project();
+				}
 			} else if(event.keyCode === 79) { // ^`O`
-				open();
+				if(focused()) {
+					open();
+				}
 			} else if(event.keyCode === 83) { // ^`S`
-				save();
+				if(focused()) {
+					save();
+				}
 			} else if(event.keyCode === 87 || event.keyCode === 115) { // ^`W` || ^`F4`
-				if(proj[sel]) {
-					proj[sel].close();
-				} else {
-					win.close();
+				if(focused()) {
+					if(proj[sel]) {
+						proj[sel].close();
+					} else {
+						win.close();
+					}
 				}
 			} else if(event.keyCode >= 49 && event.keyCode <= 56) { // ^`1`-`8`
-				if(Object.keys(proj).length) {
-					select((tabs.children[event.keyCode - 48] || tabs.lastElementChild)[_proj].id);
+				if(focused()) {
+					if(Object.keys(proj).length) {
+						select((tabs.children[event.keyCode - 48] || tabs.lastElementChild)[_proj].id);
+					}
 				}
 			}
 		} else if(event.altKey) {
-			if(event.keyCode === 36) { // `alt`+`home`
-				select("home");
+			if(focused()) {
+				if(event.keyCode === 36) { // `alt`+`home`
+					select("home");
+				}
 			}
-		} else {
-			if(event.keyCode === 122) { // `F11`
-				const fullScreen = !win.isFullScreen();
-				win.setFullScreen(fullScreen);
-				titleBar.classList[fullScreen ? "add" : "remove"]("hidden");
-			}
+		} else if(event.keyCode === 122) { // `F11`
+			const fullScreen = !win.isFullScreen();
+			win.setFullScreen(fullScreen);
+			titleBar.classList[fullScreen ? "add" : "remove"]("hidden");
 		}
 	});
+	let notConfirmingClose = true;
+	let shouldNotClose = true;
+	const confirmClose = value => {
+		notConfirmingClose = true;
+		if(value === 0) {
+			shouldNotClose = false;
+			win.close();
+		}
+	};
+	const unsaved = project => !project.saved;
+	window.onbeforeunload = () => {
+		if(shouldNotClose && notConfirmingClose) {
+			if(Object.values(proj).some(unsaved)) {
+				notConfirmingClose = false;
+				new Miro.dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
+				return true;
+			}
+		}
+	};
 //})();
