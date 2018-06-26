@@ -174,7 +174,7 @@ button * {
 	color: #8000ff;
 	content: "*"
 }
-.tab .close {
+.close {
 	position: absolute;
 	top: 3px;
 	right: 3px;
@@ -184,17 +184,17 @@ button * {
 	transition: transform 0.08s ease-out;
 	font-size: 18px;
 }
-.tab .close::after {
+.close::after {
 	opacity: 0.25;
 	content: "close";
 }
-.tab:hover .close {
+:hover > .close {
 	transform: scale(1);
 }
-.tab .close:hover::after {
+.close:hover::after {
 	opacity: 0.625;
 }
-.tab .close:active::after {
+.close:active::after {
 	opacity: 1;
 }
 #homeTab {
@@ -334,9 +334,16 @@ button * {
 }
 .asset {
 	display: flex;
+	position: relative;
 	height: 24px;
 }
+.asset:hover {
+	background-color: rgba(128, 0, 255, 0.05);
+}
 .asset.selected {
+	background-color: rgba(128, 0, 255, 0.1);
+}
+.assets.active .asset.selected {
 	background-color: rgba(128, 0, 255, 0.15);
 }
 .asset .icon {
@@ -348,6 +355,9 @@ button * {
 	pointer-events: none;
 	line-height: 24px;
 	text-overflow: ellipsis;
+}
+.asset .close {
+	background-color: transparent;
 }
 #propertyContainer > .handle {
 	left: 0;
