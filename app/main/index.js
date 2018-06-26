@@ -580,52 +580,51 @@ window.addEventListener("mouseup", event => {
 						assetInput.accept = "audio/*";
 						assetInput.click();
 					}
+				} else if(mouseTarget.classList.contains("asset")) {
+					if(event.shiftKey) {
+						let selecting = !proj[sel].selectedAsset;
+						const classListMethod = event.ctrlKey && proj[sel].selectedAsset && !document.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+						for(const asset of assets.children) {
+							if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
+								if(selecting) {
+									asset.classList[classListMethod]("selected");
+									selecting = false;
+									continue;
+								} else {
+									asset.classList[classListMethod]("selected");
+									if(proj[sel].selectedAsset !== mouseTarget.id) {
+										selecting = true;
+									}
+								}
+							} else if(selecting) {
+								asset.classList[classListMethod]("selected");
+							} else if(!event.ctrlKey) {
+								asset.classList.remove("selected");
+							}
+						}
+					} else {
+						proj[sel].selectedAsset = mouseTarget.id;
+						if(event.ctrlKey) {
+							mouseTarget.classList.toggle("selected");
+						} else {
+							let othersSelected = false;
+							for(const asset of assets.querySelectorAll(".asset.selected")) {
+								if(asset !== mouseTarget) {
+									othersSelected = true;
+									asset.classList.remove("selected");
+								}
+							}
+							mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected");
+						}
+					}
+					if(!assets.querySelector(".asset.selected")) {
+						delete proj[sel].selectedAsset;
+					}
 				} else if(mouseTarget.classList.contains("close")) {
 					if(mouseTarget.parentNode.classList.contains("asset")) {
 						confirmRemoveAsset(mouseTarget.parentNode);
 					} else if(mouseTarget.parentNode.classList.contains("tab")) {
 						mouseTarget.parentNode[_proj].close();
-					}
-				} else if(downX === event.clientX && downY === event.clientY) {
-					if(mouseTarget.classList.contains("asset")) {
-						if(event.shiftKey) {
-							let selecting = !proj[sel].selectedAsset;
-							for(const asset of assets.children) {
-								if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
-									if(selecting) {
-										asset.classList.add("selected");
-										selecting = false;
-										continue;
-									} else {
-										asset.classList.add("selected");
-										if(proj[sel].selectedAsset !== mouseTarget.id) {
-											selecting = true;
-										}
-									}
-								} else if(selecting) {
-									asset.classList.add("selected");
-								} else if(!event.ctrlKey) {
-									asset.classList.remove("selected");
-								}
-							}
-						} else {
-							proj[sel].selectedAsset = mouseTarget.id;
-							if(event.ctrlKey) {
-								mouseTarget.classList.toggle("selected");
-							} else {
-								let othersSelected = false;
-								for(const asset of assets.querySelectorAll(".asset.selected")) {
-									if(asset !== mouseTarget) {
-										othersSelected = true;
-										asset.classList.remove("selected");
-									}
-								}
-								mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected");
-							}
-						}
-						if(!assets.querySelector(".asset.selected")) {
-							delete proj[sel].selectedAsset;
-						}
 					}
 				}
 			}
