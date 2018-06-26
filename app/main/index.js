@@ -1,7 +1,15 @@
 //(() => {
 	const fs = require("fs-extra");
+	const crypto = require("crypto");
 	const zlib = require("zlib");
 	const electron = require("electron");
+	const uid = keys => {
+		let key;
+		do {
+			key = crypto.createHash("sha256").update(crypto.randomBytes(8)).digest("hex").slice(0, 8);
+		} while(keys.includes(key));
+		return key;
+	};
 	let storage;
 	try {
 		storage = JSON.parse(localStorage.data);
@@ -15,7 +23,6 @@
 			Miro.dialog("Error", "An error occurred while trying to save your user data.");
 		}
 	};
-	const slashes = /[\\\/]/g;
 	const win = electron.remote.getCurrentWindow();
 	electron.webFrame.setVisualZoomLevelLimits(1, 1);
 	const titleBar = document.querySelector("#titleBar");
@@ -38,6 +45,7 @@
 	const tabs = container.querySelector("#tabs");
 	const homeTab = tabs.querySelector("#homeTab");
 	const toolbar = container.querySelector("#toolbar");
+	const loading = container.querySelector("#loading");
 	const newProj = toolbar.querySelector("#newProj");
 	const openProj = toolbar.querySelector("#openProj");
 	const saveProj = toolbar.querySelector("#saveProj");
@@ -61,15 +69,18 @@
 			propertyContainer.style.width = `${storage.containerSizes.propertyContainer}px`;
 		}
 		if(storage.containerSizes.timelineContainer) {
-			timelineContainer.style.height = `${storage.containerSizes.timelineContainer}px`;
+			timelineContainer.style.height = timelineContainer.style.minHeight = `${storage.containerSizes.timelineContainer}px`;
 		}
 	} else {
 		storage.containerSizes = {};
 	}
 	store();
+	const slashes = /[\\\/]/g;
+	const byName = file => file.name;
 	const proj = {}; // the object of projects, the probject
 	let projID = 0;
 	let sel;
+	const prevSel = [];
 	const baseData = {
 		service: "Miroware Dynamic",
 		version: 0
@@ -102,7 +113,9 @@
 			this.tab[_proj] = this;
 			this.location = validLocation ? thisProject.location : null;
 			this.data = thisProject.data || {
-				...baseData
+				...baseData,
+				files: {},
+				objs: {}
 			};
 			const id = String(++projID);
 			(proj[id] = this).id = id;
@@ -137,19 +150,27 @@
 				return;
 			}
 			if(this.id === sel) {
-				select("home");
+				prevSel.pop();
+				select(prevSel.pop());
 			}
 			this.tab.remove();
 			delete proj[this.id];
 		}
 	}
 	const select = id => {
+		if(!proj[id]) {
+			id = "home";
+		}
+		const prevSelIndex = prevSel.indexOf(id);
+		if(prevSelIndex !== -1) {
+			prevSel.splice(prevSelIndex, 1);
+		}
 		if(proj[sel]) {
 			projectPage.classList.add("hidden");
-		} else if(sel === "home") {
+		} else {
 			homePage.classList.add("hidden");
 		}
-		sel = id;
+		prevSel.push(sel = id);
 		for(const tab of tabs.children) {
 			tab.classList.remove("current");
 		}
@@ -174,25 +195,39 @@
 			extensions: ["*"]
 		}]
 	};
+	const block = state => {
+		const classListMethod = state ? "add": "remove";
+		tabs.classList[classListMethod]("disabled");
+		toolbar.classList[classListMethod]("disabled");
+		if(proj[sel]) {
+			projectPage.classList[classListMethod]("disabled");
+		}
+	};
 	const loadIndeterminate = value => {
+		block(value);
 		if(value) {
-			tabs.classList.add("disabled");
-			toolbar.classList.add("disabled");
-			if(proj[sel]) {
-				proj[sel].page.classList.add("disabled");
-			}
 			document.body.classList.add("indeterminate");
 			win.setProgressBar(0, {
 				mode: "indeterminate"
 			});
 		} else {
-			tabs.classList.remove("disabled");
-			toolbar.classList.remove("disabled");
-			if(proj[sel]) {
-				proj[sel].page.classList.remove("disabled");
-			}
 			document.body.classList.remove("indeterminate");
 			win.setProgressBar(-1);
+		}
+	};
+	const loadProgress = value => {
+		if(value === 0) {
+			document.body.classList.add("loading");
+			win.setProgressBar(0);
+			block(true);
+		} else if(value === 1) {
+			document.body.classList.remove("loading");
+			loading.style.width = "";
+			win.setProgressBar(-1);
+			block(false);
+		} else {
+			loading.style.width = `${100 * value}%`;
+			win.setProgressBar(value);
 		}
 	};
 	const zip = data => new Promise((resolve, reject) => {
@@ -259,11 +294,44 @@
 	electron.ipcRenderer.on("argv", (event, location) => {
 		open(location);
 	});
+	const addFiles = async files => {
+		loadProgress(0);
+		for(let i = 0; i < files.length; i++) {
+			loadProgress(i / files.length);
+			console.log(files[i]);
+			let data;
+			try {
+				data = (await fs.readFile(files[i].path)).toString("base64");
+			} catch(err) {
+				new Miro.dialog("Error", html`
+					An error occurred while encoding <span class="bold">${files[i].name}</span>.<br>
+					Perhaps the file is too large.
+				`);
+				continue;
+			}
+			const names = Object.values(proj[sel].data.files).map(byName);
+			let name = files[i].name;
+			for(let j = 2; names.includes(name); j++) {
+				name = `${files[i].name} ${j}`;
+			}
+			proj[sel].data.files[uid(Object.keys(proj[sel].data.files))] = {
+				name,
+				url: `data:${files[i].type};base64,${data}`
+			};
+			assets.appendChild(html`
+				<div class="asset" title="$${name}">
+					<div class="icon material-icons">${files[i].type.startsWith("image/") ? "image" : (files[i].type.startsWith("audio/") ? "audiotrack" : "error")}</div>
+					<div class="label">$${name}</div>
+				</div>
+			`);
+		}
+		loadProgress(1);
+	};
 	const assetInput = document.createElement("input");
 	assetInput.type = "file";
 	assetInput.multiple = true;
-	assetInput.addEventListener("change", () => {
-		assetInput.files;
+	assetInput.addEventListener("change", async () => {
+		await addFiles(assetInput.files);
 		assetInput.value = null;
 	});
 	let mouseTarget;
@@ -343,7 +411,11 @@
 				} else if(mouseTarget.parentNode === timelineContainer) {
 					value += document.body.offsetHeight - event.clientY;
 				}
-				mouseTarget.parentNode.style[mouseTarget.classList.contains("horizontal") ? "width" : "height"] = `${storage.containerSizes[mouseTarget.parentNode.id] = Math.max(185, value)}px`;
+				const horizontalTarget = mouseTarget.classList.contains("horizontal");
+				mouseTarget.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget.parentNode.id] = Math.max(185, value)}px`;
+				if(!horizontalTarget) {
+					mouseTarget.parentNode.style.minHeight = mouseTarget.parentNode.style.height;
+				}
 			}
 		}
 	});
@@ -440,13 +512,17 @@
 		}
 	});
 	window.addEventListener("dblclick", event => {
-		if(downX === event.clientX && downY === event.clientY && event.target.classList.contains("handle")) {
-			event.target.parentNode.style.width = event.target.parentNode.style.height = "";
-			delete storage.containerSizes[event.target.parentNode.id];
-			store();
+		if(downX === event.clientX && downY === event.clientY) {
+			if(event.target === tabs) {
+				new Project();
+			} else if(event.target.classList.contains("handle")) {
+				event.target.parentNode.style.width = event.target.parentNode.style.height = event.target.parentNode.style.minWidth = event.target.parentNode.style.minHeight = "";
+				delete storage.containerSizes[event.target.parentNode.id];
+				store();
+			}
 		}
 	});
-	const focused = () => !(document.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate"));
+	const focused = () => !(document.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
 	window.addEventListener("keydown", event => {
 		if(event.ctrlKey || event.metaKey) {
 			if((event.shiftKey && event.keyCode === 9) || (!event.shiftKey && event.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
