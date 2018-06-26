@@ -411,12 +411,17 @@ window.addEventListener("mousedown", event => {
 		downY = event.clientY;
 		mouseTarget = event.target;
 		if(assets.contains(mouseTarget)) {
-			for(const active of document.querySelectorAll(".active")) {
+			for(const active of projectPage.querySelectorAll(".active")) {
 				active.classList.remove("active");
 			}
 			assets.classList.add("active");
 		}
-		if(mouseTarget.classList.contains("tab")) {
+		if(mouseTarget === assets) {
+			for(const selected of assets.querySelectorAll(".asset.selected")) {
+				selected.classList.remove("selected");
+			}
+			delete proj[sel].selectedAsset;
+		} else if(mouseTarget.classList.contains("tab")) {
 			if(mouseTarget === homeTab) {
 				select("home");
 			} else {
@@ -609,7 +614,7 @@ window.addEventListener("mouseup", event => {
 								mouseTarget.classList.toggle("selected");
 							} else {
 								let othersSelected = false;
-								for(const asset of document.querySelectorAll(".asset.selected")) {
+								for(const asset of assets.querySelectorAll(".asset.selected")) {
 									if(asset !== mouseTarget) {
 										othersSelected = true;
 										asset.classList.remove("selected");

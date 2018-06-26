@@ -343,7 +343,7 @@ button * {
 .asset.selected {
 	background-color: rgba(128, 0, 255, 0.1);
 }
-.assets.active .asset.selected {
+.asset:active, #assets.active .asset.selected {
 	background-color: rgba(128, 0, 255, 0.15);
 }
 .asset .icon {
