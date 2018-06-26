@@ -10,16 +10,20 @@
 	border: 2px solid transparent;
 	border-radius: 6px;
 	background-clip: content-box;
-	background-color: #9859d7;
+	background-color: rgba(128, 0, 255, 0.25);
 }
 ::-webkit-scrollbar-thumb:hover {
-	background-color: #ac6deb;
+	background-color: rgba(128, 0, 255, 0.4);
 }
 ::-webkit-scrollbar-thumb:active {
-	background-color: #c081ff;
+	background-color: rgba(128, 0, 255, 0.75);
 }
 ::-webkit-scrollbar-corner {
 	background-color: transparent;
+}
+* {
+	overflow: hidden;
+	box-sizing: border-box;
 }
 body {
 	display: flex;
@@ -30,9 +34,8 @@ body {
 	margin: 0;
 	user-select: none;
 }
-* {
-	overflow: hidden;
-	box-sizing: border-box;
+.indeterminate, .loading {
+	cursor: wait;
 }
 .hidden {
 	display: none !important;
@@ -163,9 +166,9 @@ button * {
 }
 .tab .label {
 	pointer-events: none;
-	text-overflow: ellipsis;
 	line-height: 24px;
 	font-size: 14px;
+	text-overflow: ellipsis;
 }
 .tab:not(.saved) .label::before {
 	color: #8000ff;
@@ -333,13 +336,18 @@ button * {
 	display: flex;
 	height: 24px;
 }
+.asset.selected {
+	background-color: rgba(128, 0, 255, 0.15);
+}
+.asset .icon {
+	min-width: 24px;
+	margin-right: 4px;
+	pointer-events: none;
+}
 .asset .label {
 	pointer-events: none;
 	line-height: 24px;
-}
-.asset .icon {
-	margin-right: 4px;
-	pointer-events: none;
+	text-overflow: ellipsis;
 }
 #propertyContainer > .handle {
 	left: 0;

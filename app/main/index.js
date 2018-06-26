@@ -83,7 +83,8 @@
 	const prevSel = [];
 	const baseData = {
 		service: "Miroware Dynamic",
-		version: 0
+		version: 0,
+		scrollAssets: 0
 	};
 	const _proj = Symbol("proj");
 	const _saved = Symbol("saved");
@@ -117,6 +118,7 @@
 				files: {},
 				objs: {}
 			};
+			this.selected = [];
 			const id = String(++projID);
 			(proj[id] = this).id = id;
 			select(id);
@@ -157,6 +159,17 @@
 			delete proj[this.id];
 		}
 	}
+	const appendAssetFile = file => {
+		const type = proj[sel].data.files[file].type.slice(0, proj[sel].data.files[file].type.indexOf("/"));
+		const asset = html`
+			<div id="asset_$${file}" class="asset" title="$${proj[sel].data.files[file].name}">
+				<div class="icon material-icons">${type === "image" ? "image" : (type === "audio" ? "audiotrack" : "error")}</div>
+				<div class="label">$${proj[sel].data.files[file].name}</div>
+			</div>
+		`;
+		assets.appendChild(asset);
+		return asset;
+	};
 	const select = id => {
 		if(!proj[id]) {
 			id = "home";
@@ -166,9 +179,19 @@
 			prevSel.splice(prevSelIndex, 1);
 		}
 		if(proj[sel]) {
+			proj[sel].scrollAssets = assets.scrollTop;
 			projectPage.classList.add("hidden");
 		} else {
 			homePage.classList.add("hidden");
+		}
+		if(proj[sel]) {
+			proj[sel].selected = [];
+			while(assets.lastChild) {
+				if(assets.lastChild.classList.contains("selected")) {
+					proj[sel].selected.push(assets.lastChild.id);
+				}
+				assets.lastChild.remove();
+			}
 		}
 		prevSel.push(sel = id);
 		for(const tab of tabs.children) {
@@ -179,9 +202,16 @@
 			homeTab.classList.add("current");
 			homePage.classList.remove("hidden");
 		} else {
-			saveProj.disabled = proj[id].saved;
-			proj[id].tab.classList.add("current");
+			for(const file of Object.keys(proj[sel].data.files)) {
+				appendAssetFile(file);
+			}
+			for(const selected of proj[sel].selected) {
+				projectPage.querySelector(`#${selected}`).classList.add("selected");
+			}
+			saveProj.disabled = proj[sel].saved;
+			proj[sel].tab.classList.add("current");
 			projectPage.classList.remove("hidden");
+			assets.scrollTop = proj[sel].scrollAssets;
 		}
 	};
 	select("home");
@@ -298,7 +328,6 @@
 		loadProgress(0);
 		for(let i = 0; i < files.length; i++) {
 			loadProgress(i / files.length);
-			console.log(files[i]);
 			let data;
 			try {
 				data = (await fs.readFile(files[i].path)).toString("base64");
@@ -314,16 +343,13 @@
 			for(let j = 2; names.includes(name); j++) {
 				name = `${files[i].name} ${j}`;
 			}
-			proj[sel].data.files[uid(Object.keys(proj[sel].data.files))] = {
+			const file = uid(Object.keys(proj[sel].data.files));
+			proj[sel].data.files[file] = {
 				name,
-				url: `data:${files[i].type};base64,${data}`
+				type: files[i].type,
+				data
 			};
-			assets.appendChild(html`
-				<div class="asset" title="$${name}">
-					<div class="icon material-icons">${files[i].type.startsWith("image/") ? "image" : (files[i].type.startsWith("audio/") ? "audiotrack" : "error")}</div>
-					<div class="label">$${name}</div>
-				</div>
-			`);
+			appendAssetFile(file);
 		}
 		loadProgress(1);
 	};
@@ -346,7 +372,40 @@
 			downX = event.clientX;
 			downY = event.clientY;
 			mouseTarget = event.target;
-			if(mouseTarget.classList.contains("tab")) {
+			if(mouseTarget.classList.contains("asset")) {
+				if(event.shiftKey) {
+					let selecting = !proj[sel].selectedAsset;
+					for(const asset of assets.children) {
+						if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
+							if(selecting) {
+								asset.classList.add("selected");
+								selecting = false;
+								continue;
+							} else {
+								selecting = true;
+							}
+						}
+						asset.classList[selecting ? "add" : "remove"]("selected");
+					}
+				} else {
+					proj[sel].selectedAsset = mouseTarget.id;
+					if(event.ctrlKey) {
+						mouseTarget.classList.toggle("selected");
+					} else {
+						let othersSelected = false;
+						for(const asset of document.querySelectorAll(".asset.selected")) {
+							if(asset !== mouseTarget) {
+								othersSelected = true;
+								asset.classList.remove("selected");
+							}
+						}
+						mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected");
+					}
+				}
+				if(!assets.querySelector(".asset.selected")) {
+					delete proj[sel].selectedAsset;
+				}
+			} else if(mouseTarget.classList.contains("tab")) {
 				if(mouseTarget === homeTab) {
 					select("home");
 				} else {
@@ -373,7 +432,9 @@
 	});
 	window.addEventListener("mousemove", event => {
 		if(down) {
-			if(mouseTarget.classList.contains("tab")) {
+			if(mouseTarget.classList.contains("asset")) {
+				// TODO
+			} else if(mouseTarget.classList.contains("tab")) {
 				if(mouseTarget !== homeTab) {
 					mouseTarget.style.left = `${event.clientX - initialTargetPos - targetOffset}px`;
 					const tabWidth = mouseTarget.offsetWidth + 1;
