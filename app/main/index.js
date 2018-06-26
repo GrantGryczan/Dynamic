@@ -32,13 +32,19 @@ if(win.isFullScreen()) {
 const windowActions = titleBar.querySelector("#windowActions");
 const minimizeWindow = windowActions.querySelector("#minimizeWindow");
 const maximizeWindow = windowActions.querySelector("#maximizeWindow");
-maximizeWindow.textContent = win.isMaximized() ? "fullscreen_exit" : "fullscreen";
-win.on("maximize", () => {
+const onMaximize = () => {
 	maximizeWindow.textContent = "fullscreen_exit";
-});
-win.on("unmaximize", () => {
+};
+const onUnmaximize = () => {
 	maximizeWindow.textContent = "fullscreen";
-});
+};
+if(win.isMaximized()) {
+	onMaximize();
+} else {
+	onUnmaximize();
+}
+win.on("maximize", onMaximize);
+win.on("unmaximize", onUnmaximize);
 const closeWindow = windowActions.querySelector("#closeWindow");
 const container = document.querySelector("#container");
 const tabs = container.querySelector("#tabs");
@@ -614,11 +620,10 @@ window.addEventListener("mouseup", event => {
 									asset.classList.remove("selected");
 								}
 							}
-							mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected");
+							if(mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
+								delete proj[sel].selectedAsset;
+							}
 						}
-					}
-					if(!assets.querySelector(".asset.selected")) {
-						delete proj[sel].selectedAsset;
 					}
 				} else if(mouseTarget.classList.contains("close")) {
 					if(mouseTarget.parentNode.classList.contains("asset")) {
@@ -718,8 +723,15 @@ window.addEventListener("keydown", event => {
 			}
 		}
 	} else if(event.keyCode === 8 || event.keyCode === 46) { // `backspace` || `delete`
-		if(assets.classList.contains("active")) {
+		if(focused() && assets.classList.contains("active")) {
 			confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
+		}
+	} else if(event.keyCode === 27) { // `esc`
+		if(focused() && assets.classList.contains("active")) {
+			delete proj[sel].selectedAsset;
+			for(const asset of assets.querySelectorAll(".asset.selected")) {
+				asset.classList.remove("selected");
+			}
 		}
 	} else if(event.keyCode === 122) { // `F11`
 		const fullScreen = !win.isFullScreen();
