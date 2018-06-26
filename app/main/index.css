@@ -82,39 +82,44 @@ button * {
 	z-index: 8;
 	line-height: 24px;
 	font-size: 14px;
+	background-color: #ffffff;
+	color: #a0a0a0;
+	cursor: default;
+}
+.focus #titleBar {
 	background-color: #808080;
 	color: #ffffff;
-	cursor: default;
 }
 #titleBar .label {
 	flex-grow: 1;
-	padding-left: 26px;
+	padding: 1px 0 0 26px;
 	background-image: url(../icon.png);
 	background-repeat: no-repeat;
 	background-size: contain;
 }
-#favicon {
-	height: 100%;
-}
 #titleBar button {
 	-webkit-app-region: no-drag;
 	float: left;
-	width: 24px;
-	height: 24px;
+	width: 25px;
+	height: 25px;
 	padding: 0;
 	border: none;
 	opacity: 0.75;
 	background-color: transparent;
-	color: #ffffff;
-	font-size: 20px;
+	font-size: 21px;
+	color: inherit;
 	transition: opacity 0.08s ease-out, background-color 0.2s ease-out;
 }
-#titleBar button:hover {
+#titleBar button:hover, #titleBar button:active {
 	opacity: 1;
+}
+#titleBar button:hover {
+	background-color: rgba(0, 0, 0, 0.15);
+}
+.focus #titleBar button:hover {
 	background-color: rgba(255, 255, 255, 0.25);
 }
-#titleBar button:active {
-	opacity: 1;
+.focus #titleBar button:active {
 	background-color: rgba(255, 255, 255, 0.5);
 }
 #container {

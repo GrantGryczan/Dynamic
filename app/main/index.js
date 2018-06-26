@@ -29,6 +29,19 @@ titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.use
 if(win.isFullScreen()) {
 	titleBar.classList.add("hidden");
 }
+const onFocus = () => {
+	document.body.classList.add("focus");
+};
+const onBlur = () => {
+	document.body.classList.remove("focus");
+};
+win.on("focus", onFocus);
+win.on("blur", onBlur);
+if(win.isFocused()) {
+	onFocus();
+} else {
+	onBlur();
+}
 const windowActions = titleBar.querySelector("#windowActions");
 const minimizeWindow = windowActions.querySelector("#minimizeWindow");
 const maximizeWindow = windowActions.querySelector("#maximizeWindow");
@@ -38,13 +51,13 @@ const onMaximize = () => {
 const onUnmaximize = () => {
 	maximizeWindow.textContent = "fullscreen";
 };
+win.on("maximize", onMaximize);
+win.on("unmaximize", onUnmaximize);
 if(win.isMaximized()) {
 	onMaximize();
 } else {
 	onUnmaximize();
 }
-win.on("maximize", onMaximize);
-win.on("unmaximize", onUnmaximize);
 const closeWindow = windowActions.querySelector("#closeWindow");
 const container = document.querySelector("#container");
 const tabs = container.querySelector("#tabs");
@@ -370,6 +383,9 @@ electron.ipcRenderer.on("argv", (event, location) => {
 });
 const addFiles = async files => {
 	loadProgress(0);
+	for(const selected of assets.querySelectorAll(".asset.selected")) {
+		selected.classList.remove("selected");
+	}
 	for(let i = 0; i < files.length; i++) {
 		loadProgress(i / files.length);
 		let data;
@@ -393,7 +409,11 @@ const addFiles = async files => {
 			type: files[i].type,
 			data
 		};
-		appendAssetFile(file);
+		const asset = appendAssetFile(file);
+		asset.classList.add("selected");
+		if(i === 0) {
+			proj[sel].selectedAsset = asset.id;
+		}
 	}
 	loadProgress(1);
 };
