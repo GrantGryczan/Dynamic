@@ -436,17 +436,57 @@ window.addEventListener("mousedown", event => {
 		downX = event.clientX;
 		downY = event.clientY;
 		mouseTarget = event.target;
-		if(assets.contains(mouseTarget)) {
+		const targetAssets = mouseTarget === assets;
+		if(targetAssets || assets.contains(mouseTarget)) {
 			for(const active of projectPage.querySelectorAll(".active")) {
 				active.classList.remove("active");
 			}
 			assets.classList.add("active");
-		}
-		if(mouseTarget === assets) {
-			for(const selected of assets.querySelectorAll(".asset.selected")) {
-				selected.classList.remove("selected");
+			if(targetAssets) {
+				for(const selected of assets.querySelectorAll(".asset.selected")) {
+					selected.classList.remove("selected");
+				}
+				delete proj[sel].selectedAsset;
+			} else if(mouseTarget.classList.contains("asset")) {
+				if(event.shiftKey) {
+					let selecting = !proj[sel].selectedAsset;
+					const classListMethod = event.ctrlKey && proj[sel].selectedAsset && !document.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+					for(const asset of assets.children) {
+						if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
+							if(selecting) {
+								asset.classList[classListMethod]("selected");
+								selecting = false;
+								continue;
+							} else {
+								asset.classList[classListMethod]("selected");
+								if(proj[sel].selectedAsset !== mouseTarget.id) {
+									selecting = true;
+								}
+							}
+						} else if(selecting) {
+							asset.classList[classListMethod]("selected");
+						} else if(!event.ctrlKey) {
+							asset.classList.remove("selected");
+						}
+					}
+				} else {
+					proj[sel].selectedAsset = mouseTarget.id;
+					if(event.ctrlKey) {
+						mouseTarget.classList.toggle("selected");
+					} else {
+						let othersSelected = false;
+						for(const asset of assets.querySelectorAll(".asset.selected")) {
+							if(asset !== mouseTarget) {
+								othersSelected = true;
+								asset.classList.remove("selected");
+							}
+						}
+						if(mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
+							delete proj[sel].selectedAsset;
+						}
+					}
+				}
 			}
-			delete proj[sel].selectedAsset;
 		} else if(mouseTarget.classList.contains("tab")) {
 			if(mouseTarget === homeTab) {
 				select("home");
@@ -605,45 +645,6 @@ window.addEventListener("mouseup", event => {
 					} else if(mouseTarget === importAudio) {
 						assetInput.accept = "audio/*";
 						assetInput.click();
-					}
-				} else if(mouseTarget.classList.contains("asset")) {
-					if(event.shiftKey) {
-						let selecting = !proj[sel].selectedAsset;
-						const classListMethod = event.ctrlKey && proj[sel].selectedAsset && !document.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
-						for(const asset of assets.children) {
-							if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
-								if(selecting) {
-									asset.classList[classListMethod]("selected");
-									selecting = false;
-									continue;
-								} else {
-									asset.classList[classListMethod]("selected");
-									if(proj[sel].selectedAsset !== mouseTarget.id) {
-										selecting = true;
-									}
-								}
-							} else if(selecting) {
-								asset.classList[classListMethod]("selected");
-							} else if(!event.ctrlKey) {
-								asset.classList.remove("selected");
-							}
-						}
-					} else {
-						proj[sel].selectedAsset = mouseTarget.id;
-						if(event.ctrlKey) {
-							mouseTarget.classList.toggle("selected");
-						} else {
-							let othersSelected = false;
-							for(const asset of assets.querySelectorAll(".asset.selected")) {
-								if(asset !== mouseTarget) {
-									othersSelected = true;
-									asset.classList.remove("selected");
-								}
-							}
-							if(mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
-								delete proj[sel].selectedAsset;
-							}
-						}
 					}
 				} else if(mouseTarget.classList.contains("close")) {
 					if(mouseTarget.parentNode.classList.contains("asset")) {
