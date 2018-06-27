@@ -96,6 +96,7 @@ button * {
 	background-image: url(../icon.png);
 	background-repeat: no-repeat;
 	background-size: contain;
+	font-size: 13px;
 }
 #titleBar button {
 	-webkit-app-region: no-drag;
