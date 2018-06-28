@@ -310,7 +310,7 @@ const addAsset = assetContainer.querySelector("#addAsset");
 const assets = assetContainer.querySelector("#assets");
 const propertyContainer = container.querySelector("#propertyContainer");
 const timelineContainer = container.querySelector("#timelineContainer");
-const ctxMenu = document.querySelector("#ctxMenu");
+const ctxMenu = container.querySelector("#ctxMenu");
 if(storage.containerSizes instanceof Object) {
 	if(storage.containerSizes.assetContainer) {
 		assetContainer.style.width = `${storage.containerSizes.assetContainer}px`;
@@ -335,7 +335,10 @@ const openCtx = target => {
 	const targetAsset = ctxTarget.classList.contains("asset");
 	if(ctxTarget === assets || targetAsset) {
 		if(targetAsset) {
-			items.push(["Remove", "Rename"]);
+			items.push({
+				Remove: true,
+				Rename: assets.querySelectorAll(".asset.selected").length === 1
+			});
 		}
 		items.push(["Create group", "Create object", "Import image file(s)", "Import audio file(s)"]);
 	}
@@ -345,8 +348,12 @@ const openCtx = target => {
 			if(i !== 0) {
 				ctxMenu.appendChild(document.createElement("hr"));
 			}
-			for(const item of items[i]) {
+			const itemArray = items[i] instanceof Array;
+			for(const item of itemArray ? items[i] : Object.keys(items[i])) {
 				button = html`<button class="mdc-typography">$${item}</button>`;
+				if(!itemArray && !items[i][item]) {
+					button.disabled = true;
+				}
 				button[_index] = itemIndex++;
 				ctxMenu.appendChild(button);
 			}
@@ -875,7 +882,7 @@ const handleMouseUp = (evt, evtButton) => {
 						}
 					} else if(evt.shiftKey) {
 						let selecting = !proj[sel].selectedAsset;
-						const classListMethod = evt.ctrlKey && proj[sel].selectedAsset && !document.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+						const classListMethod = evt.ctrlKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
 						for(const asset of assets.children) {
 							if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
 								if(selecting) {
