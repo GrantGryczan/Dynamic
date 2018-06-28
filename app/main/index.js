@@ -1069,6 +1069,12 @@ window.addEventListener("keydown", evt => {
 					select(tabs.lastElementChild[_proj].id);
 				}
 			}
+		} else if(evt.keyCode === 65) { // ^`A`
+			if(focused() && assets.classList.contains("active")) {
+				for(const deselected of assets.querySelectorAll(".asset:not(.selected)")) {
+					deselected.classList.add("selected");
+				}
+			}
 		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
 			if(focused()) {
 				new Project();
