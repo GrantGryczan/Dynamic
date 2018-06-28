@@ -59,6 +59,12 @@ button:focus {
 button * {
 	pointer-events: none;
 }
+hr {
+	pointer-events: none;
+	border-top-color: rgba(0, 0, 0, 0.1);
+	border-left-width: 0;
+	border-bottom-width: 0;
+}
 .mdc-fab .mdc-fab__icon {
 	width: inherit;
 	height: inherit;
@@ -329,6 +335,7 @@ button * {
 }
 #assetHead {
 	min-height: 24px;
+	line-height: 23px;
 }
 #assets {
 	flex-grow: 1;
@@ -349,7 +356,7 @@ button * {
 .asset.selected {
 	background-color: rgba(128, 0, 255, 0.1);
 }
-.asset:active:hover, #assets.active .asset.selected {
+#assets.active .asset.selected {
 	background-color: rgba(128, 0, 255, 0.15);
 }
 .asset .icon {
@@ -381,4 +388,29 @@ button * {
 	height: 250px;
 	min-height: 250px;
 	box-shadow: 0 -3px 1px -2px rgba(0, 0, 0, 0.2);
+}
+#ctxMenu {
+	position: fixed;
+	width: 240px;
+	padding: 6px 0;
+	z-index: 9;
+	background-color: #f0f0f0;
+}
+#ctxMenu button {
+	display: block;
+	width: 100%;
+	padding: 4px 28px;
+	border: none;
+	background-color: transparent;
+	text-align: left;
+	font-size: 14px;
+}
+#ctxMenu button:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+#ctxMenu button:focus {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+#ctxMenu hr {
+	margin: 6px 0;
 }

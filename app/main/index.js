@@ -1,3 +1,237 @@
+global.Miro = {};
+Miro.magic = {};
+Miro.magic.magic = Miro.magic;
+console.log(Miro.magic);
+class MiroError extends Error {
+	constructor() {
+		const err = super(...arguments);
+		err.name = "MiroError";
+		return err;
+	}
+}
+Miro.wait = delay => new Promise(resolve => {
+	setTimeout(resolve, delay);
+});
+Miro.mdc = Symbol("mdc");
+Miro.prepare = node => {
+	if(!(node instanceof Element || node instanceof Document)) {
+		throw new MiroError("The `node` parameter must be an element or a document.");
+	}
+	for(const elem of node.querySelectorAll("input[type='email']")) {
+		elem.maxLength = 254;
+	}
+	for(const elem of node.querySelectorAll("button:not([type])")) {
+		elem.type = "button";
+	}
+	for(const elem of node.querySelectorAll(".mdc-ripple:not(.mdc-ripple-upgraded)")) {
+		elem[Miro.mdc] = new mdc.ripple.MDCRipple(elem);
+	}
+	for(const elem of node.querySelectorAll(".mdc-text-field:not(.mdc-text-field--upgraded)")) {
+		elem[Miro.mdc] = new mdc.textField.MDCTextField(elem);
+	}
+	for(const elem of node.querySelectorAll(".mdc-checkbox:not(.mdc-checkbox--upgraded)")) {
+		elem.querySelector(".mdc-checkbox__background").appendChild(checkmark.cloneNode(true));
+		elem[Miro.mdc] = new mdc.checkbox.MDCCheckbox(elem);
+	}
+	for(const elem of node.querySelectorAll(".mdc-form-field")) {
+		elem[Miro.mdc] = new mdc.formField.MDCFormField(elem);
+	}
+};
+const htmlExps = ["$", "&"];
+const htmlReplacements = [[/&/g, "&amp;"], [/</g, "&lt;"], [/>/g, "&gt;"], [/"/g, "&quot;"], [/'/g, "&#39;"], [/`/g, "&#96;"]];
+global.html = (strs, ...exps) => {
+	let str = strs[0];
+	for(let i = 0; i < exps.length; i++) {
+		let code = String(exps[i]);
+		const expIndex = htmlExps.indexOf(strs[i].slice(-1));
+		if(expIndex !== -1) {
+			str = str.slice(0, -1);
+			for(let j = expIndex; j < htmlReplacements.length; j++) {
+				code = code.replace(...htmlReplacements[j]);
+			}
+		}
+		str += code + strs[i + 1];
+	}
+	const elem = document.createElement("span");
+	elem.innerHTML = str.trim() || str;
+	Miro.prepare(elem);
+	return elem.childNodes.length === 1 ? elem.firstChild : elem;
+};
+const mdcTypes = ["checkbox", "radio", "select", "slider", "text-field"];
+const _disabled = Symbol("disabled");
+const _prevDisabled = Symbol("prevDisabled");
+Miro.formState = (form, state) => {
+	if(!(form instanceof HTMLFormElement)) {
+		throw new MiroError("The `form` parameter must be an HTML `form` element.");
+	}
+	state = !state;
+	if(form[_disabled] !== state) {
+		form[_disabled] = state;
+		for(const elem of form.elements) {
+			if(state) {
+				elem[_prevDisabled] = elem.disabled;
+				elem.disabled = true;
+			} else if(!elem[_prevDisabled]) {
+				elem.disabled = false;
+			}
+		}
+		for(const mdcType of mdcTypes) {
+			const mdcClass = `.mdc-${mdcType}`;
+			const disabledClass = `mdc-${mdcType}--disabled`;
+			for(const elem of form.querySelectorAll(mdcClass)) {
+				if(state) {
+					elem[_prevDisabled] = elem.classList.contains(disabledClass);
+					elem.classList.add(disabledClass);
+				} else if(!elem[_prevDisabled]) {
+					elem.classList.remove(disabledClass);
+				}
+			}
+		}
+	}
+};
+const _dialog = Symbol("dialog");
+const _promise = Symbol("promise");
+const _close = Symbol("close");
+class MiroDialog {
+	constructor(title, body, buttons) {
+		if(!(typeof title === "string")) {
+			throw new MiroError("The `title` parameter must be a string.");
+		}
+		if(buttons === undefined) {
+			buttons = ["Okay"];
+		} else if(!(buttons instanceof Array)) {
+			throw new MiroError("The `buttons` parameter must be an array if it is defined.");
+		}
+		if(typeof body === "string") {
+			const lines = body.split("\n");
+			body = document.createElement("span");
+			for(let i = 0; i < lines.length; i++) {
+				if(i !== 0) {
+					body.appendChild(document.createElement("br"));
+				}
+				body.appendChild(document.createTextNode(lines[i]));
+			}
+		} else if(!(body instanceof Node)) {
+			throw new MiroError("The `body` parameter must be a string or a DOM node.");
+		}
+		closeCtx();
+		this.ready = false;
+		if(body instanceof HTMLElement) {
+			Miro.prepare(body);
+		}
+		const dialogElem = document.createElement("aside");
+		dialogElem[_dialog] = this;
+		dialogElem.classList.add("mdc-dialog");
+		const surfaceElem = this.form = document.createElement("form");
+		surfaceElem.classList.add("mdc-dialog__surface");
+		const headerElem = document.createElement("header");
+		headerElem.classList.add("mdc-dialog__header");
+		const titleElem = document.createElement("h2");
+		titleElem.classList.add("mdc-dialog__header__title");
+		titleElem.textContent = title;
+		headerElem.appendChild(titleElem);
+		surfaceElem.appendChild(headerElem);
+		const bodyElem = document.createElement("section");
+		bodyElem.classList.add("mdc-dialog__body");
+		bodyElem.appendChild(body);
+		surfaceElem.appendChild(bodyElem);
+		const footerElem = document.createElement("footer");
+		footerElem.classList.add("mdc-dialog__footer");
+		for(let i = 0; i < buttons.length; i++) {
+			const item = buttons[i];
+			buttons[i] = document.createElement("button");
+			if(typeof item === "string") {
+				buttons[i].type = "button";
+				buttons[i].textContent = item;
+			} else if(item instanceof Object) {
+				buttons[i].type = item.type;
+				buttons[i].textContent = item.text;
+			} else {
+				throw new MiroError("The `buttons` parameter's array must only include strings and objects.");
+			}
+			buttons[i].classList.add("mdc-button");
+			buttons[i].classList.add("mdc-dialog__footer__button");
+			footerElem.appendChild(buttons[i]);
+		}
+		surfaceElem.appendChild(footerElem);
+		dialogElem.appendChild(surfaceElem);
+		const backdropElem = document.createElement("div");
+		backdropElem.classList.add("mdc-dialog__backdrop");
+		dialogElem.appendChild(backdropElem);
+		const dialog = new mdc.dialog.MDCDialog(dialogElem);
+		container.appendChild(dialogElem);
+		this[_promise] = new Promise(resolve => {
+			let submitted = false;
+			let formState = true;
+			if(!(submitted = !footerElem.querySelector("button[type='submit']"))) {
+				surfaceElem.addEventListener("submit", evt => {
+					evt.preventDefault();
+					submitted = true;
+					setTimeout(() => {
+						formState = !surfaceElem[_disabled];
+						Miro.formState(surfaceElem, false);
+					});
+				});
+			}
+			this.value = null;
+			const close = value => {
+				this.closed = true;
+				this.value = value;
+				setTimeout(() => {
+					container.removeChild(dialogElem);
+					Miro.formState(surfaceElem, formState);
+				}, 120);
+				resolve(value);
+			};
+			this[_close] = close;
+			const dialogButton = async evt => {
+				if(!submitted && evt.target.type === "submit") {
+					await Miro.wait();
+					if(!submitted) {
+						return;
+					}
+				}
+				dialog.close();
+				close(buttons.indexOf(evt.target));
+			};
+			for(const elem of buttons) {
+				elem.addEventListener("click", dialogButton);
+			}
+			dialog.listen("MDCDialog:cancel", () => {
+				close(-1);
+			});
+			setTimeout(() => {
+				dialog.show();
+				this.ready = true;
+			});
+		});
+		this[_dialog] = dialog;
+		this.element = dialogElem;
+		this.body = bodyElem;
+		this.buttons = buttons;
+	}
+	then(onFulfilled) {
+		this[_promise].then(onFulfilled);
+		return this;
+	}
+	finally(onFinally) {
+		this[_promise].finally(onFinally);
+		return this;
+	}
+	close(value) {
+		setTimeout(() => {
+			if(this.ready) {
+				this[_dialog].close();
+				this[_close](typeof value === "number" ? value : -1);
+				return true;
+			} else {
+				throw new MiroError("The dialog has not finished instantiating and cannot be closed.");
+			}
+		});
+	}
+}
+Miro.dialog = MiroDialog;
+Miro.prepare(document);
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const zlib = require("zlib");
@@ -72,14 +306,11 @@ const exportProj = toolbar.querySelector("#exportProj");
 const homePage = container.querySelector("#homePage");
 const projectPage = container.querySelector("#projectPage");
 const assetContainer = container.querySelector("#assetContainer");
-const assetHead = assetContainer.querySelector("#assetHead");
-const createObj = assetHead.querySelector("#createObj");
-const createGroup = assetHead.querySelector("#createGroup");
-const importImage = assetHead.querySelector("#importImage");
-const importAudioj = assetHead.querySelector("#importAudio");
+const addAsset = assetContainer.querySelector("#addAsset");
 const assets = assetContainer.querySelector("#assets");
 const propertyContainer = container.querySelector("#propertyContainer");
 const timelineContainer = container.querySelector("#timelineContainer");
+const ctxMenu = document.querySelector("#ctxMenu");
 if(storage.containerSizes instanceof Object) {
 	if(storage.containerSizes.assetContainer) {
 		assetContainer.style.width = `${storage.containerSizes.assetContainer}px`;
@@ -96,6 +327,47 @@ if(storage.containerSizes instanceof Object) {
 store();
 const slashes = /[\\\/]/g;
 const byName = file => file.name;
+const _index = Symbol("_index");
+let ctxTarget;
+const openCtx = target => {
+	ctxTarget = target;
+	const items = [];
+	const targetAsset = ctxTarget.classList.contains("asset");
+	if(ctxTarget === assets || targetAsset) {
+		if(targetAsset) {
+			items.push(["Remove", "Rename"]);
+		}
+		items.push(["Create group", "Create object", "Import image file(s)", "Import audio file(s)"]);
+	}
+	if(items.length) {
+		let itemIndex = 0;
+		for(let i = 0; i < items.length; i++) {
+			if(i !== 0) {
+				ctxMenu.appendChild(document.createElement("hr"));
+			}
+			for(const item of items[i]) {
+				button = html`<button class="mdc-typography">$${item}</button>`;
+				button[_index] = itemIndex++;
+				ctxMenu.appendChild(button);
+			}
+		}
+		ctxMenu.classList.remove("hidden");
+		ctxMenu.style.left = `${mouseX - ctxMenu.offsetWidth}px`;
+		if(mouseX + ctxMenu.offsetWidth <= document.body.offsetWidth || ctxMenu.offsetLeft < 0) {
+			ctxMenu.style.left = `${mouseX + 1}px`;
+		}
+		ctxMenu.style.top = `${mouseY - ctxMenu.offsetHeight}px`;
+		if(mouseY + ctxMenu.offsetHeight <= document.body.offsetHeight || ctxMenu.offsetTop < 0) {
+			ctxMenu.style.top = `${mouseY + 1}px`;
+		}
+	}
+};
+const closeCtx = () => {
+	ctxMenu.classList.add("hidden");
+	while(ctxMenu.children.length) {
+		ctxMenu.lastChild.remove();
+	}
+}
 const proj = {}; // the object of projects, the probject
 let projID = 0;
 let sel;
@@ -243,7 +515,7 @@ const select = id => {
 	}
 	if(proj[sel]) {
 		proj[sel].selected = [];
-		while(assets.lastChild) {
+		while(assets.children.length) {
 			if(assets.lastChild.classList.contains("selected")) {
 				proj[sel].selected.push(assets.lastChild.id);
 			}
@@ -378,7 +650,7 @@ const open = async location => {
 		return false;
 	}
 };
-electron.ipcRenderer.on("argv", (event, location) => {
+electron.ipcRenderer.on("argv", (evt, location) => {
 	open(location);
 });
 const addFiles = async files => {
@@ -424,109 +696,109 @@ assetInput.addEventListener("change", async () => {
 	await addFiles(assetInput.files);
 	assetInput.value = null;
 });
+let mouseX = 0;
+let mouseY = 0;
 let mouseTarget;
-let down = false;
-let downX;
-let downY;
+let mouseTarget0;
+let mouseTarget2;
+let mouseDown = -1;
+let mouseMoved = false;
+let mouseUp = 0;
 let initialTargetPos;
 let targetOffset;
-window.addEventListener("mousedown", event => {
-	if(event.button === 0 && !down) {
-		down = true;
-		downX = event.clientX;
-		downY = event.clientY;
-		mouseTarget = event.target;
-		const targetAssets = mouseTarget === assets;
-		if(targetAssets || assets.contains(mouseTarget)) {
-			for(const active of projectPage.querySelectorAll(".active")) {
-				active.classList.remove("active");
-			}
-			assets.classList.add("active");
-			if(targetAssets) {
-				for(const selected of assets.querySelectorAll(".asset.selected")) {
-					selected.classList.remove("selected");
-				}
-				delete proj[sel].selectedAsset;
-			} else if(mouseTarget.classList.contains("asset")) {
-				if(event.shiftKey) {
-					let selecting = !proj[sel].selectedAsset;
-					const classListMethod = event.ctrlKey && proj[sel].selectedAsset && !document.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
-					for(const asset of assets.children) {
-						if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
-							if(selecting) {
-								asset.classList[classListMethod]("selected");
-								selecting = false;
-								continue;
-							} else {
-								asset.classList[classListMethod]("selected");
-								if(proj[sel].selectedAsset !== mouseTarget.id) {
-									selecting = true;
-								}
-							}
-						} else if(selecting) {
-							asset.classList[classListMethod]("selected");
-						} else if(!event.ctrlKey) {
-							asset.classList.remove("selected");
-						}
+const onMouseDown = evt => {
+	if(mouseDown !== -1) {
+		onMouseUp(evt);
+	}
+	mouseDown = evt.button;
+	mouseMoved = false;
+	mouseX = evt.clientX;
+	mouseY = evt.clientY;
+	mouseTarget = evt.target;
+	if(evt.button === 0) {
+		mouseTarget0 = evt.target;
+	} else if(evt.button === 2) {
+		mouseTarget2 = evt.target;
+	}
+	if(mouseTarget !== ctxMenu) {
+		if(!ctxMenu.classList.contains("hidden")) {
+			if(mouseTarget0 && ctxMenu.contains(mouseTarget0)) {
+				const targetAsset = ctxTarget.classList.contains("asset");
+				if(ctxTarget === assets || targetAsset) {
+					if(targetAsset) {
+						mouseTarget0[_index] -= 2;
 					}
+					if(mouseTarget0[_index] === -2) {
+						confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
+					} else if(mouseTarget0[_index] === -1) {
+						// TODO
+					} else if(mouseTarget0[_index] === 0) {
+						// TODO
+					} else if(mouseTarget0[_index] === 1) {
+						// TODO
+					} else if(mouseTarget0[_index] === 2) {
+						assetInput.accept = "image/*";
+						assetInput.click();
+					} else if(mouseTarget0[_index] === 3) {
+						assetInput.accept = "audio/*";
+						assetInput.click();
+					}
+				}
+				closeCtx();
+				return;
+			}
+			closeCtx();
+		}
+		if(evt.button === 0) {
+			if(mouseTarget0.classList.contains("tab")) {
+				if(mouseTarget0 === homeTab) {
+					select("home");
 				} else {
-					proj[sel].selectedAsset = mouseTarget.id;
-					if(event.ctrlKey) {
-						mouseTarget.classList.toggle("selected");
-					} else {
-						let othersSelected = false;
-						for(const asset of assets.querySelectorAll(".asset.selected")) {
-							if(asset !== mouseTarget) {
-								othersSelected = true;
-								asset.classList.remove("selected");
-							}
-						}
-						if(mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
-							delete proj[sel].selectedAsset;
-						}
+					select(mouseTarget0[_proj].id);
+					const prevTabPos = mouseTarget0.offsetLeft;
+					targetOffset = evt.clientX - prevTabPos;
+					mouseTarget0.style.left = "";
+					mouseTarget0.style.left = `${prevTabPos - (initialTargetPos = mouseTarget0.offsetLeft)}px`;
+					for(let i = 1; i < tabs.children.length; i++) {
+						tabs.children[i].classList[tabs.children[i] === mouseTarget0 ? "remove" : "add"]("smooth");
 					}
 				}
-			}
-		} else if(mouseTarget.classList.contains("tab")) {
-			if(mouseTarget === homeTab) {
-				select("home");
-			} else {
-				select(mouseTarget[_proj].id);
-				const prevTabPos = mouseTarget.offsetLeft;
-				targetOffset = downX - prevTabPos;
-				mouseTarget.style.left = "";
-				mouseTarget.style.left = `${prevTabPos - (initialTargetPos = mouseTarget.offsetLeft)}px`;
-				for(let i = 1; i < tabs.children.length; i++) {
-					tabs.children[i].classList[tabs.children[i] === mouseTarget ? "remove" : "add"]("smooth");
+			} else if(mouseTarget0.classList.contains("handle")) {
+				initialTargetPos = mouseTarget0.parentNode[mouseTarget0.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
+				if(mouseTarget0.parentNode === assetContainer) {
+					targetOffset = mouseTarget0.parentNode.offsetWidth - evt.clientX;
+				} else if(mouseTarget0.parentNode === propertyContainer) {
+					targetOffset = evt.clientX - mouseTarget0.parentNode.offsetLeft;
+				} else if(mouseTarget0.parentNode === timelineContainer) {
+					targetOffset = evt.clientY - mouseTarget0.parentNode.offsetTop;
 				}
-			}
-		} else if(mouseTarget.classList.contains("handle")) {
-			initialTargetPos = mouseTarget.parentNode[mouseTarget.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
-			if(mouseTarget.parentNode === assetContainer) {
-				targetOffset = mouseTarget.parentNode.offsetWidth - downX;
-			} else if(mouseTarget.parentNode === propertyContainer) {
-				targetOffset = downX - mouseTarget.parentNode.offsetLeft;
-			} else if(mouseTarget.parentNode === timelineContainer) {
-				targetOffset = downY - mouseTarget.parentNode.offsetTop;
 			}
 		}
 	}
-});
-window.addEventListener("mousemove", event => {
-	if(down) {
-		if(mouseTarget.classList.contains("asset")) {
+};
+window.addEventListener("mousedown", onMouseDown);
+window.addEventListener("mousemove", evt => {
+	mouseX = evt.clientX;
+	mouseY = evt.clientY;
+	if(mouseDown === -1) {
+		return;
+	}
+	mouseMoved = true;
+	if(mouseTarget0) {
+		if(mouseTarget0.classList.contains("asset")) {
+			mouseTarget0.classList.add("selected");
 			// TODO
-		} else if(mouseTarget.classList.contains("tab")) {
-			if(mouseTarget !== homeTab) {
-				mouseTarget.style.left = `${event.clientX - initialTargetPos - targetOffset}px`;
-				const tabWidth = mouseTarget.offsetWidth + 1;
+		} else if(mouseTarget0.classList.contains("tab")) {
+			if(mouseTarget0 !== homeTab) {
+				mouseTarget0.style.left = `${evt.clientX - initialTargetPos - targetOffset}px`;
+				const tabWidth = mouseTarget0.offsetWidth + 1;
 				let afterTarget = false;
 				for(let i = 1; i < tabs.children.length; i++) {
-					if(tabs.children[i] === mouseTarget) {
+					if(tabs.children[i] === mouseTarget0) {
 						afterTarget = true;
 					} else {
 						if(afterTarget) {
-							if(mouseTarget.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
+							if(mouseTarget0.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
 								if(!tabs.children[i].style.left) {
 									tabs.children[i].style.left = `-${tabWidth}px`;
 								}
@@ -534,7 +806,7 @@ window.addEventListener("mousemove", event => {
 								tabs.children[i].style.left = "";
 							}
 						} else {
-							if(mouseTarget.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
+							if(mouseTarget0.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
 								if(!tabs.children[i].style.left) {
 									tabs.children[i].style.left = `${tabWidth}px`;
 								}
@@ -545,134 +817,214 @@ window.addEventListener("mousemove", event => {
 					}
 				}
 			}
-		} else if(mouseTarget.classList.contains("handle")) {
+		} else if(mouseTarget0.classList.contains("handle")) {
 			let value = targetOffset;
-			if(mouseTarget.parentNode === assetContainer) {
-				value += event.clientX;
-			} else if(mouseTarget.parentNode === propertyContainer) {
-				value += document.body.offsetWidth - event.clientX;
-			} else if(mouseTarget.parentNode === timelineContainer) {
-				value += document.body.offsetHeight - event.clientY;
+			if(mouseTarget0.parentNode === assetContainer) {
+				value += evt.clientX;
+			} else if(mouseTarget0.parentNode === propertyContainer) {
+				value += document.body.offsetWidth - evt.clientX;
+			} else if(mouseTarget0.parentNode === timelineContainer) {
+				value += document.body.offsetHeight - evt.clientY;
 			}
-			const horizontalTarget = mouseTarget.classList.contains("horizontal");
-			mouseTarget.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget.parentNode.id] = Math.max(185, value)}px`;
+			const horizontalTarget = mouseTarget0.classList.contains("horizontal");
+			mouseTarget0.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget0.parentNode.id] = Math.max(185, value)}px`;
 			if(!horizontalTarget) {
-				mouseTarget.parentNode.style.minHeight = mouseTarget.parentNode.style.height;
+				mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
 			}
 		}
 	}
 });
+let originalMouseTarget;
 const makeTabRough = () => {
-	mouseTarget.classList.remove("smooth");
+	originalMouseTarget.classList.remove("smooth");
 };
 const resetTabPos = () => {
-	mouseTarget.style.left = "";
+	originalMouseTarget.style.left = "";
 	setTimeout(makeTabRough, 150);
 };
-window.addEventListener("mouseup", event => {
-	if(event.button === 0) {
-		if(mouseTarget) {
-			if(mouseTarget.classList.contains("tab")) {
-				if(mouseTarget !== homeTab) {
-					let afterTarget = false;
-					let shifted;
-					let shiftedAfterTarget = 2;
-					for(let i = 1; i < tabs.children.length; i++) {
-						if(tabs.children[i] === mouseTarget) {
-							afterTarget = true;
-						} else if(tabs.children[i].style.left) {
-							shifted = i;
-							if(afterTarget) {
-								shifted++;
-							} else {
-								shiftedAfterTarget = 1;
+const handleMouseUp = (evt, evtButton) => {
+	mouseX = evt.clientX;
+	mouseY = evt.clientY;
+	if(mouseDown === -1) {
+		return;
+	}
+	const evtButton0 = evtButton === 0;
+	const evtButton2 = evtButton === 2;
+	if(mouseTarget && (evtButton0 || evtButton2)) {
+		if(mouseTarget === assets || assets.contains(mouseTarget)) {
+			if(!mouseMoved && evtButton === mouseDown) {
+				for(const active of projectPage.querySelectorAll(".active")) {
+					active.classList.remove("active");
+				}
+				assets.classList.add("active");
+				if(mouseTarget === assets) {
+					for(const selected of assets.querySelectorAll(".asset.selected")) {
+						selected.classList.remove("selected");
+					}
+					delete proj[sel].selectedAsset;
+				} else if(mouseTarget.classList.contains("asset")) {
+					if(evtButton === 2 && !(evt.ctrlKey || evt.shiftKey)) {
+						if(!mouseTarget.classList.contains("selected")) {
+							for(const asset of assets.querySelectorAll(".asset.selected")) {
+								if(asset !== mouseTarget) {
+									asset.classList.remove("selected");
+								}
+							}
+							mouseTarget.classList.add("selected");
+							proj[sel].selectedAsset = mouseTarget.id;
+						}
+					} else if(evt.shiftKey) {
+						let selecting = !proj[sel].selectedAsset;
+						const classListMethod = evt.ctrlKey && proj[sel].selectedAsset && !document.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+						for(const asset of assets.children) {
+							if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
+								if(selecting) {
+									asset.classList[classListMethod]("selected");
+									selecting = false;
+									continue;
+								} else {
+									asset.classList[classListMethod]("selected");
+									if(proj[sel].selectedAsset !== mouseTarget.id) {
+										selecting = true;
+									}
+								}
+							} else if(selecting) {
+								asset.classList[classListMethod]("selected");
+							} else if(!evt.ctrlKey) {
+								asset.classList.remove("selected");
+							}
+						}
+					} else {
+						proj[sel].selectedAsset = mouseTarget.id;
+						if(evt.ctrlKey) {
+							mouseTarget.classList.toggle("selected");
+						} else {
+							let othersSelected = false;
+							for(const asset of assets.querySelectorAll(".asset.selected")) {
+								if(asset !== mouseTarget) {
+									othersSelected = true;
+									asset.classList.remove("selected");
+								}
+							}
+							if(mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
+								delete proj[sel].selectedAsset;
+							}
+						}
+					}
+				}
+			}
+		} else if(evtButton0) {
+			if(mouseTarget0) {
+				if(mouseTarget0.classList.contains("tab")) {
+					if(mouseTarget0 !== homeTab) {
+						let afterTarget = false;
+						let shifted;
+						let shiftedAfterTarget = 2;
+						for(let i = 1; i < tabs.children.length; i++) {
+							if(tabs.children[i] === mouseTarget0) {
+								afterTarget = true;
+							} else if(tabs.children[i].style.left) {
+								shifted = i;
+								if(afterTarget) {
+									shifted++;
+								} else {
+									shiftedAfterTarget = 1;
+									break;
+								}
+							} else if(afterTarget) {
 								break;
 							}
-						} else if(afterTarget) {
-							break;
 						}
-					}
-					const tabWidth = mouseTarget.offsetWidth + 1;
-					if(shifted) {
-						const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
-						mouseTarget.style.left = `${mouseTarget.offsetLeft - newPos}px`;
-						for(let i = 1; i < tabs.children.length; i++) {
-							if(tabs.children[i] !== mouseTarget) {
-								tabs.children[i].classList.remove("smooth");
-								tabs.children[i].style.left = "";
+						const tabWidth = mouseTarget0.offsetWidth + 1;
+						if(shifted) {
+							const newPos = homeTab.offsetWidth + 1 + (shifted - shiftedAfterTarget) * tabWidth;
+							mouseTarget0.style.left = `${mouseTarget0.offsetLeft - newPos}px`;
+							for(let i = 1; i < tabs.children.length; i++) {
+								if(tabs.children[i] !== mouseTarget0) {
+									tabs.children[i].classList.remove("smooth");
+									tabs.children[i].style.left = "";
+								}
 							}
+							tabs.insertBefore(mouseTarget0, tabs.children[shifted]);
 						}
-						tabs.insertBefore(mouseTarget, tabs.children[shifted]);
+						(originalMouseTarget = mouseTarget0).classList.add("smooth");
+						setTimeout(resetTabPos);
 					}
-					mouseTarget.classList.add("smooth");
-					setTimeout(resetTabPos);
-				}
-			} else if(mouseTarget.classList.contains("handle")) {
-				store();
-			} else if(event.target === mouseTarget) {
-				if(mouseTarget.parentNode === windowActions) {
-					if(mouseTarget === minimizeWindow) {
-						win.minimize();
-					} else if(mouseTarget === maximizeWindow) {
-						if(win.isMaximized()) {
-							win.unmaximize();
-						} else {
-							win.maximize();
+				} else if(mouseTarget0.classList.contains("handle")) {
+					store();
+				} else if(evt.target === mouseTarget0) {
+					if(mouseTarget0.parentNode === windowActions) {
+						if(mouseTarget0 === minimizeWindow) {
+							win.minimize();
+						} else if(mouseTarget0 === maximizeWindow) {
+							if(win.isMaximized()) {
+								win.unmaximize();
+							} else {
+								win.maximize();
+							}
+						} else if(mouseTarget0 === closeWindow) {
+							win.close();
 						}
-					} else if(mouseTarget === closeWindow) {
-						win.close();
-					}
-				} else if(mouseTarget.parentNode === toolbar) {
-					if(mouseTarget === newProj) {
-						new Project();
-					} else if(mouseTarget === openProj) {
-						open();
-					} else if(mouseTarget === saveProj) {
-						save();
-					} else if(mouseTarget === saveProjAs) {
-						save(true);
-					} else if(mouseTarget === exportProj) {
-						// TODO
-					}
-				} else if(mouseTarget.parentNode === assetHead) {
-					if(mouseTarget === createObj) {
-						// TODO
-					} else if(mouseTarget === createGroup) {
-						// TODO
-					} else if(mouseTarget === importImage) {
-						assetInput.accept = "image/*";
-						assetInput.click();
-					} else if(mouseTarget === importAudio) {
-						assetInput.accept = "audio/*";
-						assetInput.click();
-					}
-				} else if(mouseTarget.classList.contains("close")) {
-					if(mouseTarget.parentNode.classList.contains("asset")) {
-						confirmRemoveAsset(mouseTarget.parentNode);
-					} else if(mouseTarget.parentNode.classList.contains("tab")) {
-						mouseTarget.parentNode[_proj].close();
+					} else if(mouseTarget0.parentNode === toolbar) {
+						if(mouseTarget0 === newProj) {
+							new Project();
+						} else if(mouseTarget0 === openProj) {
+							open();
+						} else if(mouseTarget0 === saveProj) {
+							save();
+						} else if(mouseTarget0 === saveProjAs) {
+							save(true);
+						} else if(mouseTarget0 === exportProj) {
+							// TODO
+						}
+					} else if(mouseTarget0 === addAsset) {
+						openCtx(assets);
+					} else if(mouseTarget0.classList.contains("close")) {
+						if(mouseTarget0.parentNode.classList.contains("asset")) {
+							confirmRemoveAsset(mouseTarget0.parentNode);
+						} else if(mouseTarget0.parentNode.classList.contains("tab")) {
+							mouseTarget0.parentNode[_proj].close();
+						}
 					}
 				}
 			}
 		}
-		down = false;
+		if(evtButton2 && evt.target === mouseTarget2 && mouseTarget2 !== ctxMenu && !ctxMenu.contains(mouseTarget2)) {
+			openCtx(mouseTarget2);
+		}
+	}
+};
+const onMouseUp = evt => {
+	handleMouseUp(evt, 0);
+	handleMouseUp(evt, 1);
+	handleMouseUp(evt, 2);
+	mouseTarget0 = null;
+	mouseTarget2 = null;
+	mouseDown = -1;
+	mouseUp = Date.now();
+};
+window.addEventListener("mouseup", onMouseUp);
+window.addEventListener("click", evt => {
+	if(Date.now() - mouseUp > 1) {
+		onMouseDown(evt);
+		onMouseUp(evt);
 	}
 });
-window.addEventListener("dblclick", event => {
-	if(downX === event.clientX && downY === event.clientY) {
-		if(event.target === tabs) {
+window.addEventListener("dblclick", evt => {
+	if(!mouseMoved) {
+		if(evt.target === tabs) {
 			new Project();
-		} else if(event.target.classList.contains("handle")) {
-			event.target.parentNode.style.width = event.target.parentNode.style.height = event.target.parentNode.style.minWidth = event.target.parentNode.style.minHeight = "";
-			delete storage.containerSizes[event.target.parentNode.id];
+		} else if(evt.target.classList.contains("handle")) {
+			evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minWidth = evt.target.parentNode.style.minHeight = "";
+			delete storage.containerSizes[evt.target.parentNode.id];
 			store();
 		}
 	}
 });
 const focused = () => !(document.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
-window.addEventListener("keydown", event => {
-	if(event.ctrlKey || event.metaKey) {
-		if((event.shiftKey && event.keyCode === 9) || (!event.shiftKey && event.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
+window.addEventListener("keydown", evt => {
+	if(evt.ctrlKey || evt.metaKey) {
+		if((evt.shiftKey && evt.keyCode === 9) || (!evt.shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
 			if(focused()) {
 				if(sel === "home") {
 					if(Object.keys(proj).length) {
@@ -684,15 +1036,15 @@ window.addEventListener("keydown", event => {
 					select(proj[sel].tab.previousElementSibling[_proj].id);
 				}
 			}
-		} else if(event.shiftKey) {
-			if(event.keyCode === 73) { // ^`shift`+`I`
+		} else if(evt.shiftKey) {
+			if(evt.keyCode === 73) { // ^`shift`+`I`
 				win.toggleDevTools();
-			} else if(event.keyCode === 83) { // ^`shift`+`S`
+			} else if(evt.keyCode === 83) { // ^`shift`+`S`
 				if(focused()) {
 					save(true);
 				}
 			}
-		} else if(event.keyCode === 9 || event.keyCode === 34) { // ^`tab` || ^`page down`
+		} else if(evt.keyCode === 9 || evt.keyCode === 34) { // ^`tab` || ^`page down`
 			if(focused()) {
 				if(sel === "home") {
 					if(Object.keys(proj).length) {
@@ -704,25 +1056,25 @@ window.addEventListener("keydown", event => {
 					select("home");
 				}
 			}
-		} else if(event.keyCode === 57) { // ^`9`
+		} else if(evt.keyCode === 57) { // ^`9`
 			if(focused()) {
 				if(Object.keys(proj).length) {
 					select(tabs.lastElementChild[_proj].id);
 				}
 			}
-		} else if(event.keyCode === 78 || event.keyCode === 84) { // ^`N` || ^`T`
+		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
 			if(focused()) {
 				new Project();
 			}
-		} else if(event.keyCode === 79) { // ^`O`
+		} else if(evt.keyCode === 79) { // ^`O`
 			if(focused()) {
 				open();
 			}
-		} else if(event.keyCode === 83) { // ^`S`
+		} else if(evt.keyCode === 83) { // ^`S`
 			if(focused()) {
 				save();
 			}
-		} else if(event.keyCode === 87 || event.keyCode === 115) { // ^`W` || ^`F4`
+		} else if(evt.keyCode === 87 || evt.keyCode === 115) { // ^`W` || ^`F4`
 			if(focused()) {
 				if(proj[sel]) {
 					proj[sel].close();
@@ -730,31 +1082,33 @@ window.addEventListener("keydown", event => {
 					win.close();
 				}
 			}
-		} else if(event.keyCode >= 49 && event.keyCode <= 56) { // ^`1`-`8`
+		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
 			if(focused()) {
 				if(Object.keys(proj).length) {
-					select((tabs.children[event.keyCode - 48] || tabs.lastElementChild)[_proj].id);
+					select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)[_proj].id);
 				}
 			}
 		}
-	} else if(event.altKey) {
+	} else if(evt.altKey) {
 		if(focused()) {
-			if(event.keyCode === 36) { // `alt`+`home`
+			if(evt.keyCode === 36) { // `alt`+`home`
 				select("home");
 			}
 		}
-	} else if(event.keyCode === 8 || event.keyCode === 46) { // `backspace` || `delete`
+	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
 		if(focused() && assets.classList.contains("active")) {
 			confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 		}
-	} else if(event.keyCode === 27) { // `esc`
-		if(focused() && assets.classList.contains("active")) {
+	} else if(evt.keyCode === 27) { // `esc`
+		if(!ctxMenu.classList.contains("hidden")) {
+			closeCtx();
+		} else if(focused() && assets.classList.contains("active")) {
 			delete proj[sel].selectedAsset;
 			for(const asset of assets.querySelectorAll(".asset.selected")) {
 				asset.classList.remove("selected");
 			}
 		}
-	} else if(event.keyCode === 122) { // `F11`
+	} else if(evt.keyCode === 122) { // `F11`
 		const fullScreen = !win.isFullScreen();
 		win.setFullScreen(fullScreen);
 		titleBar.classList[fullScreen ? "add" : "remove"]("hidden");
