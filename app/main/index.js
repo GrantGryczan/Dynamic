@@ -791,6 +791,11 @@ const selectAsset = (target, evtButton) => {
 			}
 		}
 	}
+	if(target.offsetTop < assets.scrollTop) {
+		assets.scrollTop = target.offsetTop;
+	} else if(target.offsetTop + target.offsetHeight > assets.scrollTop + assets.offsetHeight) {
+		assets.scrollTop = target.offsetTop + target.offsetHeight - assets.offsetHeight;
+	}
 };
 let mouseX = 0;
 let mouseY = 0;
@@ -957,7 +962,7 @@ const handleMouseUp = (evt, evtButton) => {
 		if(mouseTarget === assets || assets.contains(mouseTarget)) {
 			if(!mouseMoved && evtButton === mouseDown) {
 				setActive(assets);
-				if(mouseTarget === assets) {
+				if(mouseTarget === assets && mouseX < assets.offsetLeft + assets.scrollWidth) {
 					for(const asset of assets.querySelectorAll(".asset.selected")) {
 						asset.classList.remove("selected");
 					}
@@ -1102,10 +1107,6 @@ window.addEventListener("keydown", evt => {
 			const asset = allAssets[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(allAssets, document.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % allAssets.length];
 			if(!superKey) {
 				selectAsset(asset);
-			}
-			proj[sel].focusedAsset = asset.id;
-			if(asset.offsetTop - assets.scrollTop > assets.offsetHeight) {
-				assets.scrollTop = assets.offsetHeight + asset.offsetTop - assets.scrollTop;
 			}
 		}
 	} else if(superKey) {
