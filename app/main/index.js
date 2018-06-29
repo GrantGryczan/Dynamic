@@ -548,7 +548,7 @@ const storeAssets = () => {
 	proj[sel].saved = false;
 };
 const removeAsset = assetElem => {
-	if(assetElem[_asset].id === proj[sel].selectedAsset) {
+	if(`asset_${assetElem[_asset].id}` === proj[sel].selectedAsset) {
 		proj[sel].selectedAsset = null;
 	}
 	if(assetElem.classList.contains("group")) {
