@@ -92,7 +92,7 @@ hr {
 	color: #a0a0a0;
 	cursor: default;
 }
-.focus #titleBar {
+body.focus #titleBar {
 	background-color: #808080;
 	color: #ffffff;
 }
@@ -123,11 +123,34 @@ hr {
 #titleBar button:hover {
 	background-color: rgba(0, 0, 0, 0.15);
 }
-.focus #titleBar button:hover {
+body.focus #titleBar button:hover {
 	background-color: rgba(255, 255, 255, 0.25);
 }
-.focus #titleBar button:active {
+body.focus #titleBar button:active {
 	background-color: rgba(255, 255, 255, 0.5);
+}
+.close {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	border-radius: 50%;
+	background-color: inherit;
+	transform: scale(0);
+	transition: transform 0.08s ease-out;
+	font-size: 18px;
+}
+.close::after {
+	opacity: 0.25;
+	content: "close";
+}
+:hover > .close, .focus > .close {
+	transform: scale(1);
+}
+.close:hover::after, .asset.focus::after {
+	opacity: 0.625;
+}
+.close:active::after {
+	opacity: 1;
 }
 #container {
 	display: flex;
@@ -185,29 +208,6 @@ hr {
 .tab:not(.saved) .label::before {
 	color: #8000ff;
 	content: "*"
-}
-.close {
-	position: absolute;
-	top: 3px;
-	right: 3px;
-	border-radius: 50%;
-	background-color: inherit;
-	transform: scale(0);
-	transition: transform 0.08s ease-out;
-	font-size: 18px;
-}
-.close::after {
-	opacity: 0.25;
-	content: "close";
-}
-:hover > .close {
-	transform: scale(1);
-}
-.close:hover::after {
-	opacity: 0.625;
-}
-.close:active::after {
-	opacity: 1;
 }
 #homeTab {
 	width: initial;
@@ -350,7 +350,7 @@ hr {
 	position: relative;
 	height: 24px;
 }
-.asset:hover {
+.asset:hover, .asset.focus {
 	background-color: rgba(128, 0, 255, 0.05);
 }
 .asset.selected {

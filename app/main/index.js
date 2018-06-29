@@ -232,6 +232,29 @@ class MiroDialog {
 }
 Miro.dialog = MiroDialog;
 Miro.prepare(document);
+const titleBar = document.querySelector("#titleBar");
+const windowActions = titleBar.querySelector("#windowActions");
+const minimizeWindow = windowActions.querySelector("#minimizeWindow");
+const maximizeWindow = windowActions.querySelector("#maximizeWindow");
+const closeWindow = windowActions.querySelector("#closeWindow");
+const container = document.querySelector("#container");
+const tabs = container.querySelector("#tabs");
+const homeTab = tabs.querySelector("#homeTab");
+const toolbar = container.querySelector("#toolbar");
+const loading = container.querySelector("#loading");
+const newProj = toolbar.querySelector("#newProj");
+const openProj = toolbar.querySelector("#openProj");
+const saveProj = toolbar.querySelector("#saveProj");
+const saveProjAs = toolbar.querySelector("#saveProjAs");
+const exportProj = toolbar.querySelector("#exportProj");
+const homePage = container.querySelector("#homePage");
+const projectPage = container.querySelector("#projectPage");
+const assetContainer = container.querySelector("#assetContainer");
+const addAsset = assetContainer.querySelector("#addAsset");
+const assets = assetContainer.querySelector("#assets");
+const propertyContainer = container.querySelector("#propertyContainer");
+const timelineContainer = container.querySelector("#timelineContainer");
+const ctxMenu = container.querySelector("#ctxMenu");
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const zlib = require("zlib");
@@ -258,16 +281,21 @@ const store = () => {
 };
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
-const titleBar = document.querySelector("#titleBar");
 titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.userAgent.match(/ Dynamic\/([^ ]+) /)[1]}`;
 if(win.isFullScreen()) {
 	titleBar.classList.add("hidden");
 }
+let shiftKey = false;
+let superKey = false;
+let altKey = false;
 const onFocus = () => {
 	document.body.classList.add("focus");
 };
 const onBlur = () => {
 	document.body.classList.remove("focus");
+	shiftKey = false;
+	superKey = false;
+	altKey = false;
 };
 win.on("focus", onFocus);
 win.on("blur", onBlur);
@@ -276,9 +304,6 @@ if(win.isFocused()) {
 } else {
 	onBlur();
 }
-const windowActions = titleBar.querySelector("#windowActions");
-const minimizeWindow = windowActions.querySelector("#minimizeWindow");
-const maximizeWindow = windowActions.querySelector("#maximizeWindow");
 const onMaximize = () => {
 	maximizeWindow.textContent = "fullscreen_exit";
 };
@@ -292,25 +317,6 @@ if(win.isMaximized()) {
 } else {
 	onUnmaximize();
 }
-const closeWindow = windowActions.querySelector("#closeWindow");
-const container = document.querySelector("#container");
-const tabs = container.querySelector("#tabs");
-const homeTab = tabs.querySelector("#homeTab");
-const toolbar = container.querySelector("#toolbar");
-const loading = container.querySelector("#loading");
-const newProj = toolbar.querySelector("#newProj");
-const openProj = toolbar.querySelector("#openProj");
-const saveProj = toolbar.querySelector("#saveProj");
-const saveProjAs = toolbar.querySelector("#saveProjAs");
-const exportProj = toolbar.querySelector("#exportProj");
-const homePage = container.querySelector("#homePage");
-const projectPage = container.querySelector("#projectPage");
-const assetContainer = container.querySelector("#assetContainer");
-const addAsset = assetContainer.querySelector("#addAsset");
-const assets = assetContainer.querySelector("#assets");
-const propertyContainer = container.querySelector("#propertyContainer");
-const timelineContainer = container.querySelector("#timelineContainer");
-const ctxMenu = container.querySelector("#ctxMenu");
 if(storage.containerSizes instanceof Object) {
 	if(storage.containerSizes.assetContainer) {
 		assetContainer.style.width = `${storage.containerSizes.assetContainer}px`;
@@ -340,7 +346,7 @@ const openCtx = target => {
 				Rename: assets.querySelectorAll(".asset.selected").length === 1
 			});
 		}
-		items.push(["Create group", "Create object", "Import image file(s)", "Import audio file(s)"]);
+		items.push(["Create object", "Create group", "Import image file(s)", "Import audio file(s)"]);
 	}
 	if(items.length) {
 		let itemIndex = 0;
@@ -388,6 +394,8 @@ const _proj = Symbol("proj");
 const _saved = Symbol("saved");
 const _name = Symbol("name");
 const _location = Symbol("location");
+const _selectedAsset = Symbol("selectedAsset");
+const _focusedAsset = Symbol("focusedAsset");
 class Project {
 	constructor(thisProject) {
 		if(!(thisProject instanceof Object)) {
@@ -457,6 +465,23 @@ class Project {
 		this.tab.remove();
 		delete proj[this.id];
 	}
+	get selectedAsset() {
+		return this[_selectedAsset];
+	}
+	set selectedAsset(value) {
+		this.focusedAsset = this[_selectedAsset] = value;
+	}
+	get focusedAsset() {
+		return this[_focusedAsset];
+	}
+	set focusedAsset(value) {
+		for(const asset of assets.querySelectorAll(".asset.focus")) {
+			asset.classList.remove("focus");
+		}
+		if(this[_focusedAsset] = value) {
+			assets.querySelector(`#${value}`).classList.add("focus");
+		}
+	}
 }
 const _asset = Symbol("asset");
 const _assetID = Symbol("assetID");
@@ -475,7 +500,7 @@ const appendAssetFile = file => {
 };
 const removeAsset = asset => {
 	if(asset[_asset].id === proj[sel].selectedAsset) {
-		delete proj[sel].selectedAsset;
+		proj[sel].selectedAsset = null;
 	}
 	delete proj[sel].data[`${asset.classList[1]}s`][asset[_assetID]];
 	asset.remove();
@@ -541,8 +566,11 @@ const select = id => {
 		for(const file of Object.keys(proj[sel].data.files)) {
 			appendAssetFile(file);
 		}
-		for(const selected of proj[sel].selected) {
-			projectPage.querySelector(`#${selected}`).classList.add("selected");
+		for(const id of proj[sel].selected) {
+			projectPage.querySelector(`#${id}`).classList.add("selected");
+		}
+		if(proj[sel].focusedAsset) {
+			assets.querySelector(`#${proj[sel].focusedAsset}`).classList.add("focus");
 		}
 		saveProj.disabled = proj[sel].saved;
 		proj[sel].tab.classList.add("current");
@@ -628,6 +656,12 @@ const save = async as => {
 		proj[sel].saved = true;
 	}
 };
+const setActive = elem => {
+	for(const active of document.querySelectorAll(".active")) {
+		active.classList.remove("active");
+	}
+	elem.classList.add("active");
+};
 const open = async location => {
 	if(!location) {
 		location = electron.remote.dialog.showOpenDialog(win, fileOptions);
@@ -661,9 +695,10 @@ electron.ipcRenderer.on("argv", (evt, location) => {
 	open(location);
 });
 const addFiles = async files => {
+	setActive(assets);
 	loadProgress(0);
-	for(const selected of assets.querySelectorAll(".asset.selected")) {
-		selected.classList.remove("selected");
+	for(const asset of assets.querySelectorAll(".asset.selected")) {
+		asset.classList.remove("selected");
 	}
 	for(let i = 0; i < files.length; i++) {
 		loadProgress(i / files.length);
@@ -703,6 +738,60 @@ assetInput.addEventListener("change", async () => {
 	await addFiles(assetInput.files);
 	assetInput.value = null;
 });
+const selectAsset = (target, evtButton) => {
+	setActive(assets);
+	if(typeof evtButton !== "number") {
+		evtButton = 0;
+	}
+	if(evtButton === 2 && !(superKey || shiftKey)) {
+		if(!target.classList.contains("selected")) {
+			for(const asset of assets.querySelectorAll(".asset.selected")) {
+				if(asset !== target) {
+					asset.classList.remove("selected");
+				}
+			}
+			target.classList.add("selected");
+			proj[sel].selectedAsset = target.id;
+		}
+	} else if(shiftKey) {
+		let selecting = !proj[sel].selectedAsset;
+		const classListMethod = superKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+		for(const asset of assets.children) {
+			if(asset.id === proj[sel].selectedAsset || asset.id === target.id) {
+				if(selecting) {
+					asset.classList[classListMethod]("selected");
+					selecting = false;
+					continue;
+				} else {
+					asset.classList[classListMethod]("selected");
+					if(proj[sel].selectedAsset !== target.id) {
+						selecting = true;
+					}
+				}
+			} else if(selecting) {
+				asset.classList[classListMethod]("selected");
+			} else if(!superKey) {
+				asset.classList.remove("selected");
+			}
+		}
+	} else {
+		proj[sel].selectedAsset = target.id;
+		if(superKey) {
+			target.classList.toggle("selected");
+		} else {
+			let othersSelected = false;
+			for(const asset of assets.querySelectorAll(".asset.selected")) {
+				if(asset !== target) {
+					othersSelected = true;
+					asset.classList.remove("selected");
+				}
+			}
+			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
+				proj[sel].selectedAsset = null;
+			}
+		}
+	}
+};
 let mouseX = 0;
 let mouseY = 0;
 let mouseTarget;
@@ -756,7 +845,9 @@ const onMouseDown = evt => {
 			}
 			closeCtx();
 		}
-		if(evt.button === 0) {
+		if(mouseTarget.classList.contains("asset")) {
+			proj[sel].focusedAsset = mouseTarget.id;
+		} else if(evt.button === 0) {
 			if(mouseTarget0.classList.contains("tab")) {
 				if(mouseTarget0 === homeTab) {
 					select("home");
@@ -785,15 +876,19 @@ const onMouseDown = evt => {
 };
 window.addEventListener("mousedown", onMouseDown);
 window.addEventListener("mousemove", evt => {
+	if(evt.clientX === mouseX && evt.clientY === mouseY) {
+		return;
+	}
 	mouseX = evt.clientX;
 	mouseY = evt.clientY;
 	if(mouseDown === -1) {
 		return;
 	}
-	mouseMoved = true;
 	if(mouseTarget0) {
 		if(mouseTarget0.classList.contains("asset")) {
-			mouseTarget0.classList.add("selected");
+			if(!mouseMoved) {
+				selectAsset(mouseTarget0, 2);
+			}
 			// TODO
 		} else if(mouseTarget0.classList.contains("tab")) {
 			if(mouseTarget0 !== homeTab) {
@@ -840,6 +935,7 @@ window.addEventListener("mousemove", evt => {
 			}
 		}
 	}
+	mouseMoved = true;
 });
 let originalMouseTarget;
 const makeTabRough = () => {
@@ -860,64 +956,16 @@ const handleMouseUp = (evt, evtButton) => {
 	if(mouseTarget && (evtButton0 || evtButton2)) {
 		if(mouseTarget === assets || assets.contains(mouseTarget)) {
 			if(!mouseMoved && evtButton === mouseDown) {
-				for(const active of projectPage.querySelectorAll(".active")) {
-					active.classList.remove("active");
-				}
-				assets.classList.add("active");
+				setActive(assets);
 				if(mouseTarget === assets) {
-					for(const selected of assets.querySelectorAll(".asset.selected")) {
-						selected.classList.remove("selected");
+					for(const asset of assets.querySelectorAll(".asset.selected")) {
+						asset.classList.remove("selected");
 					}
-					delete proj[sel].selectedAsset;
+					proj[sel].selectedAsset = null;
 				} else if(mouseTarget.classList.contains("asset")) {
-					if(evtButton === 2 && !(evt.ctrlKey || evt.shiftKey)) {
-						if(!mouseTarget.classList.contains("selected")) {
-							for(const asset of assets.querySelectorAll(".asset.selected")) {
-								if(asset !== mouseTarget) {
-									asset.classList.remove("selected");
-								}
-							}
-							mouseTarget.classList.add("selected");
-							proj[sel].selectedAsset = mouseTarget.id;
-						}
-					} else if(evt.shiftKey) {
-						let selecting = !proj[sel].selectedAsset;
-						const classListMethod = evt.ctrlKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
-						for(const asset of assets.children) {
-							if(asset.id === proj[sel].selectedAsset || asset.id === mouseTarget.id) {
-								if(selecting) {
-									asset.classList[classListMethod]("selected");
-									selecting = false;
-									continue;
-								} else {
-									asset.classList[classListMethod]("selected");
-									if(proj[sel].selectedAsset !== mouseTarget.id) {
-										selecting = true;
-									}
-								}
-							} else if(selecting) {
-								asset.classList[classListMethod]("selected");
-							} else if(!evt.ctrlKey) {
-								asset.classList.remove("selected");
-							}
-						}
-					} else {
-						proj[sel].selectedAsset = mouseTarget.id;
-						if(evt.ctrlKey) {
-							mouseTarget.classList.toggle("selected");
-						} else {
-							let othersSelected = false;
-							for(const asset of assets.querySelectorAll(".asset.selected")) {
-								if(asset !== mouseTarget) {
-									othersSelected = true;
-									asset.classList.remove("selected");
-								}
-							}
-							if(mouseTarget.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
-								delete proj[sel].selectedAsset;
-							}
-						}
-					}
+					selectAsset(mouseTarget, evtButton);
+				} else if(mouseTarget0.classList.contains("close") && mouseTarget0.parentNode.classList.contains("asset")) {
+					confirmRemoveAsset(mouseTarget0.parentNode);
 				}
 			}
 		} else if(evtButton0) {
@@ -986,12 +1034,8 @@ const handleMouseUp = (evt, evtButton) => {
 						}
 					} else if(mouseTarget0 === addAsset) {
 						openCtx(assets);
-					} else if(mouseTarget0.classList.contains("close")) {
-						if(mouseTarget0.parentNode.classList.contains("asset")) {
-							confirmRemoveAsset(mouseTarget0.parentNode);
-						} else if(mouseTarget0.parentNode.classList.contains("tab")) {
-							mouseTarget0.parentNode[_proj].close();
-						}
+					} else if(mouseTarget0.classList.contains("close") && mouseTarget0.parentNode.classList.contains("tab")) {
+						mouseTarget0.parentNode[_proj].close();
 					}
 				}
 			}
@@ -1030,8 +1074,42 @@ window.addEventListener("dblclick", evt => {
 });
 const focused = () => !(document.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
 window.addEventListener("keydown", evt => {
-	if(evt.ctrlKey || evt.metaKey) {
-		if((evt.shiftKey && evt.keyCode === 9) || (!evt.shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
+	superKey = evt.metaKey || evt.ctrlKey;
+	altKey = evt.altKey;
+	shiftKey = evt.shiftKey;
+	if(evt.keyCode === 38) { // `up`
+		if(!ctxMenu.classList.contains("hidden")) {
+			const buttons = ctxMenu.querySelectorAll("button");
+			const focused = ctxMenu.querySelector("button:focus");
+			buttons[focused ? (Array.prototype.indexOf.call(buttons, focused) || buttons.length) - 1 : 0].focus();
+		} else if(focused() && assets.classList.contains("active")) {
+			evt.preventDefault();
+			const allAssets = assets.querySelectorAll(".asset");
+			const asset = allAssets[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(allAssets, document.querySelector(`#${proj[sel].focusedAsset}`)) || allAssets.length) - 1) : 0];
+			if(!superKey) {
+				selectAsset(asset);
+			}
+			proj[sel].focusedAsset = asset.id;
+		}
+	} else if(evt.keyCode === 40) { // `down`
+		if(!ctxMenu.classList.contains("hidden")) {
+			const buttons = ctxMenu.querySelectorAll("button");
+			const focused = ctxMenu.querySelector("button:focus");
+			buttons[((focused ? Array.prototype.indexOf.call(buttons, focused) : -1) + 1) % buttons.length].focus();
+		} else if(focused() && assets.classList.contains("active")) {
+			evt.preventDefault();
+			const allAssets = assets.querySelectorAll(".asset");
+			const asset = allAssets[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(allAssets, document.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % allAssets.length];
+			if(!superKey) {
+				selectAsset(asset);
+			}
+			proj[sel].focusedAsset = asset.id;
+			if(asset.offsetTop - assets.scrollTop > assets.offsetHeight) {
+				assets.scrollTop = assets.offsetHeight + asset.offsetTop - assets.scrollTop;
+			}
+		}
+	} else if(superKey) {
+		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
 			if(focused()) {
 				if(sel === "home") {
 					if(Object.keys(proj).length) {
@@ -1043,7 +1121,7 @@ window.addEventListener("keydown", evt => {
 					select(proj[sel].tab.previousElementSibling[_proj].id);
 				}
 			}
-		} else if(evt.shiftKey) {
+		} else if(shiftKey) {
 			if(evt.keyCode === 73) { // ^`shift`+`I`
 				win.toggleDevTools();
 			} else if(evt.keyCode === 83) { // ^`shift`+`S`
@@ -1071,8 +1149,8 @@ window.addEventListener("keydown", evt => {
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
 			if(focused() && assets.classList.contains("active")) {
-				for(const deselected of assets.querySelectorAll(".asset:not(.selected)")) {
-					deselected.classList.add("selected");
+				for(const asset of assets.querySelectorAll(".asset:not(.selected)")) {
+					asset.classList.add("selected");
 				}
 			}
 		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
@@ -1102,7 +1180,7 @@ window.addEventListener("keydown", evt => {
 				}
 			}
 		}
-	} else if(evt.altKey) {
+	} else if(altKey) {
 		if(focused()) {
 			if(evt.keyCode === 36) { // `alt`+`home`
 				select("home");
@@ -1116,7 +1194,7 @@ window.addEventListener("keydown", evt => {
 		if(!ctxMenu.classList.contains("hidden")) {
 			closeCtx();
 		} else if(focused() && assets.classList.contains("active")) {
-			delete proj[sel].selectedAsset;
+			proj[sel].selectedAsset = null;
 			for(const asset of assets.querySelectorAll(".asset.selected")) {
 				asset.classList.remove("selected");
 			}
@@ -1126,6 +1204,11 @@ window.addEventListener("keydown", evt => {
 		win.setFullScreen(fullScreen);
 		titleBar.classList[fullScreen ? "add" : "remove"]("hidden");
 	}
+});
+window.addEventListener("keyup", evt => {
+	shiftKey = evt.keyCode !== 16 && evt.shiftKey;
+	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
+	altKey = evt.keyCode !== 18 && evt.altKey;
 });
 let notConfirmingClose = true;
 let shouldNotClose = true;
