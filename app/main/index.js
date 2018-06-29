@@ -1,3 +1,4 @@
+"use strict";
 global.Miro = {};
 Miro.magic = {};
 Miro.magic.magic = Miro.magic;
@@ -331,7 +332,13 @@ if(storage.containerSizes instanceof Object) {
 	storage.containerSizes = {};
 }
 store();
-const slashes = /[\\\/]/g;
+const scrollIntoView = elem => {
+	if(elem.offsetTop < elem.parentNode.scrollTop) {
+		elem.parentNode.scrollTop = elem.offsetTop;
+	} else if(elem.offsetTop + elem.offsetHeight > elem.parentNode.scrollTop + elem.parentNode.offsetHeight) {
+		elem.parentNode.scrollTop = elem.offsetTop + elem.offsetHeight - elem.parentNode.offsetHeight;
+	}
+};
 const byName = file => file.name;
 const _index = Symbol("_index");
 let ctxTarget;
@@ -356,7 +363,7 @@ const openCtx = target => {
 			}
 			const itemArray = items[i] instanceof Array;
 			for(const item of itemArray ? items[i] : Object.keys(items[i])) {
-				button = html`<button class="mdc-typography">$${item}</button>`;
+				const button = html`<button class="mdc-typography">$${item}</button>`;
 				if(!itemArray && !items[i][item]) {
 					button.disabled = true;
 				}
@@ -390,6 +397,7 @@ const baseData = {
 	version: 0,
 	scrollAssets: 0
 };
+const slashes = /[\\\/]/g;
 const _proj = Symbol("proj");
 const _saved = Symbol("saved");
 const _name = Symbol("name");
@@ -479,7 +487,9 @@ class Project {
 			asset.classList.remove("focus");
 		}
 		if(this[_focusedAsset] = value) {
-			assets.querySelector(`#${value}`).classList.add("focus");
+			const asset = assets.querySelector(`#${value}`);
+			asset.classList.add("focus");
+			scrollIntoView(asset);
 		}
 	}
 }
@@ -790,11 +800,6 @@ const selectAsset = (target, evtButton) => {
 				proj[sel].selectedAsset = null;
 			}
 		}
-	}
-	if(target.offsetTop < assets.scrollTop) {
-		assets.scrollTop = target.offsetTop;
-	} else if(target.offsetTop + target.offsetHeight > assets.scrollTop + assets.offsetHeight) {
-		assets.scrollTop = target.offsetTop + target.offsetHeight - assets.offsetHeight;
 	}
 };
 let mouseX = 0;
@@ -1108,6 +1113,7 @@ window.addEventListener("keydown", evt => {
 			if(!superKey) {
 				selectAsset(asset);
 			}
+			proj[sel].focusedAsset = asset.id;
 		}
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
