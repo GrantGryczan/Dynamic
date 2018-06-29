@@ -348,10 +348,7 @@ const openCtx = target => {
 	const targetAsset = ctxTarget.classList.contains("asset");
 	if(ctxTarget === assets || targetAsset) {
 		if(targetAsset) {
-			items.push({
-				Remove: true,
-				Rename: assets.querySelectorAll(".asset.selected").length === 1
-			});
+			items.push([`Remove asset${assets.querySelectorAll(".asset.selected").length > 1 ? "s" : ""}`]);
 		}
 		items.push(["Create object", "Create group", "Import image file(s)", "Import audio file(s)"]);
 	}
@@ -832,12 +829,10 @@ const onMouseDown = evt => {
 				const targetAsset = ctxTarget.classList.contains("asset");
 				if(ctxTarget === assets || targetAsset) {
 					if(targetAsset) {
-						mouseTarget0[_index] -= 2;
+						mouseTarget0[_index] -= 1;
 					}
-					if(mouseTarget0[_index] === -2) {
+					if(mouseTarget0[_index] === -1) {
 						confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
-					} else if(mouseTarget0[_index] === -1) {
-						// TODO
 					} else if(mouseTarget0[_index] === 0) {
 						// TODO
 					} else if(mouseTarget0[_index] === 1) {
@@ -894,54 +889,56 @@ window.addEventListener("mousemove", evt => {
 	if(mouseDown === -1) {
 		return;
 	}
-	if(mouseTarget0) {
-		if(mouseTarget0.classList.contains("asset")) {
+	if(mouseTarget) {
+		if(mouseTarget.classList.contains("asset")) {
 			if(!mouseMoved) {
-				selectAsset(mouseTarget0, 2);
+				selectAsset(mouseTarget, 2);
 			}
 			// TODO
-		} else if(mouseTarget0.classList.contains("tab")) {
-			if(mouseTarget0 !== homeTab) {
-				mouseTarget0.style.left = `${evt.clientX - initialTargetPos - targetOffset}px`;
-				const tabWidth = mouseTarget0.offsetWidth + 1;
-				let afterTarget = false;
-				for(let i = 1; i < tabs.children.length; i++) {
-					if(tabs.children[i] === mouseTarget0) {
-						afterTarget = true;
-					} else {
-						if(afterTarget) {
-							if(mouseTarget0.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
-								if(!tabs.children[i].style.left) {
-									tabs.children[i].style.left = `-${tabWidth}px`;
-								}
-							} else if(tabs.children[i].style.left) {
-								tabs.children[i].style.left = "";
-							}
+		} else if(mouseTarget0) {
+			if(mouseTarget0.classList.contains("tab")) {
+				if(mouseTarget0 !== homeTab) {
+					mouseTarget0.style.left = `${evt.clientX - initialTargetPos - targetOffset}px`;
+					const tabWidth = mouseTarget0.offsetWidth + 1;
+					let afterTarget = false;
+					for(let i = 1; i < tabs.children.length; i++) {
+						if(tabs.children[i] === mouseTarget0) {
+							afterTarget = true;
 						} else {
-							if(mouseTarget0.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
-								if(!tabs.children[i].style.left) {
-									tabs.children[i].style.left = `${tabWidth}px`;
+							if(afterTarget) {
+								if(mouseTarget0.offsetLeft >= homeTab.offsetWidth + 1 + (i - 1.5) * tabWidth) {
+									if(!tabs.children[i].style.left) {
+										tabs.children[i].style.left = `-${tabWidth}px`;
+									}
+								} else if(tabs.children[i].style.left) {
+									tabs.children[i].style.left = "";
 								}
-							} else if(tabs.children[i].style.left) {
-								tabs.children[i].style.left = "";
+							} else {
+								if(mouseTarget0.offsetLeft <= homeTab.offsetWidth + 1 + (i - 0.5) * tabWidth) {
+									if(!tabs.children[i].style.left) {
+										tabs.children[i].style.left = `${tabWidth}px`;
+									}
+								} else if(tabs.children[i].style.left) {
+									tabs.children[i].style.left = "";
+								}
 							}
 						}
 					}
 				}
-			}
-		} else if(mouseTarget0.classList.contains("handle")) {
-			let value = targetOffset;
-			if(mouseTarget0.parentNode === assetContainer) {
-				value += evt.clientX;
-			} else if(mouseTarget0.parentNode === propertyContainer) {
-				value += document.body.offsetWidth - evt.clientX;
-			} else if(mouseTarget0.parentNode === timelineContainer) {
-				value += document.body.offsetHeight - evt.clientY;
-			}
-			const horizontalTarget = mouseTarget0.classList.contains("horizontal");
-			mouseTarget0.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget0.parentNode.id] = Math.max(185, value)}px`;
-			if(!horizontalTarget) {
-				mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
+			} else if(mouseTarget0.classList.contains("handle")) {
+				let value = targetOffset;
+				if(mouseTarget0.parentNode === assetContainer) {
+					value += evt.clientX;
+				} else if(mouseTarget0.parentNode === propertyContainer) {
+					value += document.body.offsetWidth - evt.clientX;
+				} else if(mouseTarget0.parentNode === timelineContainer) {
+					value += document.body.offsetHeight - evt.clientY;
+				}
+				const horizontalTarget = mouseTarget0.classList.contains("horizontal");
+				mouseTarget0.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget0.parentNode.id] = Math.max(185, value)}px`;
+				if(!horizontalTarget) {
+					mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
+				}
 			}
 		}
 	}
