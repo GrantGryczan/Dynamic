@@ -570,7 +570,7 @@ const confirmRemoveAsset = assetElem => {
 const confirmRemoveAssets = assetElems => {
 	if(assetElems.length === 1) {
 		confirmRemoveAsset(assetElems[0]);
-	} else if(assets.length > 1) {
+	} else if(assetElems.length > 1) {
 		new Miro.dialog("Remove Assets", html`
 			Are you sure you want to remove all those assets?<br>
 			This cannot be undone.
