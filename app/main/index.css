@@ -135,6 +135,7 @@ body.focus #titleBar button:active {
 	top: 3px;
 	right: 3px;
 	border-radius: 50%;
+	pointer-events: initial;
 	background-color: inherit;
 	transform: scale(0);
 	transition: transform 0.08s ease-out;
@@ -144,10 +145,10 @@ body.focus #titleBar button:active {
 	opacity: 0.25;
 	content: "close";
 }
-:hover > .close, .focus > .close {
+:hover > .close {
 	transform: scale(1);
 }
-.close:hover::after, .asset.focus::after {
+.close:hover::after {
 	opacity: 0.625;
 }
 .close:active::after {
@@ -348,31 +349,68 @@ body.focus #titleBar button:active {
 	background-color: #e8e8e8;
 }
 .asset {
+	overflow: visible;
+	pointer-events: none;
+}
+.assetBar {
 	display: flex;
 	position: relative;
 	height: 24px;
+	pointer-events: initial;
 }
-.asset:hover, .asset.focus {
+.asset.focus > .assetBar {
 	background-color: rgba(128, 0, 255, 0.05);
 }
-.asset.selected {
+.asset.selected > .assetBar {
 	background-color: rgba(128, 0, 255, 0.1);
 }
-#assets.active .asset.selected {
+#assets.active .asset.selected > .assetBar {
 	background-color: rgba(128, 0, 255, 0.15);
 }
-.asset .icon {
+.assetBar > .icon {
 	min-width: 24px;
 	margin-right: 4px;
 	pointer-events: none;
 }
-.asset .label {
+.asset.group > .assetBar > .icon {
+	pointer-events: initial;
+	cursor: pointer;
+	transform: rotate(0);
+	transition: transform 0.08s ease-out;
+}
+.asset.group > .assetBar > .icon::after {
+	opacity: 0.25;
+	content: "chevron_right";
+}
+.asset.group > .assetBar > .icon:hover::after {
+	opacity: 0.625;
+}
+.asset.group > .assetBar > .icon:active::after {
+	opacity: 1;
+}
+.asset.group.open > .assetBar > .icon {
+	transform: rotate(90deg);
+}
+.assetBar > .label {
 	pointer-events: none;
 	line-height: 24px;
 	text-overflow: ellipsis;
 }
-.asset .close {
+.assetBar > .close {
 	background-color: transparent;
+}
+.assetChildren {
+	margin-left: 24px;
+	overflow: visible;
+}
+.asset.group:not(.open) > .assetChildren {
+	display: none;
+}
+#assetDrag {
+	width: 100%;
+	height: 2px;
+	margin: -1px 0 -1px 0;
+	background-color: #8000ff;
 }
 #propertyContainer > .handle {
 	left: 0;

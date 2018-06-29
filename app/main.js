@@ -20,6 +20,10 @@ if(electron.app.makeSingleInstance(([, fileToOpen]) => {
 	return;
 }
 const rootURL = `file://${__dirname}`;
+electron.crashReporter.start({
+	submitURL: "https://api.miroware.io/crash",
+	companyName: "Miroware"
+});
 let noClosedIntent = true;
 electron.app.once("window-all-closed", () => {
 	if(noClosedIntent) {
