@@ -251,7 +251,9 @@ const exportProj = toolbar.querySelector("#exportProj");
 const homePage = container.querySelector("#homePage");
 const projectPage = container.querySelector("#projectPage");
 const assetContainer = container.querySelector("#assetContainer");
-const addAsset = assetContainer.querySelector("#addAsset");
+const assetHead = assetContainer.querySelector("#assetHead");
+const addAsset = assetHead.querySelector("#addAsset");
+const sortAssets = assetHead.querySelector("#sortAssets");
 const assets = assetContainer.querySelector("#assets");
 const assetDrag = assets.querySelector("#assetDrag");
 const propertyContainer = container.querySelector("#propertyContainer");
@@ -341,7 +343,9 @@ const scrollIntoView = elem => {
 	}
 };
 const byID = asset => asset.id;
-const byName = asset => asset.name;
+const byLowerCaseName = asset => asset.name.toLowerCase();
+const byAssets = assetElem => assetElem[_asset];
+const assetElemsAlphabetically = assetElem => `${(assetElem[_asset].type === "group" ? "a" : (assetElem[_asset].type === "obj" ? "b" : `c${assetElem[_asset].mime.startsWith("image/") ? "a" : "b"}`))} ${assetElem[_asset].name.toLowerCase()}`;
 const _index = Symbol("_index");
 let ctxTarget;
 const openCtx = target => {
@@ -354,6 +358,8 @@ const openCtx = target => {
 			items.push(["Remove asset(s)"]);
 		}
 		items.push(["Create object", "Create group", "Import image file(s)", "Import audio file(s)"]);
+	} else if(ctxTarget === sortAssets) {
+		items.push(["Reverse", "Sort alphabetically"]);
 	}
 	if(items.length) {
 		let itemIndex = 0;
@@ -510,11 +516,10 @@ const appendAsset = asset => {
 			</div>
 		`;
 	} else if(asset.type === "file") {
-		const mime = asset.mime.slice(0, asset.mime.indexOf("/"));
 		assetElem = html`
 			<div id="asset_${asset.id}" class="asset file" title="$${asset.name}">
 				<div class="assetBar">
-					<div class="icon material-icons">${mime === "image" ? "image" : (mime === "audio" ? "audiotrack" : "error")}</div>
+					<div class="icon material-icons">${asset.mime.startsWith("image/") ? "image" : "audiotrack"}</div>
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
 				</div>
@@ -552,9 +557,7 @@ const removeAsset = assetElem => {
 		proj[sel].selectedAsset = null;
 	}
 	if(assetElem.classList.contains("group")) {
-		for(const child of assetElem.lastElementChild.children) {
-			assetElem.before(child);
-		}
+		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
 	}
 	assetElem.remove();
 };
@@ -636,9 +639,7 @@ const select = id => {
 		homeTab.classList.add("current");
 		homePage.classList.remove("hidden");
 	} else {
-		for(const asset of proj[sel].data.assets) {
-			appendAsset(asset);
-		}
+		proj[sel].data.assets.forEach(appendAsset);
 		for(const id of proj[sel].selected) {
 			projectPage.querySelector(`#${id}`).classList.add("selected");
 		}
@@ -853,9 +854,9 @@ const addFiles = async files => {
 			`);
 			continue;
 		}
-		const names = proj[sel].data.assets.map(byName);
+		const names = proj[sel].data.assets.map(byLowerCaseName);
 		let name = files[i].name;
-		for(let j = 2; names.includes(name); j++) {
+		for(let j = 2; names.includes(name.toLowerCase()); j++) {
 			name = `${files[i].name} ${j}`;
 		}
 		const asset = {
@@ -930,9 +931,9 @@ const onMouseDown = evt => {
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 							assetElem.classList.remove("selected");
 						}
-						const names = proj[sel].data.assets.map(byName);
+						const names = proj[sel].data.assets.map(byLowerCaseName);
 						let name = "Object";
-						for(let i = 2; names.includes(name); i++) {
+						for(let i = 2; names.includes(name.toLowerCase()); i++) {
 							name = `Object ${i}`;
 						}
 						const asset = {
@@ -952,9 +953,9 @@ const onMouseDown = evt => {
 						for(const assetElem of allSelected) {
 							assetElem.classList.remove("selected");
 						}
-						const names = proj[sel].data.assets.map(byName);
+						const names = proj[sel].data.assets.map(byLowerCaseName);
 						let name = "Group";
-						for(let i = 2; names.includes(name); i++) {
+						for(let i = 2; names.includes(name.toLowerCase()); i++) {
 							name = `Group ${i}`;
 						}
 						const asset = {
@@ -966,9 +967,7 @@ const onMouseDown = evt => {
 						const assetGroup = appendAsset(asset);
 						if(ctxTarget.classList.contains("assetBar")) {
 							ctxTarget.parentNode.before(assetGroup);
-							for(const assetElem of allSelected) {
-								assetGroup.lastElementChild.appendChild(assetElem);
-							}
+							allSelected.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
 						}
 						assetGroup.classList.add("open");
 						storeAssets();
@@ -980,6 +979,21 @@ const onMouseDown = evt => {
 					} else if(mouseTarget0[_index] === 3) { // Import audio file(s)
 						assetInput.accept = "audio/*";
 						assetInput.click();
+					}
+				} else if(ctxTarget === sortAssets) {
+					if(mouseTarget0[_index] === 0) { // Reverse
+						for(const assetElem of assets.querySelectorAll(".asset")) {
+							assetElem.parentNode.firstChild.before(assetElem);
+						}
+						storeAssets();
+					} else if(mouseTarget0[_index] === 1) { // Sort alphabetically
+						for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
+							const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
+							for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
+								assetChildren.lastChild.after(assetElems.find(assetElem => assetElem[_asset].name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+							}
+						}
+						storeAssets();
 					}
 				}
 				closeCtx();
@@ -1089,7 +1103,7 @@ window.addEventListener("mousemove", evt => {
 					value += document.body.offsetHeight - evt.clientY;
 				}
 				const horizontalTarget = mouseTarget0.classList.contains("horizontal");
-				mouseTarget0.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget0.parentNode.id] = Math.max(185, value)}px`;
+				mouseTarget0.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget0.parentNode.id] = Math.max(150, value)}px`;
 				if(!horizontalTarget) {
 					mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
 				}
@@ -1210,8 +1224,12 @@ const handleMouseUp = (evt, evtButton) => {
 						} else if(mouseTarget0 === exportProj) {
 							// TODO
 						}
-					} else if(mouseTarget0 === addAsset) {
-						openCtx(assets);
+					} else if(mouseTarget0.parentNode === assetHead) {
+						if(mouseTarget0 === addAsset) {
+							openCtx(assets);
+						} else if(mouseTarget0 === sortAssets) {
+							openCtx(sortAssets);
+						}
 					} else if(mouseTarget0.classList.contains("close") && mouseTarget0.parentNode.classList.contains("tab")) {
 						mouseTarget0.parentNode[_proj].close();
 					}
