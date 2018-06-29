@@ -520,9 +520,19 @@ const appendAsset = asset => {
 				</div>
 			</div>
 		`;
+	} else if(asset.type === "obj") {
+		assetElem = html`
+			<div id="asset_${asset.id}" class="asset obj" title="$${asset.name}">
+				<div class="assetBar">
+					<div class="icon material-icons">widgets</div>
+					<div class="label">$${asset.name}</div>
+					<div class="close material-icons"></div>
+				</div>
+			</div>
+		`;
 	}
 	assetElem[_asset] = asset;
-	(assetElem[_asset].parent ? document.querySelector(`#asset_${assetElem[_asset].parent}`).lastElementChild : assets).appendChild(assetElem);
+	(assetElem[_asset].parent ? assets.querySelector(`#asset_${assetElem[_asset].parent}`).lastElementChild : assets).appendChild(assetElem);
 	return assetElem;
 };
 const storeAssets = () => {
@@ -724,7 +734,7 @@ const save = async as => {
 	}
 };
 const setActive = elem => {
-	for(const active of document.querySelectorAll(".active")) {
+	for(const active of container.querySelectorAll(".active")) {
 		active.classList.remove("active");
 	}
 	elem.classList.add("active");
@@ -819,13 +829,16 @@ const selectAsset = (target, evtButton) => {
 const assetUID = () => uid(proj[sel].data.assets.map(byID));
 const addFiles = async files => {
 	let assetParent = assets;
-	const allSelected = assets.querySelectorAll(".asset.selected");
-	if(allSelected.length === 1 && allSelected[0].classList.contains("group")) {
-		assetParent = allSelected[0].lastElementChild;
+	if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
+		if(ctxTarget.parentNode.classList.contains("group")) {
+			assetParent = ctxTarget.parentNode.lastElementChild;
+		} else if(ctxTarget.parentNode[_asset].parent) {
+			assetParent = assets.querySelector(`#asset_${ctxTarget.parentNode[_asset].parent}`).lastElementChild;
+		}
 	}
 	setActive(assets);
 	loadProgress(0);
-	for(const assetElem of allSelected) {
+	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 		assetElem.classList.remove("selected");
 	}
 	for(let i = 0; i < files.length; i++) {
@@ -905,9 +918,34 @@ const onMouseDown = evt => {
 					if(mouseTarget0[_index] === -1) { // Remove asset(s)
 						confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 					} else if(mouseTarget0[_index] === 0) { // Create object
+						let assetParent = assets;
+						if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
+							if(ctxTarget.parentNode.classList.contains("group")) {
+								assetParent = ctxTarget.parentNode.lastElementChild;
+							} else if(ctxTarget.parentNode[_asset].parent) {
+								assetParent = assets.querySelector(`#asset_${ctxTarget.parentNode[_asset].parent}`).lastElementChild;
+							}
+						}
 						setActive(assets);
+						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+							assetElem.classList.remove("selected");
+						}
+						const names = proj[sel].data.assets.map(byName);
+						let name = "Object";
+						for(let i = 2; names.includes(name); i++) {
+							name = `Object ${i}`;
+						}
+						const asset = {
+							id: assetUID(),
+							type: "obj",
+							name
+						};
+						proj[sel].data.assets.push(asset);
+						const assetObj = appendAsset(asset);
+						assetParent.appendChild(assetObj);
 						storeAssets();
-						// TODO
+						assetObj.classList.add("selected");
+						proj[sel].selectedAsset = assetObj.id;
 					} else if(mouseTarget0[_index] === 1) { // Create group
 						setActive(assets);
 						const allSelected = assets.querySelectorAll(".asset.selected");
@@ -1210,7 +1248,7 @@ window.addEventListener("dblclick", evt => {
 		}
 	}
 });
-const focused = () => !(document.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
+const focused = () => !(container.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
 window.addEventListener("keydown", evt => {
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
@@ -1223,7 +1261,7 @@ window.addEventListener("keydown", evt => {
 		} else if(focused() && assets.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
-			const assetElem = allAssets[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(allAssets, document.querySelector(`#${proj[sel].focusedAsset}`)) || allAssets.length) - 1) : 0];
+			const assetElem = allAssets[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(allAssets, assets.querySelector(`#${proj[sel].focusedAsset}`)) || allAssets.length) - 1) : 0];
 			if(!superKey) {
 				selectAsset(assetElem);
 			}
@@ -1237,7 +1275,7 @@ window.addEventListener("keydown", evt => {
 		} else if(focused() && assets.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
-			const assetElem = allAssets[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(allAssets, document.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % allAssets.length];
+			const assetElem = allAssets[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(allAssets, assets.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % allAssets.length];
 			if(!superKey) {
 				selectAsset(assetElem);
 			}
