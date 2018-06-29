@@ -343,6 +343,7 @@ const byName = file => file.name;
 const _index = Symbol("_index");
 let ctxTarget;
 const openCtx = target => {
+	closeCtx();
 	ctxTarget = target;
 	const items = [];
 	const targetAsset = ctxTarget.classList.contains("asset");
@@ -650,6 +651,7 @@ const unzip = data => new Promise((resolve, reject) => {
 	});
 });
 const save = async as => {
+	closeCtx();
 	if(proj[sel] && (as || !proj[sel].saved) && (proj[sel].location = (!as && proj[sel].location) || electron.remote.dialog.showSaveDialog(win, fileOptions))) {
 		loadIndeterminate(true);
 		try {
@@ -670,6 +672,7 @@ const setActive = elem => {
 	elem.classList.add("active");
 };
 const open = async location => {
+	closeCtx();
 	if(!location) {
 		location = electron.remote.dialog.showOpenDialog(win, fileOptions);
 		if(location) {
@@ -1087,7 +1090,7 @@ window.addEventListener("keydown", evt => {
 	if(evt.keyCode === 38) { // `up`
 		if(!ctxMenu.classList.contains("hidden")) {
 			const buttons = ctxMenu.querySelectorAll("button");
-			const focused = ctxMenu.querySelector("button:focus");
+			const focused = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
 			buttons[focused ? (Array.prototype.indexOf.call(buttons, focused) || buttons.length) - 1 : 0].focus();
 		} else if(focused() && assets.classList.contains("active")) {
 			evt.preventDefault();
@@ -1101,7 +1104,7 @@ window.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 40) { // `down`
 		if(!ctxMenu.classList.contains("hidden")) {
 			const buttons = ctxMenu.querySelectorAll("button");
-			const focused = ctxMenu.querySelector("button:focus");
+			const focused = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
 			buttons[((focused ? Array.prototype.indexOf.call(buttons, focused) : -1) + 1) % buttons.length].focus();
 		} else if(focused() && assets.classList.contains("active")) {
 			evt.preventDefault();
