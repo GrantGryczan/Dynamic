@@ -43,7 +43,7 @@
 				<div id="topPanels">
 					<div id="assetContainer" class="panel">
 						<div class="contents">
-							<div id="assetHead">
+							<div class="head">
 								<span class="label spaced">Assets</span><button id="addAsset" class="mdc-fab spaced" title="Add asset" type="button">
 									<span class="mdc-fab__icon material-icons">add</span>
 								</button><button id="sortAssets" class="mdc-fab spaced" title="Sort assets" type="button">
@@ -58,7 +58,20 @@
 					</div>
 					<div id="contentContainer"></div>
 					<div id="propertyContainer" class="panel">
-						<div class="contents"></div>
+						<div class="contents">
+							<div class="head">
+								<span class="label spaced">Properties</span>
+							</div>
+							<div id="properties">
+								<form class="property hidden" required data-property="name">
+									<div class="mdc-text-field">
+										<input type="text" id="nameInput" class="mdc-text-field__input">
+										<label class="mdc-floating-label" for="nameInput">Name</label>
+										<div class="mdc-line-ripple"></div>
+									</div>
+								</form>
+							</div>
+						</div>
 						<div class="handle horizontal"></div>
 					</div>
 				</div>

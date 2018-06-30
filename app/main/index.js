@@ -251,12 +251,13 @@ const exportProj = toolbar.querySelector("#exportProj");
 const homePage = container.querySelector("#homePage");
 const projectPage = container.querySelector("#projectPage");
 const assetContainer = container.querySelector("#assetContainer");
-const assetHead = assetContainer.querySelector("#assetHead");
+const assetHead = assetContainer.querySelector(".head");
 const addAsset = assetHead.querySelector("#addAsset");
 const sortAssets = assetHead.querySelector("#sortAssets");
 const assets = assetContainer.querySelector("#assets");
 const assetDrag = assets.querySelector("#assetDrag");
 const propertyContainer = container.querySelector("#propertyContainer");
+const properties = container.querySelector("#properties");
 const timelineContainer = container.querySelector("#timelineContainer");
 const ctxMenu = container.querySelector("#ctxMenu");
 const fs = require("fs-extra");
@@ -342,10 +343,6 @@ const scrollIntoView = elem => {
 		elem.parentNode.scrollTop = elem.offsetTop + elem.offsetHeight - elem.parentNode.offsetHeight;
 	}
 };
-const byID = asset => asset.id;
-const byLowerCaseName = asset => asset.name.toLowerCase();
-const byAssets = assetElem => assetElem[_asset];
-const assetElemsAlphabetically = assetElem => `${(assetElem[_asset].type === "group" ? "a" : (assetElem[_asset].type === "obj" ? "b" : `c${assetElem[_asset].mime.startsWith("image/") ? "a" : "b"}`))} ${assetElem[_asset].name.toLowerCase()}`;
 const _index = Symbol("_index");
 let ctxTarget;
 const openCtx = target => {
@@ -355,11 +352,15 @@ const openCtx = target => {
 	const targetAsset = ctxTarget.classList.contains("assetBar");
 	if(ctxTarget === assets || targetAsset) {
 		if(targetAsset) {
-			items.push(["Remove asset(s)"]);
+			const singular = assets.querySelectorAll(".asset.selected").length === 1;
+			items.push({
+				[`Remove asset${singular ? "" : "s"}`]: true,
+				"Rename asset": singular
+			});
 		}
 		items.push(["Create object", "Create group", "Import image file(s)", "Import audio file(s)"]);
 	} else if(ctxTarget === sortAssets) {
-		items.push(["Reverse", "Sort alphabetically"]);
+		items.push(["Sort by asset type", "Sort alphabetically", "Reverse"]);
 	}
 	if(items.length) {
 		let itemIndex = 0;
@@ -411,13 +412,13 @@ const _location = Symbol("location");
 const _selectedAsset = Symbol("selectedAsset");
 const _focusedAsset = Symbol("focusedAsset");
 class Project {
-	constructor(thisProject) {
-		if(!(thisProject instanceof Object)) {
-			thisProject = {};
+	constructor(projectData) {
+		if(!(projectData instanceof Object)) {
+			projectData = {};
 		}
-		const validLocation = typeof thisProject.location === "string";
-		if(typeof thisProject.name === "string") {
-			this[_name] = thisProject.name;
+		const validLocation = typeof projectData.location === "string";
+		if(typeof projectData.name === "string") {
+			this[_name] = projectData.name;
 		} else if(!validLocation) {
 			const projects = Object.values(proj);
 			let i = 0;
@@ -426,14 +427,14 @@ class Project {
 			} while(projects.some(project => project.name === this[_name]));
 		}
 		tabs.appendChild(this.tab = html`
-			<div class="tab${(this[_saved] = !!thisProject.saved) ? " saved" : ""}">
+			<div class="tab${(this[_saved] = !!projectData.saved) ? " saved" : ""}">
 				<div class="label">$${this[_name]}</div>
 				<div class="close material-icons"></div>
 			</div>
 		`);
 		this.tab[_proj] = this;
-		this.location = validLocation ? thisProject.location : null;
-		this.data = thisProject.data || {
+		this.location = validLocation ? projectData.location : null;
+		this.data = projectData.data || {
 			...baseData,
 			assets: []
 		};
@@ -502,6 +503,39 @@ class Project {
 	}
 }
 const _asset = Symbol("asset");
+class Asset {
+	constructor(assetData) {
+		if(!(assetData instanceof Object)) {
+			throw new MiroError("The `assetData` value must be an object.");
+		}
+		this.id = assetData.id || uid(proj[sel].data.assets.map(byID));
+		this.type = assetData.type;
+		this[_name] = assetData.name;
+		if(this.type === "file") {
+			this.mime = assetData.mime;
+			this.data = assetData.data;
+		}
+		if(assetData.parent) {
+			this.parent = assetData.parent;
+		}
+	}
+	get name() {
+		return this[_name];
+	}
+	set name(value) {
+		this[_name] = value;
+		const assetElem = assets.querySelector(`#asset_${this.id}`);
+		if(assetElem) {
+			assetElem.querySelector(".label").textContent = assetElem.title = value;
+		}
+	}
+	toJSON() {
+		return {
+			...this,
+			name: this.name
+		};
+	}
+}
 const appendAsset = asset => {
 	let assetElem;
 	if(asset.type === "group") {
@@ -560,6 +594,7 @@ const removeAsset = assetElem => {
 		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
 	}
 	assetElem.remove();
+	updateProperties();
 };
 const confirmRemoveAsset = assetElem => {
 	const actuallyRemoveAsset = value => {
@@ -602,6 +637,7 @@ const toggleAssetGroup = assetGroup => {
 		}
 	}
 	proj[sel].selectedAsset = null;
+	updateProperties();
 }
 const select = id => {
 	if(!proj[id]) {
@@ -650,6 +686,7 @@ const select = id => {
 			assets.querySelector(`#${proj[sel].focusedAsset}`).classList.add("focus");
 		}
 		saveProj.disabled = proj[sel].saved;
+		updateProperties();
 		proj[sel].tab.classList.add("current");
 		projectPage.classList.remove("hidden");
 		assets.scrollTop = proj[sel].scrollAssets;
@@ -668,10 +705,10 @@ const fileOptions = {
 };
 const block = state => {
 	const classListMethod = state ? "add": "remove";
-	tabs.classList[classListMethod]("disabled");
-	toolbar.classList[classListMethod]("disabled");
+	tabs.classList[classListMethod]("blocked");
+	toolbar.classList[classListMethod]("blocked");
 	if(proj[sel]) {
-		projectPage.classList[classListMethod]("disabled");
+		projectPage.classList[classListMethod]("blocked");
 	}
 };
 const loadIndeterminate = value => {
@@ -735,10 +772,13 @@ const save = async as => {
 	}
 };
 const setActive = elem => {
-	for(const active of container.querySelectorAll(".active")) {
+	const active = container.querySelector(".active");
+	if(active) {
 		active.classList.remove("active");
 	}
-	elem.classList.add("active");
+	if(elem) {
+		elem.classList.add("active");
+	}
 };
 const open = async location => {
 	closeCtx();
@@ -754,6 +794,9 @@ const open = async location => {
 		try {
 			if((data = JSON.parse(await unzip(await fs.readFile(location)))).service !== "Miroware Dynamic") {
 				throw null;
+			}
+			for(let i = 0; i < data.assets.length; i++) {
+				data.assets[i] = new Asset(data.assets[i]);
 			}
 		} catch(err) {
 			new Miro.dialog("Error", "That is not a valid MWD file.");
@@ -826,8 +869,26 @@ const selectAsset = (target, evtButton) => {
 			}
 		}
 	}
+	updateProperties();
 };
-const assetUID = () => uid(proj[sel].data.assets.map(byID));
+const propElems = properties.querySelectorAll(".property");
+const prop = {};
+for(const propElem of propElems) {
+	prop[propElem.getAttribute("data-property")] = propElem;
+}
+const updateProperties = () => {
+	for(const propElem of propElems) {
+		propElem.classList.add("hidden");
+	}
+	const allSelected = assets.querySelectorAll(".asset.selected");
+	if(allSelected.length === 1) {
+		prop.name.elements[0].value = allSelected[0][_asset].name;
+		prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
+		prop.name.classList.remove("hidden");
+	}
+};
+const byLowerCaseName = asset => asset.name.toLowerCase();
+const byID = asset => asset.id;
 const addFiles = async files => {
 	let assetParent = assets;
 	if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
@@ -859,13 +920,12 @@ const addFiles = async files => {
 		for(let j = 2; names.includes(name.toLowerCase()); j++) {
 			name = `${files[i].name} ${j}`;
 		}
-		const asset = {
-			id: assetUID(),
+		const asset = new Asset({
 			type: "file",
 			name,
 			mime: files[i].type,
 			data
-		};
+		});
 		proj[sel].data.assets.push(asset);
 		const assetFile = appendAsset(asset);
 		assetParent.appendChild(assetFile);
@@ -875,6 +935,7 @@ const addFiles = async files => {
 		}
 	}
 	storeAssets();
+	updateProperties();
 	loadProgress(1);
 };
 const assetInput = document.createElement("input");
@@ -894,6 +955,9 @@ let mouseMoved = false;
 let mouseUp = 0;
 let initialTargetPos;
 let targetOffset;
+const byAssets = assetElem => assetElem[_asset];
+const numericAssetType = asset => asset.type === "group" ? 0 : (asset.type === "obj" ? 1 : (asset.mime.startsWith("image/") ? 2 : 3));
+const assetElemsAlphabetically = assetElem => `${"abcd"[numericAssetType(assetElem[_asset])]} ${assetElem[_asset].name.toLowerCase()}`;
 const onMouseDown = evt => {
 	if(mouseDown !== -1) {
 		onMouseUp(evt);
@@ -909,15 +973,22 @@ const onMouseDown = evt => {
 		mouseTarget2 = evt.target;
 	}
 	if(mouseTarget !== ctxMenu) {
+		if(assetContainer.contains(mouseTarget)) {
+			setActive(assets);
+		} else if(!ctxMenu.contains(mouseTarget)) {
+			setActive();
+		}
 		if(!ctxMenu.classList.contains("hidden")) {
 			if(mouseTarget0 && ctxMenu.contains(mouseTarget0)) {
 				const targetAsset = ctxTarget.classList.contains("assetBar");
 				if(ctxTarget === assets || targetAsset) {
 					if(targetAsset) {
-						mouseTarget0[_index] -= 1;
+						mouseTarget0[_index] -= 2;
 					}
-					if(mouseTarget0[_index] === -1) { // Remove asset(s)
+					if(mouseTarget0[_index] === -2) { // Remove asset(s)
 						confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
+					} else if(mouseTarget0[_index] === -1) { // Rename asset
+						setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
 					} else if(mouseTarget0[_index] === 0) { // Create object
 						let assetParent = assets;
 						if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
@@ -936,17 +1007,17 @@ const onMouseDown = evt => {
 						for(let i = 2; names.includes(name.toLowerCase()); i++) {
 							name = `Object ${i}`;
 						}
-						const asset = {
-							id: assetUID(),
+						const asset = new Asset({
 							type: "obj",
 							name
-						};
+						});
 						proj[sel].data.assets.push(asset);
 						const assetObj = appendAsset(asset);
 						assetParent.appendChild(assetObj);
 						storeAssets();
 						assetObj.classList.add("selected");
 						proj[sel].selectedAsset = assetObj.id;
+						updateProperties();
 					} else if(mouseTarget0[_index] === 1) { // Create group
 						setActive(assets);
 						const allSelected = assets.querySelectorAll(".asset.selected");
@@ -958,11 +1029,10 @@ const onMouseDown = evt => {
 						for(let i = 2; names.includes(name.toLowerCase()); i++) {
 							name = `Group ${i}`;
 						}
-						const asset = {
-							id: assetUID(),
+						const asset = new Asset({
 							type: "group",
 							name
-						};
+						});
 						proj[sel].data.assets.push(asset);
 						const assetGroup = appendAsset(asset);
 						if(ctxTarget.classList.contains("assetBar")) {
@@ -973,6 +1043,7 @@ const onMouseDown = evt => {
 						storeAssets();
 						assetGroup.classList.add("selected");
 						proj[sel].selectedAsset = assetGroup.id;
+						updateProperties();
 					} else if(mouseTarget0[_index] === 2) { // Import image file(s)
 						assetInput.accept = "image/*";
 						assetInput.click();
@@ -981,9 +1052,48 @@ const onMouseDown = evt => {
 						assetInput.click();
 					}
 				} else if(ctxTarget === sortAssets) {
-					if(mouseTarget0[_index] === 0) { // Reverse
-						for(const assetElem of assets.querySelectorAll(".asset")) {
-							assetElem.parentNode.firstChild.before(assetElem);
+					if(mouseTarget0[_index] === 0) { // Sort by asset type
+						for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
+							const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
+							let afterGroup = null;
+							let afterObj = null;
+							let afterImage = null;
+							for(const assetElem of assetElems) {
+								if(assetElem.classList.contains("obj")) {
+									if(!afterGroup) {
+										afterGroup = assetElem;
+									}
+								} else if(assetElem.classList.contains("file")) {
+									if(assetElem[_asset].mime.startsWith("image/")) {
+										if(!afterObj) {
+											afterObj = assetElem;
+										}
+									} else {
+										if(!afterImage) {
+											afterImage = assetElem;
+										}
+									}
+								}
+							}
+							if(!afterObj) {
+								afterObj = afterImage;
+							}
+							if(!afterGroup) {
+								afterGroup = afterObj;
+							}
+							for(const assetElem of assetElems) {
+								if(assetElem.classList.contains("group")) {
+									assetChildren.insertBefore(assetElem, afterGroup);
+								} else if(assetElem.classList.contains("obj")) {
+									assetChildren.insertBefore(assetElem, afterObj);
+								} else if(assetElem.classList.contains("file")) {
+									if(assetElem[_asset].mime.startsWith("image/")) {
+										assetChildren.insertBefore(assetElem, afterImage);
+									} else {
+										assetChildren.appendChild(assetElem);
+									}
+								}
+							}
 						}
 						storeAssets();
 					} else if(mouseTarget0[_index] === 1) { // Sort alphabetically
@@ -992,6 +1102,11 @@ const onMouseDown = evt => {
 							for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
 								assetChildren.lastChild.after(assetElems.find(assetElem => assetElem[_asset].name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
 							}
+						}
+						storeAssets();
+					} else if(mouseTarget0[_index] === 2) { // Reverse
+						for(const assetElem of assets.querySelectorAll(".asset")) {
+							assetElem.parentNode.firstChild.before(assetElem);
 						}
 						storeAssets();
 					}
@@ -1030,8 +1145,8 @@ const onMouseDown = evt => {
 		}
 	}
 };
-window.addEventListener("mousedown", onMouseDown);
-window.addEventListener("mousemove", evt => {
+document.addEventListener("mousedown", onMouseDown, true);
+document.addEventListener("mousemove", evt => {
 	if(evt.clientX === mouseX && evt.clientY === mouseY) {
 		return;
 	}
@@ -1111,7 +1226,7 @@ window.addEventListener("mousemove", evt => {
 		}
 	}
 	mouseMoved = true;
-});
+}, true);
 let originalMouseTarget;
 const makeTabRough = () => {
 	originalMouseTarget.classList.remove("smooth");
@@ -1128,13 +1243,9 @@ const handleMouseUp = (evt, evtButton) => {
 	}
 	const evtButton0 = evtButton === 0;
 	const evtButton2 = evtButton === 2;
-	if(evtButton2 && evt.target === mouseTarget2 && mouseTarget2 !== ctxMenu && !ctxMenu.contains(mouseTarget2)) {
-		openCtx(mouseTarget2);
-	}
 	if(mouseTarget && (evtButton0 || evtButton2)) {
 		if(mouseTarget === assets || assets.contains(mouseTarget)) {
 			if(evtButton === mouseDown) {
-				setActive(assets);
 				if(mouseTarget.classList.contains("assetBar") && mouseMoved) {
 					for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 						try {
@@ -1149,6 +1260,7 @@ const handleMouseUp = (evt, evtButton) => {
 							assetElem.classList.remove("selected");
 						}
 						proj[sel].selectedAsset = null;
+						updateProperties();
 					} else if(mouseTarget.classList.contains("assetBar")) {
 						selectAsset(mouseTarget.parentNode, evtButton);
 					} else if(evtButton0 && mouseTarget0.parentNode.classList.contains("assetBar")) {
@@ -1237,6 +1349,9 @@ const handleMouseUp = (evt, evtButton) => {
 			}
 		}
 	}
+	if(evtButton2 && evt.target === mouseTarget2 && mouseTarget2 !== ctxMenu && !ctxMenu.contains(mouseTarget2)) {
+		openCtx(mouseTarget2);
+	}
 };
 const onMouseUp = evt => {
 	handleMouseUp(evt, 0);
@@ -1246,14 +1361,14 @@ const onMouseUp = evt => {
 	mouseDown = -1;
 	mouseUp = Date.now();
 };
-window.addEventListener("mouseup", onMouseUp);
-window.addEventListener("click", evt => {
+document.addEventListener("mouseup", onMouseUp, true);
+document.addEventListener("click", evt => {
 	if(Date.now() - mouseUp > 1) {
 		onMouseDown(evt);
 		onMouseUp(evt);
 	}
-});
-window.addEventListener("dblclick", evt => {
+}, true);
+document.addEventListener("dblclick", evt => {
 	if(!mouseMoved) {
 		if(evt.target === tabs) {
 			new Project();
@@ -1265,9 +1380,9 @@ window.addEventListener("dblclick", evt => {
 			toggleAssetGroup(evt.target.parentNode);
 		}
 	}
-});
+}, true);
 const focused = () => !(container.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
-window.addEventListener("keydown", evt => {
+document.addEventListener("keydown", evt => {
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
 	shiftKey = evt.shiftKey;
@@ -1343,6 +1458,7 @@ window.addEventListener("keydown", evt => {
 				for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
 					assetElem.classList.add("selected");
 				}
+				updateProperties();
 			}
 		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
 			if(focused()) {
@@ -1385,22 +1501,34 @@ window.addEventListener("keydown", evt => {
 		if(!ctxMenu.classList.contains("hidden")) {
 			closeCtx();
 		} else if(focused() && assets.classList.contains("active")) {
-			proj[sel].selectedAsset = null;
 			for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 				assetElem.classList.remove("selected");
 			}
+			proj[sel].selectedAsset = null;
+			updateProperties();
 		}
+	} else if(evt.keyCode === 113) { // `F2`
+		setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
 	} else if(evt.keyCode === 122) { // `F11`
 		const fullScreen = !win.isFullScreen();
 		win.setFullScreen(fullScreen);
 		titleBar.classList[fullScreen ? "add" : "remove"]("hidden");
 	}
-});
-window.addEventListener("keyup", evt => {
+}, true);
+document.addEventListener("keyup", evt => {
 	shiftKey = evt.keyCode !== 16 && evt.shiftKey;
 	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
 	altKey = evt.keyCode !== 18 && evt.altKey;
-});
+}, true);
+document.addEventListener("change", evt => {
+	if(evt.target === prop.name.elements[0]) {
+		assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
+		proj[sel].saved = false;
+	}
+}, true);
+document.addEventListener("submit", evt => {
+	evt.preventDefault();
+}, true);
 let notConfirmingClose = true;
 let shouldNotClose = true;
 const confirmClose = value => {
