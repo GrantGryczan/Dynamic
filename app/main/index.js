@@ -116,6 +116,7 @@ class MiroDialog {
 			throw new MiroError("The `body` parameter must be a string or a DOM node.");
 		}
 		closeCtx();
+		hideFullPreview();
 		this.ready = false;
 		if(body instanceof HTMLElement) {
 			Miro.prepare(body);
@@ -1462,8 +1463,8 @@ document.addEventListener("keydown", evt => {
 	if(evt.keyCode === 38) { // `up`
 		if(!ctxMenu.classList.contains("hidden")) {
 			const buttons = ctxMenu.querySelectorAll("button");
-			const focused = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
-			buttons[focused ? (Array.prototype.indexOf.call(buttons, focused) || buttons.length) - 1 : 0].focus();
+			const focus = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
+			buttons[focus ? (Array.prototype.indexOf.call(buttons, focus) || buttons.length) - 1 : 0].focus();
 		} else if(focused() && assets.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
@@ -1476,8 +1477,8 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 40) { // `down`
 		if(!ctxMenu.classList.contains("hidden")) {
 			const buttons = ctxMenu.querySelectorAll("button");
-			const focused = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
-			buttons[((focused ? Array.prototype.indexOf.call(buttons, focused) : -1) + 1) % buttons.length].focus();
+			const focus = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
+			buttons[((focus ? Array.prototype.indexOf.call(buttons, focus) : -1) + 1) % buttons.length].focus();
 		} else if(focused() && assets.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
