@@ -70,6 +70,18 @@
 										<div class="mdc-line-ripple"></div>
 									</div>
 								</form>
+								<form class="property hidden" required data-property="mime">
+									<div class="mdc-text-field intangible">
+										<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
+										<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
+										<div class="mdc-line-ripple"></div>
+									</div>
+								</form>
+								<form class="property hidden" required data-property="preview">
+									<label>Preview</label>
+									<img class="checkerboard hidden">
+									<audio class="hidden" controls controlslist="nodownload"></audio>
+								</form>
 							</div>
 						</div>
 						<div class="handle horizontal"></div>
@@ -79,6 +91,9 @@
 					<div class="contents"></div>
 					<div class="handle vertical"></div>
 				</div>
+			</div>
+			<div id="fullPreview" class="hidden">
+				<img class="checkerboard">
 			</div>
 			<div id="ctxMenu" class="mdc-elevation--z3 hidden"></div>
 		</div>

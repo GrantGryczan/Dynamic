@@ -286,6 +286,7 @@ const store = () => {
 };
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
+win.setProgressBar(-1);
 titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.userAgent.match(/ Dynamic\/([^ ]+) /)[1]}`;
 if(win.isFullScreen()) {
 	titleBar.classList.add("hidden");
@@ -535,6 +536,11 @@ class Asset {
 			name: this.name
 		};
 	}
+	get url() {
+		if(this.type === "file") {
+			return `data:${this.mime};base64,${this.data}`;
+		}
+	}
 }
 const appendAsset = asset => {
 	let assetElem;
@@ -705,10 +711,10 @@ const fileOptions = {
 };
 const block = state => {
 	const classListMethod = state ? "add": "remove";
-	tabs.classList[classListMethod]("blocked");
-	toolbar.classList[classListMethod]("blocked");
+	tabs.classList[classListMethod]("intangible");
+	toolbar.classList[classListMethod]("intangible");
 	if(proj[sel]) {
-		projectPage.classList[classListMethod]("blocked");
+		projectPage.classList[classListMethod]("intangible");
 	}
 };
 const loadIndeterminate = value => {
@@ -876,15 +882,79 @@ const prop = {};
 for(const propElem of propElems) {
 	prop[propElem.getAttribute("data-property")] = propElem;
 }
+const previewImage = prop.preview.querySelector("img");
+const previewAudio = prop.preview.querySelector("audio");
+const fullPreview = container.querySelector("#fullPreview");
+const fullPreviewImage = fullPreview.querySelector("img");
+const makeFullPreviewHidden = fullPreview.classList.add.bind(fullPreview.classList, "hidden");
+const hideFullPreview = () => {
+	setActive();
+	fullPreview.classList.remove("opaque");
+	setTimeout(makeFullPreviewHidden, 150);
+};
+const updatePreview = () => {
+	setActive(fullPreview);
+	fullPreviewImage.style.left = `${Math.max(0, document.body.offsetWidth / 2 - fullPreviewImage.offsetWidth / 2)}px`;
+	fullPreviewImage.style.top = `${Math.max(0, document.body.offsetHeight / 2 - fullPreviewImage.offsetHeight / 2)}px`;
+};
+const makeFullPreviewOpaque = () => {
+	fullPreview.classList.add("opaque");
+};
+fullPreview.addEventListener("mousemove", evt => {
+	fullPreview.classList.remove("hoverScrollbar");
+	let targetRect;
+	let setHoverScrollbar = false;
+	if(fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - 12) {
+		setHoverScrollbar = true;
+		fullPreview.classList.add("hoverScrollbar");
+	}
+	if(!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - 12) {
+		fullPreview.classList.add("hoverScrollbar");
+	}
+});
 const updateProperties = () => {
 	for(const propElem of propElems) {
 		propElem.classList.add("hidden");
 	}
-	const allSelected = assets.querySelectorAll(".asset.selected");
-	if(allSelected.length === 1) {
-		prop.name.elements[0].value = allSelected[0][_asset].name;
-		prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
-		prop.name.classList.remove("hidden");
+	previewImage.classList.add("hidden");
+	previewAudio.classList.add("hidden");
+	previewImage.src = previewAudio.src = "";
+	const assetElems = assets.querySelectorAll(".asset.selected");
+	if(assetElems.length) {
+		if(assetElems.length === 1) {
+			prop.name.elements[0].value = assetElems[0][_asset].name;
+			prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
+			prop.name.classList.remove("hidden");
+		}
+		let typeGroup = false;
+		let typeObj = false;
+		let typeFile = false;
+		for(const assetElem of assetElems) {
+			if(assetElem[_asset].type === "group") {
+				typeGroup = true;
+			} else if(assetElem[_asset].type === "obj") {
+				typeObj = true;
+			} else if(assetElem[_asset].type === "file") {
+				typeFile = true;
+			}
+		}
+		if(!typeGroup && !typeObj && typeFile) {
+			let mime = assetElems[0][_asset].mime;
+			for(let i = 1; i < assetElems.length; i++) {
+				if(assetElems[i][_asset].mime !== mime) {
+					mime = false;
+					break;
+				}
+			}
+			prop.mime.classList.remove("hidden");
+			prop.mime.elements[0].value = mime || "< mixed >";
+			if(mime) {
+				const previewMedia = mime.startsWith("image/") ? previewImage : previewAudio;
+				previewMedia.src = assetElems[0][_asset].url;
+				previewMedia.classList.remove("hidden");
+				prop.preview.classList.remove("hidden");
+			}
+		}
 	}
 };
 const byLowerCaseName = asset => asset.name.toLowerCase();
@@ -1020,8 +1090,8 @@ const onMouseDown = evt => {
 						updateProperties();
 					} else if(mouseTarget0[_index] === 1) { // Create group
 						setActive(assets);
-						const allSelected = assets.querySelectorAll(".asset.selected");
-						for(const assetElem of allSelected) {
+						const assetElems = assets.querySelectorAll(".asset.selected");
+						for(const assetElem of assetElems) {
 							assetElem.classList.remove("selected");
 						}
 						const names = proj[sel].data.assets.map(byLowerCaseName);
@@ -1037,7 +1107,7 @@ const onMouseDown = evt => {
 						const assetGroup = appendAsset(asset);
 						if(ctxTarget.classList.contains("assetBar")) {
 							ctxTarget.parentNode.before(assetGroup);
-							allSelected.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
+							assetElems.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
 						}
 						assetGroup.classList.add("open");
 						storeAssets();
@@ -1255,12 +1325,14 @@ const handleMouseUp = (evt, evtButton) => {
 					storeAssets();
 					assetDrag.classList.add("hidden");
 				} else {
-					if(mouseTarget === assets && mouseX < assets.offsetLeft + assets.scrollWidth) {
-						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-							assetElem.classList.remove("selected");
+					if(mouseTarget === assets) {
+						if(mouseX < assets.offsetLeft + assets.scrollWidth) {
+							for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+								assetElem.classList.remove("selected");
+							}
+							proj[sel].selectedAsset = null;
+							updateProperties();
 						}
-						proj[sel].selectedAsset = null;
-						updateProperties();
 					} else if(mouseTarget.classList.contains("assetBar")) {
 						selectAsset(mouseTarget.parentNode, evtButton);
 					} else if(evtButton0 && mouseTarget0.parentNode.classList.contains("assetBar")) {
@@ -1342,8 +1414,15 @@ const handleMouseUp = (evt, evtButton) => {
 						} else if(mouseTarget0 === sortAssets) {
 							openCtx(sortAssets);
 						}
+					} else if(mouseTarget0 === previewImage) {
+						fullPreviewImage.src = previewImage.src;
+						fullPreview.classList.remove("hidden");
+						updatePreview();
+						setTimeout(makeFullPreviewOpaque);
 					} else if(mouseTarget0.classList.contains("close") && mouseTarget0.parentNode.classList.contains("tab")) {
 						mouseTarget0.parentNode[_proj].close();
+					} else if(fullPreviewImage.contains(mouseTarget0) || (mouseTarget0 === fullPreview && !mouseTarget0.classList.contains("hoverScrollbar"))) {
+						hideFullPreview();
 					}
 				}
 			}
@@ -1362,12 +1441,6 @@ const onMouseUp = evt => {
 	mouseUp = Date.now();
 };
 document.addEventListener("mouseup", onMouseUp, true);
-document.addEventListener("click", evt => {
-	if(Date.now() - mouseUp > 1) {
-		onMouseDown(evt);
-		onMouseUp(evt);
-	}
-}, true);
 document.addEventListener("dblclick", evt => {
 	if(!mouseMoved) {
 		if(evt.target === tabs) {
@@ -1500,12 +1573,16 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 27) { // `esc`
 		if(!ctxMenu.classList.contains("hidden")) {
 			closeCtx();
-		} else if(focused() && assets.classList.contains("active")) {
-			for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-				assetElem.classList.remove("selected");
+		} else if(focused()) {
+			if(assets.classList.contains("active")) {
+				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+					assetElem.classList.remove("selected");
+				}
+				proj[sel].selectedAsset = null;
+				updateProperties();
+			} else if(fullPreview.classList.contains("active")) {
+				hideFullPreview();
 			}
-			proj[sel].selectedAsset = null;
-			updateProperties();
 		}
 	} else if(evt.keyCode === 113) { // `F2`
 		setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
@@ -1538,6 +1615,11 @@ const confirmClose = value => {
 		win.close();
 	}
 };
+window.addEventListener("resize", () => {
+	if(!fullPreview.classList.contains("hidden")) {
+		updatePreview();
+	}
+});
 const unsaved = project => !project.saved;
 window.onbeforeunload = () => {
 	if(shouldNotClose && notConfirmingClose) {
