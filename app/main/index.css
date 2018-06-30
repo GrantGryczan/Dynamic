@@ -496,7 +496,7 @@ body.focus #titleBar button:active {
 	z-index: 6;
 	overflow: auto;
 	opacity: 0;
-	background-color: #000000;
+	background-color: rgba(0, 0, 0, 0.85);
 	cursor: pointer;
 	transition: opacity 0.08s ease-out;
 }
