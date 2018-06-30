@@ -894,8 +894,8 @@ const hideFullPreview = () => {
 };
 const updatePreview = () => {
 	setActive(fullPreview);
-	fullPreviewImage.style.left = `${Math.max(0, document.body.offsetWidth / 2 - fullPreviewImage.offsetWidth / 2)}px`;
-	fullPreviewImage.style.top = `${Math.max(0, document.body.offsetHeight / 2 - fullPreviewImage.offsetHeight / 2)}px`;
+	fullPreviewImage.style.left = `${Math.max(0, fullPreview.offsetWidth / 2 - fullPreviewImage.offsetWidth / 2)}px`;
+	fullPreviewImage.style.top = `${Math.max(0, fullPreview.offsetHeight / 2 - fullPreviewImage.offsetHeight / 2)}px`;
 };
 const makeFullPreviewOpaque = () => {
 	fullPreview.classList.add("opaque");
