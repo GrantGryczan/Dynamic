@@ -47,8 +47,8 @@ div {
 .hidden {
 	display: none !important;
 }
-.intangible {
-	pointer-events: none;
+.intangible, .intangible * {
+	pointer-events: none !important;
 }
 .spaced + .spaced {
 	margin-left: 6px;
@@ -95,6 +95,9 @@ button * {
 }
 .mdc-text-field:not(.mdc-text-field--disabled):not(.mdc-text-field--outlined):not(.mdc-text-field--textarea) .mdc-text-field__input:read-only {
 	border-bottom: 1px dotted rgba(35, 31, 32, 0.26);
+}
+.mdc-text-field__input:read-only ~ .mdc-line-ripple {
+	display: none;
 }
 label {
 	pointer-events: none;

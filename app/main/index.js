@@ -719,9 +719,7 @@ const block = state => {
 	const classListMethod = state ? "add": "remove";
 	tabs.classList[classListMethod]("intangible");
 	toolbar.classList[classListMethod]("intangible");
-	if(proj[sel]) {
-		projectPage.classList[classListMethod]("intangible");
-	}
+	projectPage.classList[classListMethod]("intangible");
 };
 const loadIndeterminate = value => {
 	block(value);
@@ -1473,9 +1471,15 @@ const onMouseUp = evt => {
 	mouseTarget0 = null;
 	mouseTarget2 = null;
 	mouseDown = -1;
-	mouseUp = Date.now();
+	mouseUp = evt.timeStamp;
 };
 document.addEventListener("mouseup", onMouseUp, true);
+document.addEventListener("click", evt => {
+	if(evt.timeStamp !== mouseUp) {
+		onMouseDown(evt);
+		onMouseUp(evt);
+	}
+}, true);
 document.addEventListener("dblclick", evt => {
 	if(!mouseMoved) {
 		if(evt.target === tabs) {
@@ -1489,7 +1493,17 @@ document.addEventListener("dblclick", evt => {
 		}
 	}
 }, true);
-const focused = () => !(container.querySelector(".mdc-dialog") || document.body.classList.contains("indeterminate") || document.body.classList.contains("loading"));
+const focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
+document.addEventListener("focus", evt => {
+	for(const target of evt.path) {
+		if(target === document.body) {
+			break;
+		}
+		if(target.classList.contains("intangible")) {
+			setTimeout(evt.target.blur.bind(evt.target));
+		}
+	}
+}, true);
 document.addEventListener("keydown", evt => {
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
