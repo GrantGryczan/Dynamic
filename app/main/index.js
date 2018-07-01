@@ -508,18 +508,23 @@ const _asset = Symbol("asset");
 class Asset {
 	constructor(assetData) {
 		if(!(assetData instanceof Object)) {
-			throw new MiroError("The `assetData` value must be an object.");
+			throw new MiroError("The `assetData` parameter must be an object.");
 		}
-		this.id = assetData.id || uid(proj[sel].data.assets.map(byID));
 		this.type = assetData.type;
 		this[_name] = assetData.name;
 		if(this.type === "file") {
+			if(!assetData.mime.startsWith("image/") && !assetData.mime.startsWith("audio/")) {
+				throw new MiroError("The `mime` value is invalid.");
+			}
 			this.mime = assetData.mime;
 			this.data = assetData.data;
+		} else if(this.type !== "group" && this.type !== "obj") {
+			throw new MiroError("The `type` value is invalid.");
 		}
 		if(assetData.parent) {
 			this.parent = assetData.parent;
 		}
+		this.id = assetData.id || uid(proj[sel].data.assets.map(byID));
 	}
 	get name() {
 		return this[_name];
@@ -802,15 +807,29 @@ const open = async location => {
 			if((data = JSON.parse(await unzip(await fs.readFile(location)))).service !== "Miroware Dynamic") {
 				throw null;
 			}
-			for(let i = 0; i < data.assets.length; i++) {
-				data.assets[i] = new Asset(data.assets[i]);
-			}
 		} catch(err) {
 			new Miro.dialog("Error", "That is not a valid MWD file.");
 			loadIndeterminate(false);
 			return false;
 		}
 		loadIndeterminate(false);
+		loadProgress(0);
+		for(let i = 0; i < data.assets.length; i++) {
+			loadProgress(i / data.assets.length);
+			try {
+				data.assets[i] = new Asset(data.assets[i]);
+				await new Promise((resolve, reject) => {
+					const media = new (data.assets[i].mime.startsWith("image/") ? Image : Audio)();
+					media.addEventListener("load", resolve);
+					media.addEventListener("error", reject);
+				});
+			} catch(err) {
+				new Miro.dialog("Error", html`
+					<span class="bold">${files[i].name}</span> is not a valid asset.
+				`);
+			}
+		}
+		loadProgress(1);
 		return new Project({
 			saved: true,
 			location,
@@ -974,6 +993,7 @@ const addFiles = async files => {
 	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 		assetElem.classList.remove("selected");
 	}
+	proj[sel].selectedAsset = null;
 	for(let i = 0; i < files.length; i++) {
 		loadProgress(i / files.length);
 		let data;
@@ -991,12 +1011,26 @@ const addFiles = async files => {
 		for(let j = 2; names.includes(name.toLowerCase()); j++) {
 			name = `${files[i].name} ${j}`;
 		}
-		const asset = new Asset({
-			type: "file",
-			name,
-			mime: files[i].type,
-			data
-		});
+		let asset;
+		try {
+			asset = new Asset({
+				type: "file",
+				name,
+				mime: files[i].type,
+				data
+			});
+			await new Promise((resolve, reject) => {
+				const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
+				media.src = asset.url;
+				media.addEventListener("load", resolve);
+				media.addEventListener("error", reject);
+			});
+		} catch(err) {
+			new Miro.dialog("Error", html`
+				<span class="bold">${files[i].name}</span> is not a valid asset.
+			`);
+			continue;
+		}
 		proj[sel].data.assets.push(asset);
 		const assetFile = appendAsset(asset);
 		assetParent.appendChild(assetFile);
