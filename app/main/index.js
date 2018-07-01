@@ -815,15 +815,17 @@ const open = async location => {
 		for(let i = 0; i < data.assets.length; i++) {
 			loadProgress(i / data.assets.length);
 			try {
-				data.assets[i] = new Asset(data.assets[i]);
-				await new Promise((resolve, reject) => {
-					const media = new (data.assets[i].mime.startsWith("image/") ? Image : Audio)();
-					media.addEventListener("load", resolve);
-					media.addEventListener("error", reject);
-				});
+				if((data.assets[i] = new Asset(data.assets[i])).type === "file") {
+					await new Promise((resolve, reject) => {
+						const media = new (data.assets[i].mime.startsWith("image/") ? Image : Audio)();
+						media.src = data.assets[i].url;
+						media.addEventListener("load", resolve);
+						media.addEventListener("error", reject);
+					});
+				}
 			} catch(err) {
 				new Miro.dialog("Error", html`
-					<span class="bold">${files[i].name}</span> is not a valid asset.
+					<span class="bold">${data.assets[i].name}</span> is not a valid asset.
 				`);
 			}
 		}
@@ -1000,7 +1002,7 @@ const addFiles = async files => {
 		} catch(err) {
 			new Miro.dialog("Error", html`
 				An error occurred while encoding <span class="bold">${files[i].name}</span>.<br>
-				Perhaps the file is too large.
+				${err.message}
 			`);
 			continue;
 		}
@@ -1479,6 +1481,28 @@ document.addEventListener("click", evt => {
 		onMouseDown(evt);
 		onMouseUp(evt);
 	}
+}, true);
+document.addEventListener("dragstart", evt => {
+	if(mouseDown !== -1) {
+		mouseTarget = mouseTarget0 = mouseTarget2 = null;
+		mouseDown = -1;
+	}
+}, true);
+document.addEventListener("dragover", evt => {
+	evt.preventDefault();
+}, true);
+document.addEventListener("drop", evt => {
+	evt.preventDefault();
+	const files = [...evt.dataTransfer.files];
+	for(let i = 0; i < files.length; i++) {
+		if(files[i].path.toLowerCase().endsWith(".mwd")) {
+			open(files.splice(i, 1)[0].path);
+		}
+	}
+	if(sel !== "home" && files.length) {
+		addFiles(files);
+	}
+	win.focus();
 }, true);
 document.addEventListener("dblclick", evt => {
 	if(!mouseMoved) {
