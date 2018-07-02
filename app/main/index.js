@@ -260,6 +260,7 @@ const assetDrag = assets.querySelector("#assetDrag");
 const propertyContainer = container.querySelector("#propertyContainer");
 const properties = container.querySelector("#properties");
 const timelineContainer = container.querySelector("#timelineContainer");
+const assetPath = timelineContainer.querySelector("#assetPath");
 const ctxMenu = container.querySelector("#ctxMenu");
 const fs = require("fs-extra");
 const crypto = require("crypto");
@@ -505,6 +506,7 @@ class Project {
 	}
 }
 const _asset = Symbol("asset");
+const getAssetElemByID = id => assets.querySelector(`#asset_${id}`);
 class Asset {
 	constructor(assetData) {
 		if(!(assetData instanceof Object)) {
@@ -531,7 +533,7 @@ class Asset {
 	}
 	set name(value) {
 		this[_name] = value;
-		const assetElem = assets.querySelector(`#asset_${this.id}`);
+		const assetElem = getAssetElemByID(this.id);
 		if(assetElem) {
 			assetElem.querySelector(".label").textContent = assetElem.title = value;
 		}
@@ -583,7 +585,7 @@ const appendAsset = asset => {
 		`;
 	}
 	assetElem[_asset] = asset;
-	(assetElem[_asset].parent ? assets.querySelector(`#asset_${assetElem[_asset].parent}`).lastElementChild : assets).appendChild(assetElem);
+	(assetElem[_asset].parent ? getAssetElemByID(assetElem[_asset].parent).lastElementChild : assets).appendChild(assetElem);
 	return assetElem;
 };
 const storeAssets = () => {
@@ -602,7 +604,7 @@ const removeAsset = assetElem => {
 	if(`asset_${assetElem[_asset].id}` === proj[sel].selectedAsset) {
 		proj[sel].selectedAsset = null;
 	}
-	if(assetElem.classList.contains("group")) {
+	if(assetElem[_asset].type === "group") {
 		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
 	}
 	assetElem.remove();
@@ -615,12 +617,12 @@ const confirmRemoveAsset = assetElem => {
 			storeAssets();
 		}
 	};
-	if(assetElem.classList.contains("file") || assetElem.classList.contains("obj")) {
+	if(assetElem[_asset].type === "file" || assetElem[_asset].type === "obj") {
 		new Miro.dialog("Remove Asset", html`
 			Are you sure you want to remove <span class="bold">${assetElem[_asset].name}</span>?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
-	} else if(assetElem.classList.contains("group")) {
+	} else if(assetElem[_asset].type === "group") {
 		new Miro.dialog("Remove Group", html`
 			Are you sure you want to remove <span class="bold">${assetElem[_asset].name}</span>?<br>
 			All assets inside the group will be taken out.
@@ -697,6 +699,8 @@ const select = id => {
 		if(proj[sel].focusedAsset) {
 			assets.querySelector(`#${proj[sel].focusedAsset}`).classList.add("focus");
 		}
+		rootAsset(proj[sel].rootAsset ? getAssetElemByID(proj[sel].rootAsset)[_asset] : null);
+		openAsset(proj[sel].openAsset ? getAssetElemByID(proj[sel].openAsset)[_asset] : null);
 		saveProj.disabled = proj[sel].saved;
 		updateProperties();
 		proj[sel].tab.classList.add("current");
@@ -914,8 +918,8 @@ const hideFullPreview = () => {
 };
 const updatePreview = () => {
 	setActive(fullPreview);
-	fullPreviewImage.style.left = `${Math.max(0, fullPreview.offsetWidth / 2 - fullPreviewImage.offsetWidth / 2)}px`;
-	fullPreviewImage.style.top = `${Math.max(0, fullPreview.offsetHeight / 2 - fullPreviewImage.offsetHeight / 2)}px`;
+	fullPreviewImage.style.left = `${Math.max(0, (fullPreview.offsetWidth === fullPreview.scrollWidth ? fullPreview.offsetWidth : fullPreview.offsetWidth - 12) / 2 - fullPreviewImage.offsetWidth / 2)}px`;
+	fullPreviewImage.style.top = `${Math.max(0, (fullPreview.offsetHeight === fullPreview.scrollHeight ? fullPreview.offsetHeight : fullPreview.offsetHeight - 12) / 2 - fullPreviewImage.offsetHeight / 2)}px`;
 };
 const makeFullPreviewOpaque = () => {
 	fullPreview.classList.add("opaque");
@@ -982,10 +986,10 @@ const byID = asset => asset.id;
 const addFiles = async files => {
 	let assetParent = assets;
 	if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
-		if(ctxTarget.parentNode.classList.contains("group")) {
+		if(ctxTarget.parentNode[_asset].type === "group") {
 			assetParent = ctxTarget.parentNode.lastElementChild;
 		} else if(ctxTarget.parentNode[_asset].parent) {
-			assetParent = assets.querySelector(`#asset_${ctxTarget.parentNode[_asset].parent}`).lastElementChild;
+			assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
 		}
 	}
 	setActive(assets);
@@ -1097,10 +1101,10 @@ const onMouseDown = evt => {
 					} else if(mouseTarget0[_index] === 0) { // Create object
 						let assetParent = assets;
 						if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
-							if(ctxTarget.parentNode.classList.contains("group")) {
+							if(ctxTarget.parentNode[_asset].type === "group") {
 								assetParent = ctxTarget.parentNode.lastElementChild;
 							} else if(ctxTarget.parentNode[_asset].parent) {
-								assetParent = assets.querySelector(`#asset_${ctxTarget.parentNode[_asset].parent}`).lastElementChild;
+								assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
 							}
 						}
 						setActive(assets);
@@ -1164,11 +1168,11 @@ const onMouseDown = evt => {
 							let afterObj = null;
 							let afterImage = null;
 							for(const assetElem of assetElems) {
-								if(assetElem.classList.contains("obj")) {
+								if(assetElem[_asset].type === "obj") {
 									if(!afterGroup) {
 										afterGroup = assetElem;
 									}
-								} else if(assetElem.classList.contains("file")) {
+								} else if(assetElem[_asset].type === "file") {
 									if(assetElem[_asset].mime.startsWith("image/")) {
 										if(!afterObj) {
 											afterObj = assetElem;
@@ -1187,11 +1191,11 @@ const onMouseDown = evt => {
 								afterGroup = afterObj;
 							}
 							for(const assetElem of assetElems) {
-								if(assetElem.classList.contains("group")) {
+								if(assetElem[_asset].type === "group") {
 									assetChildren.insertBefore(assetElem, afterGroup);
-								} else if(assetElem.classList.contains("obj")) {
+								} else if(assetElem[_asset].type === "obj") {
 									assetChildren.insertBefore(assetElem, afterObj);
-								} else if(assetElem.classList.contains("file")) {
+								} else if(assetElem[_asset].type === "file") {
 									if(assetElem[_asset].mime.startsWith("image/")) {
 										assetChildren.insertBefore(assetElem, afterImage);
 									} else {
@@ -1278,7 +1282,7 @@ document.addEventListener("mousemove", evt => {
 					side = distTop < 0 ? "before" : "after";
 				}
 			}
-			if(side === "after" && minAssetElem.classList.contains("group") && minAssetElem.classList.contains("open")) {
+			if(side === "after" && minAssetElem[_asset].type === "group" && minAssetElem.classList.contains("open")) {
 				minAssetElem.lastElementChild.insertBefore(assetDrag, minAssetElem.lastElementChild.firstChild);
 			} else {
 				minAssetElem[side](assetDrag);
@@ -1449,6 +1453,12 @@ const handleMouseUp = (evt, evtButton) => {
 						} else if(mouseTarget0 === sortAssets) {
 							openCtx(sortAssets);
 						}
+					} else if(mouseTarget0.parentNode.parentNode === assetPath) {
+						if(mouseTarget0.parentNode === assetPath.firstElementChild) {
+							rootAsset();
+						} else {
+							// TODO
+						}
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
 						fullPreview.classList.remove("hidden");
@@ -1512,8 +1522,12 @@ document.addEventListener("dblclick", evt => {
 			evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minWidth = evt.target.parentNode.style.minHeight = "";
 			delete storage.containerSizes[evt.target.parentNode.id];
 			store();
-		} else if(evt.target.classList.contains("assetBar") && evt.target.parentNode.classList.contains("group")) {
-			toggleAssetGroup(evt.target.parentNode);
+		} else if(evt.target.classList.contains("assetBar")) {
+			if(evt.target.parentNode[_asset].type === "group") {
+				toggleAssetGroup(evt.target.parentNode);
+			} else if(evt.target.parentNode[_asset].type === "obj") {
+				rootAsset(evt.target.parentNode[_asset]);
+			}
 		}
 	}
 }, true);
@@ -1643,6 +1657,19 @@ document.addEventListener("keydown", evt => {
 		if(focused() && assets.classList.contains("active")) {
 			confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 		}
+	} else if(evt.keyCode === 13) { // `enter`
+		if(focused() && assets.classList.contains("active")) {
+			const focusedAssetElem = assets.querySelector(".asset.focus");
+			if(focusedAssetElem && focusedAssetElem[_asset].type === "obj") {
+				rootAsset(focusedAssetElem[_asset]);
+			} else {
+				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+					if(assetElem[_asset].type === "group") {
+						assetElem.classList.toggle("open");
+					}
+				}
+			}
+		}
 	} else if(evt.keyCode === 27) { // `esc`
 		if(!ctxMenu.classList.contains("hidden")) {
 			closeCtx();
@@ -1671,7 +1698,10 @@ document.addEventListener("keyup", evt => {
 	altKey = evt.keyCode !== 18 && evt.altKey;
 }, true);
 document.addEventListener("change", evt => {
-	if(evt.target === prop.name.elements[0]) {
+	if(!evt.target.checkValidity()) {
+		return;
+	}
+	if(evt.target === prop.name.elements[0] ) {
 		assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
 		proj[sel].saved = false;
 	}
@@ -1679,6 +1709,11 @@ document.addEventListener("change", evt => {
 document.addEventListener("submit", evt => {
 	evt.preventDefault();
 }, true);
+window.addEventListener("resize", () => {
+	if(!fullPreview.classList.contains("hidden")) {
+		updatePreview();
+	}
+});
 let notConfirmingClose = true;
 let shouldNotClose = true;
 const confirmClose = value => {
@@ -1688,11 +1723,6 @@ const confirmClose = value => {
 		win.close();
 	}
 };
-window.addEventListener("resize", () => {
-	if(!fullPreview.classList.contains("hidden")) {
-		updatePreview();
-	}
-});
 const unsaved = project => !project.saved;
 window.onbeforeunload = () => {
 	if(shouldNotClose && notConfirmingClose) {
@@ -1701,5 +1731,48 @@ window.onbeforeunload = () => {
 			new Miro.dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
 			return true;
 		}
+	}
+};
+const assetLink = (asset, selected) => {
+	if(selected) {
+		const selectedElem = assetPath.querySelector(".assetLink .mdc-chip--selected");
+		if(selectedElem) {
+			selectedElem.classList.remove("mdc-chip--selected");
+		}
+	}
+	const assetLinkElem = html`
+		<span class="assetLink">
+			> <div class="mdc-chip${selected ? " mdc-chip--selected" : ""}">
+				<div class="mdc-chip__text">$${asset.name}</div>
+			</div>
+		</span>
+	`;
+	assetLinkElem[_asset] = asset;
+	assetPath.appendChild(assetLinkElem);
+};
+const rootAsset = asset => {
+	if(asset && proj[sel].rootAsset === asset.id) {
+		return;
+	}
+	while(assetPath.children[1]) {
+		assetPath.children[1].remove();
+	}
+	openAsset(asset, true, true);
+	if(asset) {
+		proj[sel].rootAsset = asset.id;
+	} else {
+		delete proj[sel].rootAsset;
+	}
+};
+const openAsset = (asset, selected, finish) => {
+	if(asset) {
+		proj[sel].openAsset = asset.id;
+		assetLink(asset, selected);
+		if(finish) {
+			// TODO
+		}
+	} else {
+		assetPath.firstElementChild.firstElementChild.classList.add("mdc-chip--selected");
+		delete proj[sel].openAsset;
 	}
 };

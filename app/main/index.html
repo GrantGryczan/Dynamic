@@ -63,21 +63,21 @@
 								<span class="label spaced">Properties</span>
 							</div>
 							<div id="properties">
-								<form class="property hidden" required data-property="name">
+								<form class="property hidden" data-property="name">
 									<div class="mdc-text-field">
-										<input type="text" id="nameInput" class="mdc-text-field__input">
+										<input type="text" id="nameInput" class="mdc-text-field__input" required>
 										<label class="mdc-floating-label" for="nameInput">Name</label>
 										<div class="mdc-line-ripple"></div>
 									</div>
 								</form>
-								<form class="property hidden" required data-property="mime">
+								<form class="property hidden" data-property="mime">
 									<div class="mdc-text-field mdc-text-field--upgraded">
 										<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
 										<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
 										<div class="mdc-line-ripple"></div>
 									</div>
 								</form>
-								<form class="property hidden" required data-property="preview">
+								<form class="property hidden" data-property="preview">
 									<label>Preview</label>
 									<img class="checkerboard hidden">
 									<audio class="hidden" controls controlslist="nodownload"></audio>
@@ -88,7 +88,15 @@
 					</div>
 				</div>
 				<div id="timelineContainer" class="panel">
-					<div class="contents"></div>
+					<div class="contents">
+						<div id="assetPath">
+							<span class="assetLink">
+								<div class="mdc-chip mdc-chip--selected">
+									<div class="mdc-chip__text">Canvas</div>
+								</div>
+							</span>
+						</div>
+					</div>
 					<div class="handle vertical"></div>
 				</div>
 			</div>
