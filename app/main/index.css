@@ -507,6 +507,10 @@ body.focus #titleBar button:active {
 #assetPath .assetLink:last-child {
 	pointer-events: none;
 }
+#assetPath .assetLink span {
+	margin: 0 -8px;
+	vertical-align: bottom;
+}
 #fullPreview {
 	position: absolute;
 	left: 0;

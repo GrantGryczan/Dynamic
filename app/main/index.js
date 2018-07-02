@@ -1523,6 +1523,7 @@ document.addEventListener("dblclick", evt => {
 			delete storage.containerSizes[evt.target.parentNode.id];
 			store();
 		} else if(evt.target.classList.contains("assetBar")) {
+			selectAsset(evt.target.parentNode, 2);
 			if(evt.target.parentNode[_asset].type === "group") {
 				toggleAssetGroup(evt.target.parentNode);
 			} else if(evt.target.parentNode[_asset].type === "obj") {
@@ -1701,9 +1702,14 @@ document.addEventListener("change", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === prop.name.elements[0] ) {
-		assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
-		proj[sel].saved = false;
+	if(evt.target === prop.name.elements[0]) {
+		const names = proj[sel].data.assets.map(byLowerCaseName);
+		if(names.includes(evt.target.value)) {
+			new Miro.dialog("Error", "That asset name is already in use.");
+		} else {
+			assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
+			proj[sel].saved = false;
+		}
 	}
 }, true);
 document.addEventListener("submit", evt => {
@@ -1742,7 +1748,8 @@ const assetLink = (asset, selected) => {
 	}
 	const assetLinkElem = html`
 		<span class="assetLink">
-			> <div class="mdc-chip${selected ? " mdc-chip--selected" : ""}">
+			<span class="material-icons">arrow_right</span>
+			<div class="mdc-chip${selected ? " mdc-chip--selected" : ""}">
 				<div class="mdc-chip__text">$${asset.name}</div>
 			</div>
 		</span>
