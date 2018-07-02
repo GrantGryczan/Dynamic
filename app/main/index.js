@@ -847,7 +847,7 @@ electron.ipcRenderer.on("argv", (evt, location) => {
 	open(location);
 });
 const selectAsset = (target, evtButton) => {
-	setActive(assets);
+	setActive(assetContainer);
 	if(typeof evtButton !== "number") {
 		evtButton = 0;
 	}
@@ -992,7 +992,7 @@ const addFiles = async files => {
 			assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
 		}
 	}
-	setActive(assets);
+	setActive(assetContainer);
 	loadProgress(0);
 	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 		assetElem.classList.remove("selected");
@@ -1083,7 +1083,7 @@ const onMouseDown = evt => {
 	}
 	if(mouseTarget !== ctxMenu) {
 		if(assetContainer.contains(mouseTarget)) {
-			setActive(assets);
+			setActive(assetContainer);
 		} else if(!ctxMenu.contains(mouseTarget)) {
 			setActive();
 		}
@@ -1107,7 +1107,7 @@ const onMouseDown = evt => {
 								assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
 							}
 						}
-						setActive(assets);
+						setActive(assetContainer);
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 							assetElem.classList.remove("selected");
 						}
@@ -1128,7 +1128,7 @@ const onMouseDown = evt => {
 						proj[sel].selectedAsset = assetObj.id;
 						updateProperties();
 					} else if(mouseTarget0[_index] === 1) { // Create group
-						setActive(assets);
+						setActive(assetContainer);
 						const assetElems = assets.querySelectorAll(".asset.selected");
 						for(const assetElem of assetElems) {
 							assetElem.classList.remove("selected");
@@ -1552,7 +1552,7 @@ document.addEventListener("keydown", evt => {
 			const buttons = ctxMenu.querySelectorAll("button");
 			const focus = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
 			buttons[focus ? (Array.prototype.indexOf.call(buttons, focus) || buttons.length) - 1 : 0].focus();
-		} else if(focused() && assets.classList.contains("active")) {
+		} else if(focused() && assetContainer.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
 			const assetElem = allAssets[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(allAssets, assets.querySelector(`#${proj[sel].focusedAsset}`)) || allAssets.length) - 1) : 0];
@@ -1566,7 +1566,7 @@ document.addEventListener("keydown", evt => {
 			const buttons = ctxMenu.querySelectorAll("button");
 			const focus = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
 			buttons[((focus ? Array.prototype.indexOf.call(buttons, focus) : -1) + 1) % buttons.length].focus();
-		} else if(focused() && assets.classList.contains("active")) {
+		} else if(focused() && assetContainer.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
 			const assetElem = allAssets[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(allAssets, assets.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % allAssets.length];
@@ -1615,7 +1615,7 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
-			if(focused() && assets.classList.contains("active")) {
+			if(focused() && assetContainer.classList.contains("active")) {
 				for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
 					assetElem.classList.add("selected");
 				}
@@ -1655,11 +1655,11 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
-		if(focused() && assets.classList.contains("active")) {
+		if(focused() && assetContainer.classList.contains("active")) {
 			confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		if(focused() && assets.classList.contains("active")) {
+		if(focused() && assetContainer.classList.contains("active")) {
 			const focusedAssetElem = assets.querySelector(".asset.focus");
 			if(focusedAssetElem && focusedAssetElem[_asset].type === "obj") {
 				rootAsset(focusedAssetElem[_asset]);
@@ -1675,7 +1675,7 @@ document.addEventListener("keydown", evt => {
 		if(!ctxMenu.classList.contains("hidden")) {
 			closeCtx();
 		} else if(focused()) {
-			if(assets.classList.contains("active")) {
+			if(assetContainer.classList.contains("active")) {
 				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 					assetElem.classList.remove("selected");
 				}

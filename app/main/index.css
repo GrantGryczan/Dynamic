@@ -322,7 +322,6 @@ body.focus #titleBar button:active {
 .page {
 	display: flex;
 	flex-grow: 1;
-	flex-direction: column;
 	width: 100%;
 }
 #homePage {
@@ -337,6 +336,12 @@ body.focus #titleBar button:active {
 	min-height: 150px;
 	padding: 6px;
 	background-color: #f0f0f0;
+}
+#leftPanels {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+	min-width: 300px;
 }
 #topPanels {
 	display: flex;
@@ -497,8 +502,8 @@ body.focus #titleBar button:active {
 	width: 100%;
 }
 #timelineContainer {
-	height: 250px;
-	min-height: 250px;
+	height: 300px;
+	min-height: 300px;
 	box-shadow: 0 -3px 1px -2px rgba(0, 0, 0, 0.2);
 }
 #assetPath {

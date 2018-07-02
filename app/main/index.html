@@ -40,64 +40,66 @@
 			</div>
 			<div id="homePage" class="page hidden"></div>
 			<div id="projectPage" class="page hidden">
-				<div id="topPanels">
-					<div id="assetContainer" class="panel">
-						<div class="contents">
-							<div class="head">
-								<span class="label spaced">Assets</span><button id="addAsset" class="mdc-fab spaced" title="Add asset" type="button">
-									<span class="mdc-fab__icon material-icons">add</span>
-								</button><button id="sortAssets" class="mdc-fab spaced" title="Sort assets" type="button">
-									<span class="mdc-fab__icon material-icons">sort</span>
-								</button>
+				<div id="leftPanels">
+					<div id="topPanels">
+						<div id="assetContainer" class="panel">
+							<div class="contents">
+								<div class="head">
+									<span class="label spaced">Assets</span><button id="addAsset" class="mdc-fab spaced" title="Add asset" type="button">
+										<span class="mdc-fab__icon material-icons">add</span>
+									</button><button id="sortAssets" class="mdc-fab spaced" title="Sort assets" type="button">
+										<span class="mdc-fab__icon material-icons">sort</span>
+									</button>
+								</div>
+								<div id="assets">
+									<div id="assetDrag" class="hidden"></div>
+								</div>
 							</div>
-							<div id="assets">
-								<div id="assetDrag" class="hidden"></div>
-							</div>
+							<div class="handle horizontal"></div>
 						</div>
-						<div class="handle horizontal"></div>
+						<div id="contentContainer"></div>
 					</div>
-					<div id="contentContainer"></div>
-					<div id="propertyContainer" class="panel">
+					<div id="timelineContainer" class="panel">
 						<div class="contents">
-							<div class="head">
-								<span class="label spaced">Properties</span>
-							</div>
-							<div id="properties">
-								<form class="property hidden" data-property="name">
-									<div class="mdc-text-field">
-										<input type="text" id="nameInput" class="mdc-text-field__input" required>
-										<label class="mdc-floating-label" for="nameInput">Name</label>
-										<div class="mdc-line-ripple"></div>
+							<div id="assetPath">
+								<span class="assetLink">
+									<div class="mdc-chip mdc-chip--selected">
+										<div class="mdc-chip__text">Canvas</div>
 									</div>
-								</form>
-								<form class="property hidden" data-property="mime">
-									<div class="mdc-text-field mdc-text-field--upgraded">
-										<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
-										<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
-										<div class="mdc-line-ripple"></div>
-									</div>
-								</form>
-								<form class="property hidden" data-property="preview">
-									<label>Preview</label>
-									<img class="checkerboard hidden">
-									<audio class="hidden" controls controlslist="nodownload"></audio>
-								</form>
+								</span>
 							</div>
 						</div>
-						<div class="handle horizontal"></div>
+						<div class="handle vertical"></div>
 					</div>
 				</div>
-				<div id="timelineContainer" class="panel">
+				<div id="propertyContainer" class="panel">
 					<div class="contents">
-						<div id="assetPath">
-							<span class="assetLink">
-								<div class="mdc-chip mdc-chip--selected">
-									<div class="mdc-chip__text">Canvas</div>
+						<div class="head">
+							<span class="label spaced">Properties</span>
+						</div>
+						<div id="properties">
+							<form class="property hidden" data-property="name">
+								<div class="mdc-text-field">
+									<input type="text" id="nameInput" class="mdc-text-field__input" required>
+									<label class="mdc-floating-label" for="nameInput">Name</label>
+									<div class="mdc-line-ripple"></div>
 								</div>
-							</span>
+							</form>
+							<form class="property hidden" data-property="mime">
+								<div class="mdc-text-field mdc-text-field--upgraded">
+									<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
+									<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
+									<div class="mdc-line-ripple"></div>
+								</div>
+							</form>
+							<form class="property hidden" data-property="preview">
+								<label>Preview</label>
+								<img class="checkerboard hidden">
+								<audio class="hidden" controls controlslist="nodownload"></audio>
+							</form>
 						</div>
 					</div>
-					<div class="handle vertical"></div>
+					<div class="handle horizontal"></div>
 				</div>
 			</div>
 			<div id="fullPreview" class="hidden">
