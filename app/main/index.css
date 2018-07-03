@@ -532,28 +532,3 @@ body.focus #titleBar button:active {
 #fullPreview img {
 	position: absolute;
 }
-#ctxMenu {
-	position: fixed;
-	width: 240px;
-	padding: 6px 0;
-	z-index: 9;
-	background-color: #f0f0f0;
-}
-#ctxMenu button {
-	display: block;
-	width: 100%;
-	padding: 4px 28px;
-	border: none;
-	background-color: transparent;
-	text-align: left;
-	font-size: 14px;
-}
-#ctxMenu button:hover {
-	background-color: rgba(0, 0, 0, 0.05);
-}
-#ctxMenu button:focus {
-	background-color: rgba(0, 0, 0, 0.1);
-}
-#ctxMenu hr {
-	margin: 6px 0;
-}

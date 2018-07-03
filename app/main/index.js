@@ -115,7 +115,6 @@ class MiroDialog {
 		} else if(!(body instanceof Node)) {
 			throw new MiroError("The `body` parameter must be a string or a DOM node.");
 		}
-		closeCtx();
 		hideFullPreview();
 		this.ready = false;
 		if(body instanceof HTMLElement) {
@@ -261,7 +260,6 @@ const propertyContainer = container.querySelector("#propertyContainer");
 const properties = container.querySelector("#properties");
 const timelineContainer = container.querySelector("#timelineContainer");
 const assetPath = timelineContainer.querySelector("#assetPath");
-const ctxMenu = container.querySelector("#ctxMenu");
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const zlib = require("zlib");
@@ -346,6 +344,89 @@ const scrollIntoView = elem => {
 		elem.parentNode.scrollTop = elem.offsetTop + elem.offsetHeight - elem.parentNode.offsetHeight;
 	}
 };
+const propElems = properties.querySelectorAll(".property");
+const prop = {};
+for(const propElem of propElems) {
+	prop[propElem.getAttribute("data-property")] = propElem;
+}
+const previewImage = prop.preview.querySelector("img");
+const previewAudio = prop.preview.querySelector("audio");
+const fullPreview = container.querySelector("#fullPreview");
+const fullPreviewImage = fullPreview.querySelector("img");
+const makeFullPreviewHidden = fullPreview.classList.add.bind(fullPreview.classList, "hidden");
+const hideFullPreview = () => {
+	setActive();
+	fullPreview.classList.remove("opaque");
+	setTimeout(makeFullPreviewHidden, 150);
+};
+const updatePreview = () => {
+	setActive(fullPreview);
+	fullPreviewImage.style.left = `${Math.max(0, (fullPreview.offsetWidth === fullPreview.scrollWidth ? fullPreview.offsetWidth : fullPreview.offsetWidth - 12) / 2 - fullPreviewImage.offsetWidth / 2)}px`;
+	fullPreviewImage.style.top = `${Math.max(0, (fullPreview.offsetHeight === fullPreview.scrollHeight ? fullPreview.offsetHeight : fullPreview.offsetHeight - 12) / 2 - fullPreviewImage.offsetHeight / 2)}px`;
+};
+const makeFullPreviewOpaque = () => {
+	fullPreview.classList.add("opaque");
+};
+fullPreview.addEventListener("mousemove", evt => {
+	fullPreview.classList.remove("hoverScrollbar");
+	let targetRect;
+	let setHoverScrollbar = false;
+	if(fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - 12) {
+		setHoverScrollbar = true;
+		fullPreview.classList.add("hoverScrollbar");
+	}
+	if(!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - 12) {
+		fullPreview.classList.add("hoverScrollbar");
+	}
+});
+const updateProperties = () => {
+	for(const propElem of propElems) {
+		propElem.classList.add("hidden");
+	}
+	previewImage.classList.add("hidden");
+	previewAudio.classList.add("hidden");
+	previewImage.src = previewAudio.src = "";
+	const assetElems = assets.querySelectorAll(".asset.selected");
+	if(assetElems.length) {
+		if(assetElems.length === 1) {
+			prop.name.elements[0].value = assetElems[0][_asset].name;
+			prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
+			prop.name.classList.remove("hidden");
+		}
+		let typeGroup = false;
+		let typeObj = false;
+		let typeFile = false;
+		for(const assetElem of assetElems) {
+			if(assetElem[_asset].type === "group") {
+				typeGroup = true;
+			} else if(assetElem[_asset].type === "obj") {
+				typeObj = true;
+			} else if(assetElem[_asset].type === "file") {
+				typeFile = true;
+			}
+		}
+		if(!typeGroup && !typeObj && typeFile) {
+			let mime = assetElems[0][_asset].mime;
+			for(let i = 1; i < assetElems.length; i++) {
+				if(assetElems[i][_asset].mime !== mime) {
+					mime = false;
+					break;
+				}
+			}
+			prop.mime.classList.remove("hidden");
+			prop.mime.elements[0].value = mime || "< mixed >";
+			if(mime) {
+				const previewMedia = mime.startsWith("image/") ? previewImage : previewAudio;
+				previewMedia.src = assetElems[0][_asset].url;
+				previewMedia.classList.remove("hidden");
+				prop.preview.classList.remove("hidden");
+			}
+		}
+	}
+};
+const menuSeparator = {
+	type: "separator"
+};
 const textMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Undo",
 	accelerator: "CmdOrCtrl+Z",
@@ -369,61 +450,190 @@ const textMenu = electron.remote.Menu.buildFromTemplate([{
 	accelerator: "CmdOrCtrl+V",
 	role: "paste"
 }, {
-	label: "Select All",
+	label: "Select all",
 	accelerator: "CmdOrCtrl+A",
 	role: "selectall"
 }]);
+const assetMenuItems = [{
+	label: "Create object",
+	click: () => {
+		let assetParent = assets;
+		if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
+			if(ctxTarget.parentNode[_asset].type === "group") {
+				assetParent = ctxTarget.parentNode.lastElementChild;
+			} else if(ctxTarget.parentNode[_asset].parent) {
+				assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
+			}
+		}
+		setActive(assetContainer);
+		for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+			assetElem.classList.remove("selected");
+		}
+		const names = proj[sel].data.assets.map(byLowerCaseName);
+		let name = "Object";
+		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+			name = `Object ${i}`;
+		}
+		const asset = new Asset({
+			type: "obj",
+			name
+		});
+		proj[sel].data.assets.push(asset);
+		const assetObj = appendAsset(asset);
+		assetParent.appendChild(assetObj);
+		storeAssets();
+		assetObj.classList.add("selected");
+		proj[sel].selectedAsset = assetObj.id;
+		updateProperties();
+	}
+}, {
+	label: "Create group",
+	click: () => {
+		setActive(assetContainer);
+		const assetElems = assets.querySelectorAll(".asset.selected");
+		for(const assetElem of assetElems) {
+			assetElem.classList.remove("selected");
+		}
+		const names = proj[sel].data.assets.map(byLowerCaseName);
+		let name = "Group";
+		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+			name = `Group ${i}`;
+		}
+		const asset = new Asset({
+			type: "group",
+			name
+		});
+		proj[sel].data.assets.push(asset);
+		const assetGroup = appendAsset(asset);
+		if(ctxTarget.classList.contains("assetBar")) {
+			ctxTarget.parentNode.before(assetGroup);
+			assetElems.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
+		}
+		assetGroup.classList.add("open");
+		storeAssets();
+		assetGroup.classList.add("selected");
+		proj[sel].selectedAsset = assetGroup.id;
+		updateProperties();
+	}
+}, {
+	label: "Import image file(s)",
+	click: () => {
+		assetInput.accept = "image/*";
+		win.webContents.executeJavaScript("assetInput.click()", true);
+	}
+}, {
+	label: "Import audio file(s)",
+	click: () => {
+		assetInput.accept = "audio/*";
+		win.webContents.executeJavaScript("assetInput.click()", true);
+	}
+}];
+const assetMenu = electron.remote.Menu.buildFromTemplate(assetMenuItems);
+const removeSelectedAssets = () => {
+	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
+};
+const selectedAssetMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Remove asset",
+	click: removeSelectedAssets
+}, {
+	label: "Rename asset",
+	accelerator: "F2",
+	click: prop.name.elements[0].select.bind(prop.name.elements[0])
+}, menuSeparator, ...assetMenuItems]);
+const selectedAssetsMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Remove assets",
+	click: removeSelectedAssets
+}, {
+	label: "Rename asset",
+	accelerator: "F2",
+	enabled: false
+}, menuSeparator, ...assetMenuItems]);
+const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Sort by asset type",
+	click: () => {
+		for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
+			const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
+			let afterGroup = null;
+			let afterObj = null;
+			let afterImage = null;
+			for(const assetElem of assetElems) {
+				if(assetElem[_asset].type === "obj") {
+					if(!afterGroup) {
+						afterGroup = assetElem;
+					}
+				} else if(assetElem[_asset].type === "file") {
+					if(assetElem[_asset].mime.startsWith("image/")) {
+						if(!afterObj) {
+							afterObj = assetElem;
+						}
+					} else {
+						if(!afterImage) {
+							afterImage = assetElem;
+						}
+					}
+				}
+			}
+			if(!afterObj) {
+				afterObj = afterImage;
+			}
+			if(!afterGroup) {
+				afterGroup = afterObj;
+			}
+			for(const assetElem of assetElems) {
+				if(assetElem[_asset].type === "group") {
+					assetChildren.insertBefore(assetElem, afterGroup);
+				} else if(assetElem[_asset].type === "obj") {
+					assetChildren.insertBefore(assetElem, afterObj);
+				} else if(assetElem[_asset].type === "file") {
+					if(assetElem[_asset].mime.startsWith("image/")) {
+						assetChildren.insertBefore(assetElem, afterImage);
+					} else {
+						assetChildren.appendChild(assetElem);
+					}
+				}
+			}
+		}
+		storeAssets();
+	}
+}, {
+	label: "Sort alphabetically",
+	click: () => {
+		for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
+			const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
+			for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
+				assetChildren.lastChild.after(assetElems.find(assetElem => assetElem[_asset].name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+			}
+		}
+		storeAssets();
+	}
+}, {
+	label: "Reverse",
+	click: () => {
+		for(const assetElem of assets.querySelectorAll(".asset")) {
+			assetElem.parentNode.firstChild.before(assetElem);
+		}
+		storeAssets();
+	}
+}]);
 let ctxTarget;
 const openCtx = target => {
-	closeCtx();
 	ctxTarget = target;
 	const items = [];
 	const targetAsset = ctxTarget.classList.contains("assetBar");
-	if(ctxTarget === assets || targetAsset) {
-		if(targetAsset) {
-			const singular = assets.querySelectorAll(".asset.selected").length === 1;
-			items.push({
-				[`Remove asset${singular ? "" : "s"}`]: true,
-				"Rename asset": singular
-			});
+	if(ctxTarget === assets) {
+		assetMenu.popup(win);
+	} else if(targetAsset) {
+		if(assets.querySelectorAll(".asset.selected").length === 1) {
+			selectedAssetMenu.popup(win);
+		} else {
+			selectedAssetsMenu.popup(win);
 		}
-		items.push(["Create object", "Create group", "Import image file(s)", "Import audio file(s)"]);
 	} else if(ctxTarget === sortAssets) {
-		items.push(["Sort by asset type", "Sort alphabetically", "Reverse"]);
+		sortAssetsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		textMenu.popup(win);
 	}
-	if(items.length) {
-		for(let i = 0; i < items.length; i++) {
-			if(i !== 0) {
-				ctxMenu.appendChild(document.createElement("hr"));
-			}
-			const itemArray = items[i] instanceof Array;
-			for(const item of itemArray ? items[i] : Object.keys(items[i])) {
-				const button = html`<button class="mdc-typography">$${item}</button>`;
-				if(!itemArray && !items[i][item]) {
-					button.disabled = true;
-				}
-				ctxMenu.appendChild(button);
-			}
-		}
-		ctxMenu.classList.remove("hidden");
-		ctxMenu.style.left = `${mouseX - ctxMenu.offsetWidth}px`;
-		if(mouseX + ctxMenu.offsetWidth <= document.body.offsetWidth || ctxMenu.offsetLeft < 0) {
-			ctxMenu.style.left = `${mouseX + 1}px`;
-		}
-		ctxMenu.style.top = `${mouseY - ctxMenu.offsetHeight}px`;
-		if(mouseY + ctxMenu.offsetHeight <= document.body.offsetHeight || ctxMenu.offsetTop < 0) {
-			ctxMenu.style.top = `${mouseY + 1}px`;
-		}
-	}
 };
-const closeCtx = () => {
-	ctxMenu.classList.add("hidden");
-	while(ctxMenu.children.length) {
-		ctxMenu.lastChild.remove();
-	}
-}
 const proj = {}; // the object of projects, the probject
 let projID = 0;
 let sel;
@@ -797,7 +1007,6 @@ const unzip = data => new Promise((resolve, reject) => {
 	});
 });
 const save = async as => {
-	closeCtx();
 	if(proj[sel] && (as || !proj[sel].saved) && (proj[sel].location = (!as && proj[sel].location) || electron.remote.dialog.showSaveDialog(win, fileOptions))) {
 		loadIndeterminate(true);
 		try {
@@ -821,7 +1030,6 @@ const setActive = elem => {
 	}
 };
 const open = async location => {
-	closeCtx();
 	if(!location) {
 		location = electron.remote.dialog.showOpenDialog(win, fileOptions);
 		if(location) {
@@ -927,86 +1135,6 @@ const selectAsset = (target, evtButton) => {
 	}
 	updateProperties();
 };
-const propElems = properties.querySelectorAll(".property");
-const prop = {};
-for(const propElem of propElems) {
-	prop[propElem.getAttribute("data-property")] = propElem;
-}
-const previewImage = prop.preview.querySelector("img");
-const previewAudio = prop.preview.querySelector("audio");
-const fullPreview = container.querySelector("#fullPreview");
-const fullPreviewImage = fullPreview.querySelector("img");
-const makeFullPreviewHidden = fullPreview.classList.add.bind(fullPreview.classList, "hidden");
-const hideFullPreview = () => {
-	setActive();
-	fullPreview.classList.remove("opaque");
-	setTimeout(makeFullPreviewHidden, 150);
-};
-const updatePreview = () => {
-	setActive(fullPreview);
-	fullPreviewImage.style.left = `${Math.max(0, (fullPreview.offsetWidth === fullPreview.scrollWidth ? fullPreview.offsetWidth : fullPreview.offsetWidth - 12) / 2 - fullPreviewImage.offsetWidth / 2)}px`;
-	fullPreviewImage.style.top = `${Math.max(0, (fullPreview.offsetHeight === fullPreview.scrollHeight ? fullPreview.offsetHeight : fullPreview.offsetHeight - 12) / 2 - fullPreviewImage.offsetHeight / 2)}px`;
-};
-const makeFullPreviewOpaque = () => {
-	fullPreview.classList.add("opaque");
-};
-fullPreview.addEventListener("mousemove", evt => {
-	fullPreview.classList.remove("hoverScrollbar");
-	let targetRect;
-	let setHoverScrollbar = false;
-	if(fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - 12) {
-		setHoverScrollbar = true;
-		fullPreview.classList.add("hoverScrollbar");
-	}
-	if(!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - 12) {
-		fullPreview.classList.add("hoverScrollbar");
-	}
-});
-const updateProperties = () => {
-	for(const propElem of propElems) {
-		propElem.classList.add("hidden");
-	}
-	previewImage.classList.add("hidden");
-	previewAudio.classList.add("hidden");
-	previewImage.src = previewAudio.src = "";
-	const assetElems = assets.querySelectorAll(".asset.selected");
-	if(assetElems.length) {
-		if(assetElems.length === 1) {
-			prop.name.elements[0].value = assetElems[0][_asset].name;
-			prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
-			prop.name.classList.remove("hidden");
-		}
-		let typeGroup = false;
-		let typeObj = false;
-		let typeFile = false;
-		for(const assetElem of assetElems) {
-			if(assetElem[_asset].type === "group") {
-				typeGroup = true;
-			} else if(assetElem[_asset].type === "obj") {
-				typeObj = true;
-			} else if(assetElem[_asset].type === "file") {
-				typeFile = true;
-			}
-		}
-		if(!typeGroup && !typeObj && typeFile) {
-			let mime = assetElems[0][_asset].mime;
-			for(let i = 1; i < assetElems.length; i++) {
-				if(assetElems[i][_asset].mime !== mime) {
-					mime = false;
-					break;
-				}
-			}
-			prop.mime.classList.remove("hidden");
-			prop.mime.elements[0].value = mime || "< mixed >";
-			if(mime) {
-				const previewMedia = mime.startsWith("image/") ? previewImage : previewAudio;
-				previewMedia.src = assetElems[0][_asset].url;
-				previewMedia.classList.remove("hidden");
-				prop.preview.classList.remove("hidden");
-			}
-		}
-	}
-};
 const byLowerCaseName = asset => asset.name.toLowerCase();
 const byID = asset => asset.id;
 const addFiles = async files => {
@@ -1107,172 +1235,35 @@ const onMouseDown = evt => {
 	} else if(evt.button === 2) {
 		mouseTarget2 = evt.target;
 	}
-	if(mouseTarget !== ctxMenu) {
-		if(assetContainer.contains(mouseTarget)) {
-			setActive(assetContainer);
-		} else if(!ctxMenu.contains(mouseTarget)) {
-			setActive();
-		}
-		if(!ctxMenu.classList.contains("hidden")) {
-			if(mouseTarget0 && ctxMenu.contains(mouseTarget0)) {
-				const targetAsset = ctxTarget.classList.contains("assetBar");
-				if(ctxTarget === assets || targetAsset) {
-					if(mouseTarget0.textContent.startsWith("Remove asset")) {
-						confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
-					} else if(mouseTarget0.textContent === "Rename asset") {
-						setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
-					} else if(mouseTarget0.textContent === "Create object") {
-						let assetParent = assets;
-						if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
-							if(ctxTarget.parentNode[_asset].type === "group") {
-								assetParent = ctxTarget.parentNode.lastElementChild;
-							} else if(ctxTarget.parentNode[_asset].parent) {
-								assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
-							}
-						}
-						setActive(assetContainer);
-						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-							assetElem.classList.remove("selected");
-						}
-						const names = proj[sel].data.assets.map(byLowerCaseName);
-						let name = "Object";
-						for(let i = 2; names.includes(name.toLowerCase()); i++) {
-							name = `Object ${i}`;
-						}
-						const asset = new Asset({
-							type: "obj",
-							name
-						});
-						proj[sel].data.assets.push(asset);
-						const assetObj = appendAsset(asset);
-						assetParent.appendChild(assetObj);
-						storeAssets();
-						assetObj.classList.add("selected");
-						proj[sel].selectedAsset = assetObj.id;
-						updateProperties();
-					} else if(mouseTarget0.textContent === "Create group") {
-						setActive(assetContainer);
-						const assetElems = assets.querySelectorAll(".asset.selected");
-						for(const assetElem of assetElems) {
-							assetElem.classList.remove("selected");
-						}
-						const names = proj[sel].data.assets.map(byLowerCaseName);
-						let name = "Group";
-						for(let i = 2; names.includes(name.toLowerCase()); i++) {
-							name = `Group ${i}`;
-						}
-						const asset = new Asset({
-							type: "group",
-							name
-						});
-						proj[sel].data.assets.push(asset);
-						const assetGroup = appendAsset(asset);
-						if(ctxTarget.classList.contains("assetBar")) {
-							ctxTarget.parentNode.before(assetGroup);
-							assetElems.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
-						}
-						assetGroup.classList.add("open");
-						storeAssets();
-						assetGroup.classList.add("selected");
-						proj[sel].selectedAsset = assetGroup.id;
-						updateProperties();
-					} else if(mouseTarget0.textContent === "Import image file(s)") {
-						assetInput.accept = "image/*";
-						assetInput.click();
-					} else if(mouseTarget0.textContent === "Import audio file(s)") {
-						assetInput.accept = "audio/*";
-						assetInput.click();
-					}
-				} else if(ctxTarget === sortAssets) {
-					if(mouseTarget0.textContent === "Sort by asset type") {
-						for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
-							const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
-							let afterGroup = null;
-							let afterObj = null;
-							let afterImage = null;
-							for(const assetElem of assetElems) {
-								if(assetElem[_asset].type === "obj") {
-									if(!afterGroup) {
-										afterGroup = assetElem;
-									}
-								} else if(assetElem[_asset].type === "file") {
-									if(assetElem[_asset].mime.startsWith("image/")) {
-										if(!afterObj) {
-											afterObj = assetElem;
-										}
-									} else {
-										if(!afterImage) {
-											afterImage = assetElem;
-										}
-									}
-								}
-							}
-							if(!afterObj) {
-								afterObj = afterImage;
-							}
-							if(!afterGroup) {
-								afterGroup = afterObj;
-							}
-							for(const assetElem of assetElems) {
-								if(assetElem[_asset].type === "group") {
-									assetChildren.insertBefore(assetElem, afterGroup);
-								} else if(assetElem[_asset].type === "obj") {
-									assetChildren.insertBefore(assetElem, afterObj);
-								} else if(assetElem[_asset].type === "file") {
-									if(assetElem[_asset].mime.startsWith("image/")) {
-										assetChildren.insertBefore(assetElem, afterImage);
-									} else {
-										assetChildren.appendChild(assetElem);
-									}
-								}
-							}
-						}
-						storeAssets();
-					} else if(mouseTarget0.textContent === "Sort alphabetically") {
-						for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
-							const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
-							for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
-								assetChildren.lastChild.after(assetElems.find(assetElem => assetElem[_asset].name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
-							}
-						}
-						storeAssets();
-					} else if(mouseTarget0.textContent === "Reverse") {
-						for(const assetElem of assets.querySelectorAll(".asset")) {
-							assetElem.parentNode.firstChild.before(assetElem);
-						}
-						storeAssets();
-					}
+	if(assetContainer.contains(mouseTarget)) {
+		setActive(assetContainer);
+	} else {
+		setActive();
+	}
+	if(mouseTarget.classList.contains("assetBar")) {
+		proj[sel].focusedAsset = mouseTarget.parentNode.id;
+	} else if(evt.button === 0) {
+		if(mouseTarget0.classList.contains("tab")) {
+			if(mouseTarget0 === homeTab) {
+				select("home");
+			} else {
+				select(mouseTarget0[_proj].id);
+				const prevTabPos = mouseTarget0.offsetLeft;
+				targetOffset = evt.clientX - prevTabPos;
+				mouseTarget0.style.left = "";
+				mouseTarget0.style.left = `${prevTabPos - (initialTargetPos = mouseTarget0.offsetLeft)}px`;
+				for(let i = 1; i < tabs.children.length; i++) {
+					tabs.children[i].classList[tabs.children[i] === mouseTarget0 ? "remove" : "add"]("smooth");
 				}
-				closeCtx();
-				return;
 			}
-			closeCtx();
-		}
-		if(mouseTarget.classList.contains("assetBar")) {
-			proj[sel].focusedAsset = mouseTarget.parentNode.id;
-		} else if(evt.button === 0) {
-			if(mouseTarget0.classList.contains("tab")) {
-				if(mouseTarget0 === homeTab) {
-					select("home");
-				} else {
-					select(mouseTarget0[_proj].id);
-					const prevTabPos = mouseTarget0.offsetLeft;
-					targetOffset = evt.clientX - prevTabPos;
-					mouseTarget0.style.left = "";
-					mouseTarget0.style.left = `${prevTabPos - (initialTargetPos = mouseTarget0.offsetLeft)}px`;
-					for(let i = 1; i < tabs.children.length; i++) {
-						tabs.children[i].classList[tabs.children[i] === mouseTarget0 ? "remove" : "add"]("smooth");
-					}
-				}
-			} else if(mouseTarget0.classList.contains("handle")) {
-				initialTargetPos = mouseTarget0.parentNode[mouseTarget0.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
-				if(mouseTarget0.parentNode === assetContainer) {
-					targetOffset = mouseTarget0.parentNode.offsetWidth - evt.clientX;
-				} else if(mouseTarget0.parentNode === propertyContainer) {
-					targetOffset = evt.clientX - mouseTarget0.parentNode.offsetLeft;
-				} else if(mouseTarget0.parentNode === timelineContainer) {
-					targetOffset = evt.clientY - mouseTarget0.parentNode.offsetTop;
-				}
+		} else if(mouseTarget0.classList.contains("handle")) {
+			initialTargetPos = mouseTarget0.parentNode[mouseTarget0.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
+			if(mouseTarget0.parentNode === assetContainer) {
+				targetOffset = mouseTarget0.parentNode.offsetWidth - evt.clientX;
+			} else if(mouseTarget0.parentNode === propertyContainer) {
+				targetOffset = evt.clientX - mouseTarget0.parentNode.offsetLeft;
+			} else if(mouseTarget0.parentNode === timelineContainer) {
+				targetOffset = evt.clientY - mouseTarget0.parentNode.offsetTop;
 			}
 		}
 	}
@@ -1496,7 +1487,7 @@ const handleMouseUp = (evt, evtButton) => {
 			}
 		}
 	}
-	if(evtButton2 && evt.target === mouseTarget2 && mouseTarget2 !== ctxMenu && !ctxMenu.contains(mouseTarget2)) {
+	if(evtButton2 && evt.target === mouseTarget2) {
 		openCtx(mouseTarget2);
 	}
 };
@@ -1571,11 +1562,7 @@ document.addEventListener("keydown", evt => {
 	altKey = evt.altKey;
 	shiftKey = evt.shiftKey;
 	if(evt.keyCode === 38) { // `up`
-		if(!ctxMenu.classList.contains("hidden")) {
-			const buttons = ctxMenu.querySelectorAll("button");
-			const focus = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
-			buttons[focus ? (Array.prototype.indexOf.call(buttons, focus) || buttons.length) - 1 : 0].focus();
-		} else if(focused() && assetContainer.classList.contains("active")) {
+		if(focused() && assetContainer.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
 			const assetElem = allAssets[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(allAssets, assets.querySelector(`#${proj[sel].focusedAsset}`)) || allAssets.length) - 1) : 0];
@@ -1585,11 +1572,7 @@ document.addEventListener("keydown", evt => {
 			proj[sel].focusedAsset = assetElem.id;
 		}
 	} else if(evt.keyCode === 40) { // `down`
-		if(!ctxMenu.classList.contains("hidden")) {
-			const buttons = ctxMenu.querySelectorAll("button");
-			const focus = ctxMenu.querySelector("button:focus") || ctxMenu.querySelector("button:hover");
-			buttons[((focus ? Array.prototype.indexOf.call(buttons, focus) : -1) + 1) % buttons.length].focus();
-		} else if(focused() && assetContainer.classList.contains("active")) {
+		if(focused() && assetContainer.classList.contains("active")) {
 			evt.preventDefault();
 			const allAssets = assets.querySelectorAll(".asset");
 			const assetElem = allAssets[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(allAssets, assets.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % allAssets.length];
@@ -1700,9 +1683,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 27) { // `esc`
-		if(!ctxMenu.classList.contains("hidden")) {
-			closeCtx();
-		} else if(focused()) {
+		if(focused()) {
 			if(assetContainer.classList.contains("active")) {
 				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 					assetElem.classList.remove("selected");
