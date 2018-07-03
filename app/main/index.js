@@ -346,7 +346,33 @@ const scrollIntoView = elem => {
 		elem.parentNode.scrollTop = elem.offsetTop + elem.offsetHeight - elem.parentNode.offsetHeight;
 	}
 };
-const _index = Symbol("_index");
+const textMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Undo",
+	accelerator: "CmdOrCtrl+Z",
+	role: "undo"
+}, {
+	label: "Redo",
+	accelerator: "CmdOrCtrl+Shift+Z",
+	role: "redo"
+}, {
+	type: "separator"
+}, {
+	label: "Cut",
+	accelerator: "CmdOrCtrl+X",
+	role: "cut"
+}, {
+	label: "Copy",
+	accelerator: "CmdOrCtrl+C",
+	role: "copy"
+}, {
+	label: "Paste",
+	accelerator: "CmdOrCtrl+V",
+	role: "paste"
+}, {
+	label: "Select All",
+	accelerator: "CmdOrCtrl+A",
+	role: "selectall"
+}]);
 let ctxTarget;
 const openCtx = target => {
 	closeCtx();
@@ -364,9 +390,10 @@ const openCtx = target => {
 		items.push(["Create object", "Create group", "Import image file(s)", "Import audio file(s)"]);
 	} else if(ctxTarget === sortAssets) {
 		items.push(["Sort by asset type", "Sort alphabetically", "Reverse"]);
+	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
+		textMenu.popup(win);
 	}
 	if(items.length) {
-		let itemIndex = 0;
 		for(let i = 0; i < items.length; i++) {
 			if(i !== 0) {
 				ctxMenu.appendChild(document.createElement("hr"));
@@ -377,7 +404,6 @@ const openCtx = target => {
 				if(!itemArray && !items[i][item]) {
 					button.disabled = true;
 				}
-				button[_index] = itemIndex++;
 				ctxMenu.appendChild(button);
 			}
 		}
@@ -1091,14 +1117,11 @@ const onMouseDown = evt => {
 			if(mouseTarget0 && ctxMenu.contains(mouseTarget0)) {
 				const targetAsset = ctxTarget.classList.contains("assetBar");
 				if(ctxTarget === assets || targetAsset) {
-					if(targetAsset) {
-						mouseTarget0[_index] -= 2;
-					}
-					if(mouseTarget0[_index] === -2) { // Remove asset(s)
+					if(mouseTarget0.textContent.startsWith("Remove asset")) {
 						confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
-					} else if(mouseTarget0[_index] === -1) { // Rename asset
+					} else if(mouseTarget0.textContent === "Rename asset") {
 						setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
-					} else if(mouseTarget0[_index] === 0) { // Create object
+					} else if(mouseTarget0.textContent === "Create object") {
 						let assetParent = assets;
 						if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
 							if(ctxTarget.parentNode[_asset].type === "group") {
@@ -1127,7 +1150,7 @@ const onMouseDown = evt => {
 						assetObj.classList.add("selected");
 						proj[sel].selectedAsset = assetObj.id;
 						updateProperties();
-					} else if(mouseTarget0[_index] === 1) { // Create group
+					} else if(mouseTarget0.textContent === "Create group") {
 						setActive(assetContainer);
 						const assetElems = assets.querySelectorAll(".asset.selected");
 						for(const assetElem of assetElems) {
@@ -1153,15 +1176,15 @@ const onMouseDown = evt => {
 						assetGroup.classList.add("selected");
 						proj[sel].selectedAsset = assetGroup.id;
 						updateProperties();
-					} else if(mouseTarget0[_index] === 2) { // Import image file(s)
+					} else if(mouseTarget0.textContent === "Import image file(s)") {
 						assetInput.accept = "image/*";
 						assetInput.click();
-					} else if(mouseTarget0[_index] === 3) { // Import audio file(s)
+					} else if(mouseTarget0.textContent === "Import audio file(s)") {
 						assetInput.accept = "audio/*";
 						assetInput.click();
 					}
 				} else if(ctxTarget === sortAssets) {
-					if(mouseTarget0[_index] === 0) { // Sort by asset type
+					if(mouseTarget0.textContent === "Sort by asset type") {
 						for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
 							const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
 							let afterGroup = null;
@@ -1205,7 +1228,7 @@ const onMouseDown = evt => {
 							}
 						}
 						storeAssets();
-					} else if(mouseTarget0[_index] === 1) { // Sort alphabetically
+					} else if(mouseTarget0.textContent === "Sort alphabetically") {
 						for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
 							const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
 							for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
@@ -1213,7 +1236,7 @@ const onMouseDown = evt => {
 							}
 						}
 						storeAssets();
-					} else if(mouseTarget0[_index] === 2) { // Reverse
+					} else if(mouseTarget0.textContent === "Reverse") {
 						for(const assetElem of assets.querySelectorAll(".asset")) {
 							assetElem.parentNode.firstChild.before(assetElem);
 						}
@@ -1574,6 +1597,11 @@ document.addEventListener("keydown", evt => {
 				selectAsset(assetElem);
 			}
 			proj[sel].focusedAsset = assetElem.id;
+		}
+	} else if(evt.keyCode === 93) { // `context menu`
+		const ctxCandidates = document.querySelectorAll(":hover, :focus");
+		if(ctxCandidates.length) {
+			openCtx(ctxCandidates[ctxCandidates.length - 1]);
 		}
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
