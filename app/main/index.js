@@ -851,6 +851,12 @@ const removeAsset = assetElem => {
 	}
 	if(assetElem[_asset].type === "group") {
 		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
+	} else if(assetElem[_asset].type === "obj" && assetPath.querySelector(`#assetLink_${assetElem[_asset].id}`)) {
+		if(proj[sel].rootAsset === assetElem[_asset].id) {
+			rootAsset();
+		} else {
+			// TODO: Deselect asset upon removal
+		}
 	}
 	assetElem.remove();
 	updateProperties();
@@ -1779,7 +1785,7 @@ const assetLink = (asset, selected) => {
 		}
 	}
 	const assetLinkElem = html`
-		<span class="assetLink">
+		<span id="assetLink_${asset.id}" class="assetLink">
 			<span class="material-icons">arrow_right</span>
 			<div class="mdc-chip${selected ? " mdc-chip--selected" : ""}">
 				<div class="mdc-chip__text">$${asset.name}</div>
