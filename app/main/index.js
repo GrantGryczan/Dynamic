@@ -337,6 +337,12 @@ if(storage.containerSizes instanceof Object) {
 } else {
 	storage.containerSizes = {};
 }
+if(typeof storage.defaultCanvasWidth !== "number") {
+	storage.defaultCanvasWidth = 650;
+}
+if(typeof storage.defaultCanvasHeight !== "number") {
+	storage.defaultCanvasHeight = 450;
+}
 store();
 const scrollIntoView = elem => {
 	if(elem.offsetTop < elem.parentNode.scrollTop) {
@@ -928,8 +934,6 @@ const select = id => {
 		homeTab.classList.add("current");
 		homePage.classList.remove("hidden");
 	} else {
-		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width}px`;
-		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height}px`;
 		proj[sel].data.assets.forEach(appendAsset);
 		for(const id of proj[sel].selected) {
 			projectPage.querySelector(`#${id}`).classList.add("selected");
@@ -947,6 +951,9 @@ const select = id => {
 		proj[sel].tab.classList.add("current");
 		projectPage.classList.remove("hidden");
 		assets.scrollTop = proj[sel].scrollAssets;
+		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.defaultCanvasWidth}px`;
+		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.defaultCanvasHeight}px`;
+		absoluteCenter(content);
 	}
 };
 select("home");
@@ -1350,6 +1357,7 @@ document.addEventListener("mousemove", evt => {
 				if(!horizontalTarget) {
 					mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
 				}
+				absoluteCenter(content);
 			}
 		}
 	}

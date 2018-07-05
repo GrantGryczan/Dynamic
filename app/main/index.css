@@ -481,6 +481,7 @@ body.focus #titleBar button:active {
 #contentContainer {
 	flex-grow: 1;
 	position: relative;
+	overflow: auto;
 }
 #content {
 	position: absolute;
