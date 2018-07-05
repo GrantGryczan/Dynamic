@@ -855,7 +855,7 @@ const removeAsset = assetElem => {
 		if(proj[sel].rootAsset === assetElem[_asset].id) {
 			rootAsset();
 		} else {
-			// TODO: Deselect asset upon removal
+			// TODO: Close asset upon removal
 		}
 	}
 	assetElem.remove();
