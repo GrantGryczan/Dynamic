@@ -1547,6 +1547,7 @@ document.addEventListener("dblclick", evt => {
 			new Project();
 		} else if(evt.target.classList.contains("handle")) {
 			evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minWidth = evt.target.parentNode.style.minHeight = "";
+			absoluteCenter(content);
 			delete storage.containerSizes[evt.target.parentNode.id];
 			store();
 		} else if(evt.target.classList.contains("assetBar")) {
@@ -1726,9 +1727,11 @@ document.addEventListener("input", evt => {
 	}
 	if(evt.target === prop.canvasSize.elements[0]) {
 		content.style.width = `${proj[sel].data.width = evt.target.value}px`;
+		store();
 		absoluteCenter(content);
 	} else if(evt.target === prop.canvasSize.elements[1]) {
 		content.style.height = `${proj[sel].data.height = evt.target.value}px`;
+		store();
 		absoluteCenter(content);
 	} else if(evt.target === prop.name.elements[0]) {
 		const names = proj[sel].data.assets.map(byLowerCaseName);
