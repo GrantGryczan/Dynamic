@@ -256,10 +256,11 @@ const addAsset = assetHead.querySelector("#addAsset");
 const sortAssets = assetHead.querySelector("#sortAssets");
 const assets = assetContainer.querySelector("#assets");
 const assetDrag = assets.querySelector("#assetDrag");
-const propertyContainer = container.querySelector("#propertyContainer");
-const properties = container.querySelector("#properties");
+const content = container.querySelector("#content");
 const timelineContainer = container.querySelector("#timelineContainer");
 const assetPath = timelineContainer.querySelector("#assetPath");
+const propertyContainer = container.querySelector("#propertyContainer");
+const properties = container.querySelector("#properties");
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const zlib = require("zlib");
@@ -359,10 +360,10 @@ const hideFullPreview = () => {
 	fullPreview.classList.remove("opaque");
 	setTimeout(makeFullPreviewHidden, 150);
 };
-const updatePreview = () => {
+const absoluteCenter = elem => {
 	setActive(fullPreview);
-	fullPreviewImage.style.left = `${Math.max(0, (fullPreview.offsetWidth === fullPreview.scrollWidth ? fullPreview.offsetWidth : fullPreview.offsetWidth - 12) / 2 - fullPreviewImage.offsetWidth / 2)}px`;
-	fullPreviewImage.style.top = `${Math.max(0, (fullPreview.offsetHeight === fullPreview.scrollHeight ? fullPreview.offsetHeight : fullPreview.offsetHeight - 12) / 2 - fullPreviewImage.offsetHeight / 2)}px`;
+	elem.style.left = `${Math.max(0, (elem.parentNode.offsetWidth === elem.parentNode.scrollWidth ? elem.parentNode.offsetWidth : elem.parentNode.offsetWidth - 12) / 2 - elem.offsetWidth / 2)}px`;
+	elem.style.top = `${Math.max(0, (elem.parentNode.offsetHeight === elem.parentNode.scrollHeight ? elem.parentNode.offsetHeight : elem.parentNode.offsetHeight - 12) / 2 - elem.offsetHeight / 2)}px`;
 };
 const makeFullPreviewOpaque = () => {
 	fullPreview.classList.add("opaque");
@@ -422,6 +423,8 @@ const updateProperties = () => {
 				prop.preview.classList.remove("hidden");
 			}
 		}
+	} else {
+		prop.canvasSize.classList.remove("hidden");
 	}
 };
 const menuSeparator = {
@@ -925,6 +928,8 @@ const select = id => {
 		homeTab.classList.add("current");
 		homePage.classList.remove("hidden");
 	} else {
+		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width}px`;
+		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height}px`;
 		proj[sel].data.assets.forEach(appendAsset);
 		for(const id of proj[sel].selected) {
 			projectPage.querySelector(`#${id}`).classList.add("selected");
@@ -1476,7 +1481,7 @@ const handleMouseUp = (evt, evtButton) => {
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
 						fullPreview.classList.remove("hidden");
-						updatePreview();
+						absoluteCenter(fullPreviewImage);
 						setTimeout(makeFullPreviewOpaque);
 					} else if(mouseTarget0.classList.contains("close") && mouseTarget0.parentNode.classList.contains("tab")) {
 						mouseTarget0.parentNode[_proj].close();
@@ -1707,11 +1712,17 @@ document.addEventListener("keyup", evt => {
 	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
 	altKey = evt.keyCode !== 18 && evt.altKey;
 }, true);
-document.addEventListener("change", evt => {
+document.addEventListener("input", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === prop.name.elements[0]) {
+	if(evt.target === prop.canvasSize.elements[0]) {
+		content.style.width = `${proj[sel].data.width = evt.target.value}px`;
+		absoluteCenter(content);
+	} else if(evt.target === prop.canvasSize.elements[1]) {
+		content.style.height = `${proj[sel].data.height = evt.target.value}px`;
+		absoluteCenter(content);
+	} else if(evt.target === prop.name.elements[0]) {
 		const names = proj[sel].data.assets.map(byLowerCaseName);
 		if(names.includes(evt.target.value)) {
 			new Miro.dialog("Error", "That asset name is already in use.");
@@ -1725,8 +1736,9 @@ document.addEventListener("submit", evt => {
 	evt.preventDefault();
 }, true);
 window.addEventListener("resize", () => {
+	absoluteCenter(content);
 	if(!fullPreview.classList.contains("hidden")) {
-		updatePreview();
+		absoluteCenter(fullPreviewImage);
 	}
 });
 let notConfirmingClose = true;

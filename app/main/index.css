@@ -480,6 +480,11 @@ body.focus #titleBar button:active {
 }
 #contentContainer {
 	flex-grow: 1;
+	position: relative;
+}
+#content {
+	position: absolute;
+	background-color: #ffffff;
 }
 #propertyContainer {
 	width: 300px;
@@ -489,6 +494,22 @@ body.focus #titleBar button:active {
 }
 .property {
 	position: relative;
+}
+.property[data-property="canvasSize"] .mdc-text-field {
+	display; inline-block;
+	width: initial;
+	height: initial !important;
+}
+.property[data-property="canvasSize"] input {
+	padding-top: 0;
+	text-align: center;
+}
+#manageSize {
+	width: 32px;
+	height: 32px;
+	box-shadow: none;
+	vertical-align: middle;
+	background-color: #6e00db;
 }
 .property[data-property="preview"] img {
 	max-width: 100%;

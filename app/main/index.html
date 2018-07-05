@@ -57,7 +57,9 @@
 							</div>
 							<div class="handle horizontal"></div>
 						</div>
-						<div id="contentContainer"></div>
+						<div id="contentContainer">
+							<div id="content" class="mdc-elevation--z1"></div>
+						</div>
 					</div>
 					<div id="timelineContainer" class="panel">
 						<div class="contents">
@@ -78,6 +80,18 @@
 							<span class="label spaced">Properties</span>
 						</div>
 						<div id="properties">
+							<form class="property hidden" data-property="canvasSize">
+								<label>Canvas Size</label>
+								<div class="mdc-text-field">
+									<input type="number" id="canvasWidth" class="mdc-text-field__input" min="1" max="999999" required>
+									<div class="mdc-line-ripple"></div>
+								</div> x <div class="mdc-text-field">
+									<input type="number" id="canvasHeight" class="mdc-text-field__input" min="1" max="999999" required>
+									<div class="mdc-line-ripple"></div>
+								</div><!-- <button id="manageSize" class="mdc-fab" title="Manage size" type="button">
+									<span class="mdc-fab__icon material-icons">transform</span>
+								</button>-->
+							</form>
 							<form class="property hidden" data-property="name">
 								<div class="mdc-text-field">
 									<input type="text" id="nameInput" class="mdc-text-field__input" required>
