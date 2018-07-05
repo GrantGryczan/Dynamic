@@ -1547,9 +1547,9 @@ document.addEventListener("dblclick", evt => {
 			new Project();
 		} else if(evt.target.classList.contains("handle")) {
 			evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minWidth = evt.target.parentNode.style.minHeight = "";
-			absoluteCenter(content);
 			delete storage.containerSizes[evt.target.parentNode.id];
 			store();
+			absoluteCenter(content);
 		} else if(evt.target.classList.contains("assetBar")) {
 			selectAsset(evt.target.parentNode, 2);
 			if(evt.target.parentNode[_asset].type === "group") {
