@@ -10,14 +10,6 @@
 		<link rel="stylesheet" href="./index.css">
 	</head>
 	<body class="mdc-typography">
-		<div id="titleBar">
-			<div class="label"></div>
-			<div id="windowActions">
-				<button id="minimizeWindow" class="material-icons" tabindex="-1">minimize</button>
-				<button id="maximizeWindow" class="material-icons" tabindex="-1"></button>
-				<button id="closeWindow" class="material-icons" tabindex="-1">close</button>
-			</div>
-		</div>
 		<div id="container">
 			<div id="tabs">
 				<div id="homeTab" class="tab saved">
@@ -40,9 +32,10 @@
 			</div>
 			<div id="homePage" class="page hidden"></div>
 			<div id="projectPage" class="page hidden">
-				<div id="leftPanels">
-					<div id="topPanels">
+				<div id="leftPanels" class="panelGroup">
+					<div id="topPanels" class="panelGroup">
 						<div id="assetContainer" class="panel">
+							<div class="handle right"></div>
 							<div class="contents">
 								<div class="head">
 									<span class="label spaced">Assets</span><button id="addAsset" class="mdc-fab spaced" title="Add asset" type="button">
@@ -55,13 +48,13 @@
 									<div id="assetDrag" class="hidden"></div>
 								</div>
 							</div>
-							<div class="handle horizontal"></div>
 						</div>
 						<div id="contentContainer">
 							<div id="content" class="mdc-elevation--z1"></div>
 						</div>
 					</div>
 					<div id="timelineContainer" class="panel">
+						<div class="handle top"></div>
 						<div class="contents">
 							<div id="assetPath">
 								<span class="assetLink">
@@ -71,54 +64,73 @@
 								</span>
 							</div>
 						</div>
-						<div class="handle vertical"></div>
 					</div>
 				</div>
-				<div id="propertyContainer" class="panel">
-					<div class="contents">
-						<div class="head">
-							<span class="label spaced">Properties</span>
-						</div>
-						<div id="properties">
-							<form class="property hidden" data-property="canvasSize">
-								<label>Canvas Size</label>
-								<div class="mdc-text-field">
-									<input type="number" id="canvasWidth" class="mdc-text-field__input" min="1" max="999999" required>
-									<div class="mdc-line-ripple"></div>
-								</div> x <div class="mdc-text-field">
-									<input type="number" id="canvasHeight" class="mdc-text-field__input" min="1" max="999999" required>
-									<div class="mdc-line-ripple"></div>
-								</div><!-- <button id="manageSize" class="mdc-fab" title="Manage size" type="button">
-									<span class="mdc-fab__icon material-icons">transform</span>
-								</button>-->
-							</form>
-							<form class="property hidden" data-property="name">
-								<div class="mdc-text-field">
-									<input type="text" id="nameInput" class="mdc-text-field__input" required>
-									<label class="mdc-floating-label" for="nameInput">Name</label>
-									<div class="mdc-line-ripple"></div>
-								</div>
-							</form>
-							<form class="property hidden" data-property="mime">
-								<div class="mdc-text-field mdc-text-field--upgraded">
-									<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
-									<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
-									<div class="mdc-line-ripple"></div>
-								</div>
-							</form>
-							<form class="property hidden" data-property="preview">
-								<label>Preview</label>
-								<img class="checkerboard hidden">
-								<audio class="hidden" controls controlslist="nodownload"></audio>
-							</form>
+				<div id="rightPanels" class="panelGroup">
+					<div class="handle left"></div>
+					<div id="propertyContainer" class="panel">
+						<div class="contents">
+							<div class="head">
+								<span class="label spaced">Properties</span>
+							</div>
+							<div id="properties">
+								<form class="property hidden" data-property="canvasSize">
+									<label>Canvas Size</label>
+									<div class="mdc-text-field">
+										<input type="number" id="canvasWidth" class="mdc-text-field__input" min="1" max="999999" required>
+										<div class="mdc-line-ripple"></div>
+									</div> x <div class="mdc-text-field">
+										<input type="number" id="canvasHeight" class="mdc-text-field__input" min="1" max="999999" required>
+										<div class="mdc-line-ripple"></div>
+									</div><!-- <button id="manageSize" class="mdc-fab" title="Manage size">
+										<span class="mdc-fab__icon material-icons">transform</span>
+									</button>-->
+								</form>
+								<form class="property hidden" data-property="name">
+									<div class="mdc-text-field">
+										<input type="text" id="nameInput" class="mdc-text-field__input" required>
+										<label class="mdc-floating-label" for="nameInput">Name</label>
+										<div class="mdc-line-ripple"></div>
+									</div>
+								</form>
+								<form class="property hidden" data-property="mime">
+									<div class="mdc-text-field mdc-text-field--upgraded">
+										<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
+										<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
+										<div class="mdc-line-ripple"></div>
+									</div>
+								</form>
+								<form class="property hidden" data-property="preview">
+									<label>Preview</label>
+									<img class="checkerboard hidden">
+									<audio class="hidden" controls controlslist="nodownload"></audio>
+									<br>
+									<button id="downloadAsset" class="mdc-button mdc-button--dense">
+										<i class="material-icons mdc-button__icon">file_download</i> Download
+									</button>
+								</form>
+							</div>
 						</div>
 					</div>
-					<div class="handle horizontal"></div>
+					<div id="layerContainer" class="panel">
+						<div class="handle top"></div>
+						<div class="contents">
+							<div class="head">
+								<span class="label spaced">Layers</span>
+							</div>
+							<div id="layerBox">
+								<table>
+									<tbody id="layers"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div id="fullPreview" class="hidden">
 				<img class="checkerboard mdc-elevation--z8">
 			</div>
+			<div id="targetIndicator"></div>
 		</div>
 		<script src="../js/material.js"></script> <!-- https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js -->
 		<script src="./index.js"></script>

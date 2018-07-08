@@ -48,9 +48,7 @@ electron.app.once("ready", () => {
 					title: "Miroware Dynamic",
 					show: false,
 					minWidth: 650,
-					minHeight: 450,
-					titleBarStyle: false,
-					frame: false
+					minHeight: 450
 				});
 				noClosedIntent = true;
 				win.webContents.once("did-finish-load", () => {
@@ -60,7 +58,6 @@ electron.app.once("ready", () => {
 					}
 					addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
 				});
-				win.setMenu(null);
 				win.maximize();
 				win.loadURL(`${rootURL}/main/index.html`);
 			});

@@ -233,11 +233,6 @@ class MiroDialog {
 }
 Miro.dialog = MiroDialog;
 Miro.prepare(document);
-const titleBar = document.querySelector("#titleBar");
-const windowActions = titleBar.querySelector("#windowActions");
-const minimizeWindow = windowActions.querySelector("#minimizeWindow");
-const maximizeWindow = windowActions.querySelector("#maximizeWindow");
-const closeWindow = windowActions.querySelector("#closeWindow");
 const container = document.querySelector("#container");
 const tabs = container.querySelector("#tabs");
 const homeTab = tabs.querySelector("#homeTab");
@@ -250,20 +245,25 @@ const saveProjAs = toolbar.querySelector("#saveProjAs");
 const exportProj = toolbar.querySelector("#exportProj");
 const homePage = container.querySelector("#homePage");
 const projectPage = container.querySelector("#projectPage");
-const assetContainer = container.querySelector("#assetContainer");
+const assetContainer = projectPage.querySelector("#assetContainer");
 const assetHead = assetContainer.querySelector(".head");
 const addAsset = assetHead.querySelector("#addAsset");
 const sortAssets = assetHead.querySelector("#sortAssets");
 const assets = assetContainer.querySelector("#assets");
 const assetDrag = assets.querySelector("#assetDrag");
-const content = container.querySelector("#content");
-const timelineContainer = container.querySelector("#timelineContainer");
+const content = projectPage.querySelector("#content");
+const timelineContainer = projectPage.querySelector("#timelineContainer");
 const assetPath = timelineContainer.querySelector("#assetPath");
-const propertyContainer = container.querySelector("#propertyContainer");
-const properties = container.querySelector("#properties");
+const propertyContainer = projectPage.querySelector("#propertyContainer");
+const properties = propertyContainer.querySelector("#properties");
+const layerContainer = projectPage.querySelector("#layerContainer");
+const layers = layerContainer.querySelector("#layers");
+const targetIndicator = container.querySelector("#targetIndicator");
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const zlib = require("zlib");
+const http = require("http");
+const https = require("https");
 const electron = require("electron");
 const uid = keys => {
 	let key;
@@ -288,10 +288,6 @@ const store = () => {
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
 win.setProgressBar(-1);
-titleBar.querySelector(".label").textContent = `Miroware Dynamic ${navigator.userAgent.match(/ Dynamic\/([^ ]+) /)[1]}`;
-if(win.isFullScreen()) {
-	titleBar.classList.add("hidden");
-}
 let shiftKey = false;
 let superKey = false;
 let altKey = false;
@@ -311,37 +307,29 @@ if(win.isFocused()) {
 } else {
 	onBlur();
 }
-const onMaximize = () => {
-	maximizeWindow.textContent = "fullscreen_exit";
-};
-const onUnmaximize = () => {
-	maximizeWindow.textContent = "fullscreen";
-};
-win.on("maximize", onMaximize);
-win.on("unmaximize", onUnmaximize);
-if(win.isMaximized()) {
-	onMaximize();
-} else {
-	onUnmaximize();
-}
-if(storage.containerSizes instanceof Object) {
-	if(storage.containerSizes.assetContainer) {
-		assetContainer.style.width = `${storage.containerSizes.assetContainer}px`;
-	}
-	if(storage.containerSizes.propertyContainer) {
-		propertyContainer.style.width = `${storage.containerSizes.propertyContainer}px`;
-	}
-	if(storage.containerSizes.timelineContainer) {
-		timelineContainer.style.height = timelineContainer.style.minHeight = `${storage.containerSizes.timelineContainer}px`;
+if(storage.size instanceof Object) {
+	for(const id of Object.keys(storage.size)) {
+		const elem = document.querySelector(`#${id}`);
+		if(elem) {
+			const handle = elem.querySelector(".handle");
+			if(handle) {
+				const verticalHandle = handle.classList.contains("top") || handle.classList.contains("bottom");
+				const px = `${storage.size[id]}px`;
+				elem.style[verticalHandle ? "height" : "width"] = px;
+				if(verticalHandle) {
+					elem.style.minHeight = px;
+				}
+			}
+		}
 	}
 } else {
-	storage.containerSizes = {};
+	storage.size = {};
 }
-if(typeof storage.defaultCanvasWidth !== "number") {
-	storage.defaultCanvasWidth = 650;
+if(typeof storage.canvasWidth !== "number") {
+	storage.canvasWidth = 650;
 }
-if(typeof storage.defaultCanvasHeight !== "number") {
-	storage.defaultCanvasHeight = 450;
+if(typeof storage.canvasHeight !== "number") {
+	storage.canvasHeight = 450;
 }
 store();
 const scrollIntoView = elem => {
@@ -351,6 +339,22 @@ const scrollIntoView = elem => {
 		elem.parentNode.scrollTop = elem.offsetTop + elem.offsetHeight - elem.parentNode.offsetHeight;
 	}
 };
+const indicateTarget = target => {
+	if(target) {
+		const rect = target.getBoundingClientRect();
+		targetIndicator.style.left = `${rect.left}px`;
+		targetIndicator.style.top = `${rect.top}px`;
+		targetIndicator.style.width = `${rect.width}px`;
+		targetIndicator.style.height = `${rect.height}px`;
+		targetIndicator.classList.add("visible");
+	} else if(targetIndicator.classList.contains("visible")) {
+		targetIndicator.style.left = "";
+		targetIndicator.style.top = "";
+		targetIndicator.style.width = "";
+		targetIndicator.style.height = "";
+		targetIndicator.classList.remove("visible");
+	}
+};
 const propElems = properties.querySelectorAll(".property");
 const prop = {};
 for(const propElem of propElems) {
@@ -358,6 +362,7 @@ for(const propElem of propElems) {
 }
 const previewImage = prop.preview.querySelector("img");
 const previewAudio = prop.preview.querySelector("audio");
+const downloadAsset = prop.preview.querySelector("#downloadAsset");
 const fullPreview = container.querySelector("#fullPreview");
 const fullPreviewImage = fullPreview.querySelector("img");
 const makeFullPreviewHidden = fullPreview.classList.add.bind(fullPreview.classList, "hidden");
@@ -367,7 +372,6 @@ const hideFullPreview = () => {
 	setTimeout(makeFullPreviewHidden, 150);
 };
 const absoluteCenter = elem => {
-	setActive(fullPreview);
 	elem.style.left = `${Math.max(0, (elem.parentNode.offsetWidth === elem.parentNode.scrollWidth ? elem.parentNode.offsetWidth : elem.parentNode.offsetWidth - 12) / 2 - elem.offsetWidth / 2)}px`;
 	elem.style.top = `${Math.max(0, (elem.parentNode.offsetHeight === elem.parentNode.scrollHeight ? elem.parentNode.offsetHeight : elem.parentNode.offsetHeight - 12) / 2 - elem.offsetHeight / 2)}px`;
 };
@@ -413,17 +417,17 @@ const updateProperties = () => {
 			}
 		}
 		if(!typeGroup && !typeObj && typeFile) {
-			let mime = assetElems[0][_asset].mime;
+			let mimeType = assetElems[0][_asset].mime;
 			for(let i = 1; i < assetElems.length; i++) {
-				if(assetElems[i][_asset].mime !== mime) {
-					mime = false;
+				if(assetElems[i][_asset].mime !== mimeType) {
+					mimeType = false;
 					break;
 				}
 			}
 			prop.mime.classList.remove("hidden");
-			prop.mime.elements[0].value = mime || "< mixed >";
-			if(mime) {
-				const previewMedia = mime.startsWith("image/") ? previewImage : previewAudio;
+			prop.mime.elements[0].value = mimeType || "< mixed >";
+			if(mimeType) {
+				const previewMedia = mimeType.startsWith("image/") ? previewImage : previewAudio;
 				previewMedia.src = assetElems[0][_asset].url;
 				previewMedia.classList.remove("hidden");
 				prop.preview.classList.remove("hidden");
@@ -957,8 +961,8 @@ const select = id => {
 		proj[sel].tab.classList.add("current");
 		projectPage.classList.remove("hidden");
 		assets.scrollTop = proj[sel].scrollAssets;
-		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.defaultCanvasWidth}px`;
-		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.defaultCanvasHeight}px`;
+		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.canvasWidth}px`;
+		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.canvasHeight}px`;
 		absoluteCenter(content);
 	}
 };
@@ -1075,7 +1079,7 @@ const open = async location => {
 					await new Promise((resolve, reject) => {
 						const media = new (data.assets[i].mime.startsWith("image/") ? Image : Audio)();
 						media.src = data.assets[i].url;
-						media.addEventListener("load", resolve);
+						media.addEventListener(media instanceof Image ? "load" : "canplay", resolve);
 						media.addEventListener("error", reject);
 					});
 				}
@@ -1174,11 +1178,14 @@ const addFiles = async files => {
 		loadProgress(i / files.length);
 		let data;
 		try {
-			data = (await fs.readFile(files[i].path)).toString("base64");
+			data = files[i].data || Buffer.from((await new Promise(resolve => {
+				const reader = new FileReader();
+				reader.addEventListener("loadend", resolve);
+				reader.readAsArrayBuffer(files[i]);
+			})).target.result).toString("base64");
 		} catch(err) {
 			new Miro.dialog("Error", html`
-				An error occurred while encoding <span class="bold">${files[i].name}</span>.<br>
-				${err.message}
+				An error occurred while encoding <span class="bold">${files[i].name}</span>.
 			`);
 			continue;
 		}
@@ -1198,7 +1205,7 @@ const addFiles = async files => {
 			await new Promise((resolve, reject) => {
 				const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
 				media.src = asset.url;
-				media.addEventListener("load", resolve);
+				media.addEventListener(media instanceof Image ? "load" : "canplay", resolve);
 				media.addEventListener("error", reject);
 			});
 		} catch(err) {
@@ -1226,6 +1233,31 @@ assetInput.addEventListener("change", async () => {
 	await addFiles(assetInput.files);
 	assetInput.value = null;
 });
+const addFileFromURI = uri => {
+	loadIndeterminate(true);
+	const error = () => {
+		loadIndeterminate(false);
+		new Miro.dialog("Error", html`
+			An error occurred while fetching <span class="bold">${uri}</span>.
+		`);
+	};
+	try {
+		(uri.startsWith("https:") ? https : http).get(uri, res => {
+			const chunks = [];
+			res.on("data", chunks.push.bind(chunks));
+			res.once("end", () => {
+				loadIndeterminate(false);
+				addFiles([{
+					name: uri.slice(uri.lastIndexOf("/") + 1),
+					type: res.headers["content-type"],
+					data: Buffer.concat(chunks).toString("base64")
+				}]);
+			});
+		}).once("error", error);
+	} catch(err) {
+		error();
+	}
+};
 let mouseX = 0;
 let mouseY = 0;
 let mouseTarget;
@@ -1275,13 +1307,16 @@ const onMouseDown = evt => {
 				}
 			}
 		} else if(mouseTarget0.classList.contains("handle")) {
-			initialTargetPos = mouseTarget0.parentNode[mouseTarget0.classList.contains("horizontal") ? "offsetWidth" : "offsetHeight"];
-			if(mouseTarget0.parentNode === assetContainer) {
-				targetOffset = mouseTarget0.parentNode.offsetWidth - evt.clientX;
-			} else if(mouseTarget0.parentNode === propertyContainer) {
-				targetOffset = evt.clientX - mouseTarget0.parentNode.offsetLeft;
-			} else if(mouseTarget0.parentNode === timelineContainer) {
-				targetOffset = evt.clientY - mouseTarget0.parentNode.offsetTop;
+			initialTargetPos = mouseTarget0.parentNode[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "offsetWidth" : "offsetHeight"];
+			const rect = mouseTarget0.parentNode.getBoundingClientRect();
+			if(mouseTarget0.classList.contains("left")) {
+				targetOffset = evt.clientX - rect.left + rect.right;
+			} else if(mouseTarget0.classList.contains("top")) {
+				targetOffset = evt.clientY - rect.top + rect.bottom;
+			} else if(mouseTarget0.classList.contains("right")) {
+				targetOffset = rect.right - evt.clientX + rect.left;
+			} else if(mouseTarget0.classList.contains("bottom")) {
+				targetOffset = rect.bottom - evt.clientX + rect.top;
 			}
 		}
 	}
@@ -1300,24 +1335,29 @@ document.addEventListener("mousemove", evt => {
 		if(mouseTarget.classList.contains("assetBar")) {
 			if(!mouseMoved) {
 				selectAsset(mouseTarget.parentNode, 2);
-				assetDrag.classList.remove("hidden");
 			}
-			let side;
-			let minDist = Infinity;
-			let minAssetElem;
-			for(const assetElem of assets.querySelectorAll(".asset")) {
-				const distTop = mouseY - assetElem.firstElementChild.getBoundingClientRect().top - assetElem.firstElementChild.offsetHeight / 2;
-				const absDistTop = Math.abs(distTop);
-				if(absDistTop < minDist) {
-					minDist = absDistTop;
-					minAssetElem = assetElem;
-					side = distTop < 0 ? "before" : "after";
+			if(evt.target === assetContainer || assetContainer.contains(evt.target)) {
+				let side;
+				let minDist = Infinity;
+				let minAssetElem;
+				for(const assetElem of assets.querySelectorAll(".asset")) {
+					const distTop = mouseY - assetElem.firstElementChild.getBoundingClientRect().top - assetElem.firstElementChild.offsetHeight / 2;
+					const absDistTop = Math.abs(distTop);
+					if(absDistTop < minDist) {
+						minDist = absDistTop;
+						minAssetElem = assetElem;
+						side = distTop < 0 ? "before" : "after";
+					}
 				}
-			}
-			if(side === "after" && minAssetElem[_asset].type === "group" && minAssetElem.classList.contains("open")) {
-				minAssetElem.lastElementChild.insertBefore(assetDrag, minAssetElem.lastElementChild.firstChild);
+				if(side === "after" && minAssetElem[_asset].type === "group" && minAssetElem.classList.contains("open")) {
+					minAssetElem.lastElementChild.insertBefore(assetDrag, minAssetElem.lastElementChild.firstChild);
+				} else {
+					minAssetElem[side](assetDrag);
+				}
+				assetDrag.classList.remove("hidden");
 			} else {
-				minAssetElem[side](assetDrag);
+				
+				assetDrag.classList.add("hidden");
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("tab")) {
@@ -1350,17 +1390,10 @@ document.addEventListener("mousemove", evt => {
 					}
 				}
 			} else if(mouseTarget0.classList.contains("handle")) {
-				let value = targetOffset;
-				if(mouseTarget0.parentNode === assetContainer) {
-					value += evt.clientX;
-				} else if(mouseTarget0.parentNode === propertyContainer) {
-					value += document.body.offsetWidth - evt.clientX;
-				} else if(mouseTarget0.parentNode === timelineContainer) {
-					value += document.body.offsetHeight - evt.clientY;
-				}
-				const horizontalTarget = mouseTarget0.classList.contains("horizontal");
-				mouseTarget0.parentNode.style[horizontalTarget ? "width" : "height"] = `${storage.containerSizes[mouseTarget0.parentNode.id] = Math.max(150, value)}px`;
-				if(!horizontalTarget) {
+				const horizontalHandle = mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right");
+				const sign = mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1;
+				mouseTarget0.parentNode.style[horizontalHandle ? "width" : "height"] = `${storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + sign * evt[horizontalHandle ? "clientX" : "clientY"])}px`;
+				if(mouseTarget0.parentNode.style.height) {
 					mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
 				}
 				absoluteCenter(content);
@@ -1389,13 +1422,19 @@ const handleMouseUp = (evt, evtButton) => {
 		if(mouseTarget === assets || assets.contains(mouseTarget)) {
 			if(evtButton === mouseDown) {
 				if(mouseTarget.classList.contains("assetBar") && mouseMoved) {
-					for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-						try {
-							assetDrag.before(assetElem);
-						} catch(err) {}
+					if(assetDrag.classList.contains("hidden")) {
+						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+							
+						}
+					} else {
+						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+							try {
+								assetDrag.before(assetElem);
+							} catch(err) {}
+						}
+						storeAssets();
+						assetDrag.classList.add("hidden");
 					}
-					storeAssets();
-					assetDrag.classList.add("hidden");
 				} else {
 					if(mouseTarget === assets) {
 						if(mouseX < assets.offsetLeft + assets.scrollWidth) {
@@ -1456,19 +1495,7 @@ const handleMouseUp = (evt, evtButton) => {
 				} else if(mouseTarget0.classList.contains("handle")) {
 					store();
 				} else if(evt.target === mouseTarget0) {
-					if(mouseTarget0.parentNode === windowActions) {
-						if(mouseTarget0 === minimizeWindow) {
-							win.minimize();
-						} else if(mouseTarget0 === maximizeWindow) {
-							if(win.isMaximized()) {
-								win.unmaximize();
-							} else {
-								win.maximize();
-							}
-						} else if(mouseTarget0 === closeWindow) {
-							win.close();
-						}
-					} else if(mouseTarget0.parentNode === toolbar) {
+					if(mouseTarget0.parentNode === toolbar) {
 						if(mouseTarget0 === newProj) {
 							new Project();
 						} else if(mouseTarget0 === openProj) {
@@ -1497,6 +1524,15 @@ const handleMouseUp = (evt, evtButton) => {
 						fullPreview.classList.remove("hidden");
 						absoluteCenter(fullPreviewImage);
 						setTimeout(makeFullPreviewOpaque);
+						setActive(fullPreview);
+					} else if(mouseTarget0 === downloadAsset) {
+						const selectedAsset = assets.querySelector(".selected")[_asset];
+						const path = electron.remote.dialog.showSaveDialog(win, {
+							defaultPath: selectedAsset.name
+						});
+						if(path) {
+							fs.writeFile(path, Buffer.from(selectedAsset.data, "base64"));
+						}
 					} else if(mouseTarget0.classList.contains("close") && mouseTarget0.parentNode.classList.contains("tab")) {
 						mouseTarget0.parentNode[_proj].close();
 					} else if(fullPreviewImage.contains(mouseTarget0) || (mouseTarget0 === fullPreview && !mouseTarget0.classList.contains("hoverScrollbar"))) {
@@ -1517,6 +1553,7 @@ const onMouseUp = evt => {
 	mouseTarget2 = null;
 	mouseDown = -1;
 	mouseUp = evt.timeStamp;
+	indicateTarget();
 };
 document.addEventListener("mouseup", onMouseUp, true);
 document.addEventListener("click", evt => {
@@ -1525,35 +1562,66 @@ document.addEventListener("click", evt => {
 		onMouseUp(evt);
 	}
 }, true);
+let allowDrag = true;
 document.addEventListener("dragstart", evt => {
 	if(mouseDown !== -1) {
 		mouseTarget = mouseTarget0 = mouseTarget2 = null;
 		mouseDown = -1;
 	}
+	allowDrag = false;
+}, true);
+document.addEventListener("dragend", evt => {
+	allowDrag = true;
 }, true);
 document.addEventListener("dragover", evt => {
 	evt.preventDefault();
+	if(allowDrag && focused()) {
+		if(evt.dataTransfer.types.includes("Files") || evt.dataTransfer.types.includes("text/uri-list")) {
+			indicateTarget(container);
+		}
+	}
+}, true);
+document.addEventListener("dragleave", evt => {
+	if(evt.target === targetIndicator) {
+		indicateTarget();
+	}
 }, true);
 document.addEventListener("drop", evt => {
 	evt.preventDefault();
-	const files = [...evt.dataTransfer.files];
-	for(let i = 0; i < files.length; i++) {
-		if(files[i].path.toLowerCase().endsWith(".mwd")) {
-			open(files.splice(i, 1)[0].path);
+	if(allowDrag && focused()) {
+		if(evt.dataTransfer.files.length) {
+			const files = [...evt.dataTransfer.files];
+			for(let i = files.length - 1; i >= 0; i--) {
+				if(files[i].path.toLowerCase().endsWith(".mwd")) {
+					open(files.splice(i, 1)[0].path);
+				}
+			}
+			if(proj[sel] && files.length) {
+				addFiles(files);
+			}
+		} else if(proj[sel] && evt.dataTransfer.types.includes("text/uri-list")) {
+			addFileFromURI(evt.dataTransfer.getData("text/uri-list"));
 		}
+		indicateTarget();
+		win.focus();
 	}
-	if(sel !== "home" && files.length) {
-		addFiles(files);
-	}
-	win.focus();
 }, true);
 document.addEventListener("dblclick", evt => {
 	if(!mouseMoved) {
 		if(evt.target === tabs) {
 			new Project();
 		} else if(evt.target.classList.contains("handle")) {
-			evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minWidth = evt.target.parentNode.style.minHeight = "";
-			delete storage.containerSizes[evt.target.parentNode.id];
+			if(evt.target.parentNode === layerContainer) {
+				const containerSize = parseInt(evt.target.parentNode.style.height = evt.target.parentNode.style.minHeight = timelineContainer.style.height);
+				if(containerSize) {
+					storage.size.layerContainer = containerSize;
+				} else {
+					delete storage.size.layerContainer;
+				}
+			} else {
+				evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minHeight = "";
+				delete storage.size[evt.target.parentNode.id];
+			}
 			store();
 			absoluteCenter(content);
 		} else if(evt.target.classList.contains("assetBar")) {
@@ -1567,6 +1635,7 @@ document.addEventListener("dblclick", evt => {
 	}
 }, true);
 const focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
+const notTyping = () => !container.querySelector("input:not([type='button']):not([type='submit']):not([type='reset']):focus, textarea:focus");
 document.addEventListener("focus", evt => {
 	for(const target of evt.path) {
 		if(target === document.body) {
@@ -1719,7 +1788,6 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 122) { // `F11`
 		const fullScreen = !win.isFullScreen();
 		win.setFullScreen(fullScreen);
-		titleBar.classList[fullScreen ? "add" : "remove"]("hidden");
 	}
 }, true);
 document.addEventListener("keyup", evt => {
@@ -1739,13 +1807,43 @@ document.addEventListener("input", evt => {
 		content.style.height = `${proj[sel].data.height = evt.target.value}px`;
 		store();
 		absoluteCenter(content);
-	} else if(evt.target === prop.name.elements[0]) {
+	}
+}, true);
+document.addEventListener("change", evt => {
+	if(!evt.target.checkValidity()) {
+		return;
+	}
+	if(evt.target === prop.name.elements[0]) {
 		const names = proj[sel].data.assets.map(byLowerCaseName);
 		if(names.includes(evt.target.value)) {
 			new Miro.dialog("Error", "That asset name is already in use.");
 		} else {
 			assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
 			proj[sel].saved = false;
+		}
+	}
+}, true);
+const htmlFilenameTest = /\/([^\/]+?)"/;
+document.addEventListener("paste", async evt => {
+	if(proj[sel] && focused() && notTyping()) {
+		if(evt.clipboardData.items.length) {
+			let file;
+			let string;
+			for(const item of evt.clipboardData.items) {
+				if(item.kind === "file") {
+					file = item;
+				} else {
+					string = item;
+				}
+			}
+			if(file) {
+				file = file.getAsFile();
+				const htmlFilename = (await new Promise(string.getAsString.bind(string))).match(htmlFilenameTest);
+				Object.defineProperty(file, "name", {
+					value: htmlFilename ? htmlFilename[1] : "Image"
+				});
+				addFiles([file]);
+			}
 		}
 	}
 }, true);

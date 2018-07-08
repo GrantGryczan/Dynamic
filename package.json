@@ -1,6 +1,6 @@
 {
 	"name": "Dynamic",
-	"version": "0.13.6",
+	"version": "0.14.0",
 	"description": "Create HTML5 animations with ease!",
 	"main": "app/main.js",
 	"scripts": {
@@ -43,6 +43,7 @@
 		"electron-builder": "^19.45.5"
 	},
 	"dependencies": {
-		"fs-extra": "^6.0.1"
+		"fs-extra": "^6.0.1",
+		"snekfetch": "^4.0.4"
 	}
 }
