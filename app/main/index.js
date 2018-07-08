@@ -479,9 +479,7 @@ const assetMenuItems = [{
 			}
 		}
 		setActive(assetContainer);
-		for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-			assetElem.classList.remove("selected");
-		}
+		deselectAssets();
 		const names = proj[sel].data.assets.map(byLowerCaseName);
 		let name = "Object";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
@@ -542,25 +540,6 @@ const assetMenuItems = [{
 	}
 }];
 const assetMenu = electron.remote.Menu.buildFromTemplate(assetMenuItems);
-const removeSelectedAssets = () => {
-	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
-};
-const selectedAssetMenu = electron.remote.Menu.buildFromTemplate([{
-	label: "Remove asset",
-	click: removeSelectedAssets
-}, {
-	label: "Rename asset",
-	accelerator: "F2",
-	click: prop.name.elements[0].select.bind(prop.name.elements[0])
-}, menuSeparator, ...assetMenuItems]);
-const selectedAssetsMenu = electron.remote.Menu.buildFromTemplate([{
-	label: "Remove assets",
-	click: removeSelectedAssets
-}, {
-	label: "Rename asset",
-	accelerator: "F2",
-	enabled: false
-}, menuSeparator, ...assetMenuItems]);
 const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Sort by asset type",
 	click: () => {
@@ -628,6 +607,86 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 		storeAssets();
 	}
 }]);
+const deselectAssets = () => {
+	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+		assetElem.classList.remove("selected");
+		assetElem.classList.remove("focus");
+	}
+	proj[sel].selectedAsset = null;
+};
+const removeSelectedAssets = () => {
+	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
+};
+const addToCanvas = () => {
+	// TODO: Add selected assets to canvas
+};
+const deselectAssetMenuItem = {
+	label: "Deselect",
+	accelerator: "esc",
+	click: deselectAssets
+};
+const assetBarMenuSingleItems = [{
+	label: "Remove asset",
+	click: removeSelectedAssets
+}, {
+	label: "Rename asset",
+	accelerator: "F2",
+	click: prop.name.elements[0].select.bind(prop.name.elements[0])
+}, menuSeparator, deselectAssetMenuItem];
+const assetBarMenuMultipleItems = [{
+	label: "Remove assets",
+	click: removeSelectedAssets
+}, {
+	label: "Rename asset",
+	accelerator: "F2",
+	enabled: false
+}, menuSeparator, deselectAssetMenuItem];
+const assetBarMenuGroupItems = [{
+	label: "Select children",
+	click: () => {
+		for(const assetElem of assets.querySelectorAll(".asset.selected.group > .assetChildren > .asset")) {
+			assetElem.classList.add("selected");
+		}
+	}
+}, {
+	label: "Deselect && select children",
+	click: () => {
+		const childrenToSelect = assets.querySelectorAll(".asset.selected.group > .assetChildren > .asset");
+		deselectAssets();
+		for(let i = 0; i < childrenToSelect.length; i++) {
+			childrenToSelect[i].classList.add("selected");
+			if(i === 0) {
+				childrenToSelect[i].classList.add("focus");
+				proj[sel].focusedAsset = childrenToSelect[i].id;
+			}
+		}
+	}
+}];
+const assetBarMenuNoGroupItems = [{
+	label: "Add to canvas",
+	click: addToCanvas
+}];
+const assetBarMenu = [];
+for(const assetBarMenuQuantityItems of [assetBarMenuMultipleItems, assetBarMenuSingleItems]) {
+	const x = [];
+	for(let i = 0; i < 3; i++) {
+		const y = [...assetBarMenuQuantityItems];
+		if(i === 0 || i === 1) {
+			y.push(...assetBarMenuGroupItems);
+		}
+		if(i === 1 || i === 2) {
+			y.push(menuSeparator, ...assetBarMenuNoGroupItems);
+		}
+		y.push(menuSeparator, ...assetMenuItems);
+		x.push(electron.remote.Menu.buildFromTemplate(y));
+	}
+	assetBarMenu.push(x);
+}
+/*	assetBarMenu
+				Group		Both		No group
+	Multiple	[0][0]		[0][1]		[0][2]
+	Single		[1][0]		[1][1]		[1][2]
+*/
 let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
@@ -636,11 +695,7 @@ const openCtx = target => {
 	if(ctxTarget === assets) {
 		assetMenu.popup(win);
 	} else if(targetAsset) {
-		if(assets.querySelectorAll(".asset.selected").length === 1) {
-			selectedAssetMenu.popup(win);
-		} else {
-			selectedAssetsMenu.popup(win);
-		}
+		assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.selected.group") ? +!!assets.querySelector(".asset.selected:not(.group)") : 2].popup(win);
 	} else if(ctxTarget === sortAssets) {
 		sortAssetsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
@@ -918,6 +973,10 @@ const select = id => {
 	}
 	if(proj[sel]) {
 		proj[sel].scrollAssets = assets.scrollTop;
+		proj[sel].scrollProperties = propertyContainer.scrollTop;
+		proj[sel].scrollContentLeft = contentContainer.scrollLeft;
+		proj[sel].scrollContentTop = contentContainer.scrollTop;
+		proj[sel].scrollLayers = layers.scrollTop;
 		projectPage.classList.add("hidden");
 	} else {
 		homePage.classList.add("hidden");
@@ -960,9 +1019,13 @@ const select = id => {
 		updateProperties();
 		proj[sel].tab.classList.add("current");
 		projectPage.classList.remove("hidden");
-		assets.scrollTop = proj[sel].scrollAssets;
 		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.canvasWidth}px`;
 		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.canvasHeight}px`;
+		assets.scrollTop = proj[sel].scrollAssets;
+		propertyContainer.scrollTop = proj[sel].scrollProperties;
+		contentContainer.scrollLeft = proj[sel].scrollContentLeft;
+		contentContainer.scrollTop = proj[sel].scrollContentTop;
+		layers.scrollTop = proj[sel].scrollLayers;
 		absoluteCenter(content);
 	}
 };
@@ -1170,10 +1233,7 @@ const addFiles = async files => {
 	}
 	setActive(assetContainer);
 	loadProgress(0);
-	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-		assetElem.classList.remove("selected");
-	}
-	proj[sel].selectedAsset = null;
+	deselectAssets();
 	for(let i = 0; i < files.length; i++) {
 		loadProgress(i / files.length);
 		let data;
@@ -1424,7 +1484,7 @@ const handleMouseUp = (evt, evtButton) => {
 				if(mouseTarget.classList.contains("assetBar") && mouseMoved) {
 					if(assetDrag.classList.contains("hidden")) {
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-							
+							// TODO: Add asset to canvas
 						}
 					} else {
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
@@ -1438,10 +1498,7 @@ const handleMouseUp = (evt, evtButton) => {
 				} else {
 					if(mouseTarget === assets) {
 						if(mouseX < assets.offsetLeft + assets.scrollWidth) {
-							for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-								assetElem.classList.remove("selected");
-							}
-							proj[sel].selectedAsset = null;
+							deselectAssets();
 							updateProperties();
 						}
 					} else if(mouseTarget.classList.contains("assetBar")) {
@@ -1774,10 +1831,7 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 27) { // `esc`
 		if(focused()) {
 			if(assetContainer.classList.contains("active")) {
-				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-					assetElem.classList.remove("selected");
-				}
-				proj[sel].selectedAsset = null;
+				deselectAssets();
 				updateProperties();
 			} else if(fullPreview.classList.contains("active")) {
 				hideFullPreview();
