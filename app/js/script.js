@@ -282,6 +282,7 @@ const store = () => {
 	try {
 		localStorage.data = JSON.stringify(storage);
 	} catch(err) {
+		console.warn(err);
 		Miro.dialog("Error", "An error occurred while trying to save your user data.");
 	}
 };
@@ -291,7 +292,24 @@ win.setProgressBar(-1);
 let shiftKey = false;
 let superKey = false;
 let altKey = false;
+let originalShiftKey = false;
+let originalSuperKey = false;
+let originalAltKey = false;
+const backUpKeyStates = evt => {
+	originalShiftKey = shiftKey;
+	shiftKey = evt.shiftKey;
+	originalSuperKey = superKey;
+	superKey = evt.metaKey || evt.ctrlKey;
+	originalAltKey = altKey;
+	altKey = evt.altKey;
+};
+const restoreKeyStates = () => {
+	shiftKey = originalShiftKey;
+	superKey = originalSuperKey;
+	altKey = originalAltKey;
+};
 const onFocus = () => {
+	win.flashFrame(false);
 	document.body.classList.add("focus");
 };
 const onBlur = () => {
@@ -307,6 +325,11 @@ if(win.isFocused()) {
 } else {
 	onBlur();
 }
+const flashFrame = () => {
+	if(!win.isFocused()) {
+		win.flashFrame(true);
+	}
+};
 if(storage.size instanceof Object) {
 	for(const id of Object.keys(storage.size)) {
 		const elem = document.querySelector(`#${id}`);
@@ -475,7 +498,7 @@ const assetMenuItems = [{
 			if(ctxTarget.parentNode[_asset].type === "group") {
 				assetParent = ctxTarget.parentNode.lastElementChild;
 			} else if(ctxTarget.parentNode[_asset].parent) {
-				assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
+				assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent.id).lastElementChild;
 			}
 		}
 		setActive(assetContainer);
@@ -485,16 +508,16 @@ const assetMenuItems = [{
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Object ${i}`;
 		}
-		const asset = new Asset({
+		const asset = new DynamicAsset({
 			type: "obj",
 			name
 		});
 		proj[sel].data.assets.push(asset);
-		const assetObj = appendAsset(asset);
-		assetParent.appendChild(assetObj);
+		const assetElem = appendAsset(asset);
+		assetParent.appendChild(assetElem);
 		storeAssets();
-		assetObj.classList.add("selected");
-		proj[sel].selectedAsset = assetObj.id;
+		assetElem.classList.add("selected");
+		proj[sel].selectedAsset = assetElem.id;
 		updateProperties();
 	}
 }, {
@@ -510,7 +533,7 @@ const assetMenuItems = [{
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Group ${i}`;
 		}
-		const asset = new Asset({
+		const asset = new DynamicAsset({
 			type: "group",
 			name
 		});
@@ -618,7 +641,10 @@ const removeSelectedAssets = () => {
 	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 };
 const addToCanvas = () => {
-	// TODO: Add selected assets to canvas
+	for(const assetElem of assets.querySelectorAll(".asset:not(.group).selected")) {
+		new DynamicObject(assetElem[_asset].id);
+	}
+	setActive(contentContainer);
 };
 const deselectAssetMenuItem = {
 	label: "Deselect",
@@ -632,7 +658,7 @@ const assetBarMenuSingleItems = [{
 	label: "Rename asset",
 	accelerator: "F2",
 	click: prop.name.elements[0].select.bind(prop.name.elements[0])
-}, menuSeparator, deselectAssetMenuItem];
+}];
 const assetBarMenuMultipleItems = [{
 	label: "Remove assets",
 	click: removeSelectedAssets
@@ -640,18 +666,18 @@ const assetBarMenuMultipleItems = [{
 	label: "Rename asset",
 	accelerator: "F2",
 	enabled: false
-}, menuSeparator, deselectAssetMenuItem];
+}];
 const assetBarMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
-		for(const assetElem of assets.querySelectorAll(".asset.selected.group > .assetChildren > .asset")) {
+		for(const assetElem of assets.querySelectorAll(".asset.group.selected > .assetChildren > .asset")) {
 			assetElem.classList.add("selected");
 		}
 	}
 }, {
 	label: "Deselect && select children",
 	click: () => {
-		const childrenToSelect = assets.querySelectorAll(".asset.selected.group > .assetChildren > .asset");
+		const childrenToSelect = assets.querySelectorAll(".asset.group.selected > .assetChildren > .asset");
 		deselectAssets();
 		for(let i = 0; i < childrenToSelect.length; i++) {
 			childrenToSelect[i].classList.add("selected");
@@ -671,11 +697,12 @@ for(const assetBarMenuQuantityItems of [assetBarMenuMultipleItems, assetBarMenuS
 	const x = [];
 	for(let i = 0; i < 3; i++) {
 		const y = [...assetBarMenuQuantityItems];
-		if(i === 0 || i === 1) {
-			y.push(...assetBarMenuGroupItems);
-		}
 		if(i === 1 || i === 2) {
 			y.push(menuSeparator, ...assetBarMenuNoGroupItems);
+		}
+		y.push(menuSeparator, deselectAssetMenuItem);
+		if(i === 0 || i === 1) {
+			y.push(...assetBarMenuGroupItems);
 		}
 		y.push(menuSeparator, ...assetMenuItems);
 		x.push(electron.remote.Menu.buildFromTemplate(y));
@@ -695,7 +722,7 @@ const openCtx = target => {
 	if(ctxTarget === assets) {
 		assetMenu.popup(win);
 	} else if(targetAsset) {
-		assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.selected.group") ? +!!assets.querySelector(".asset.selected:not(.group)") : 2].popup(win);
+		assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.group.selected") ? +!!assets.querySelector(".asset.selected:not(.group)") : 2].popup(win);
 	} else if(ctxTarget === sortAssets) {
 		sortAssetsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
@@ -718,14 +745,14 @@ const _name = Symbol("name");
 const _location = Symbol("location");
 const _selectedAsset = Symbol("selectedAsset");
 const _focusedAsset = Symbol("focusedAsset");
-class Project {
-	constructor(projectData) {
-		if(!(projectData instanceof Object)) {
-			projectData = {};
+class DynamicProject {
+	constructor(value) {
+		if(!(value instanceof Object)) {
+			value = {};
 		}
-		const validLocation = typeof projectData.location === "string";
-		if(typeof projectData.name === "string") {
-			this[_name] = projectData.name;
+		const validLocation = typeof value.location === "string";
+		if(typeof value.name === "string") {
+			this[_name] = value.name;
 		} else if(!validLocation) {
 			const projects = Object.values(proj);
 			let i = 0;
@@ -734,22 +761,22 @@ class Project {
 			} while(projects.some(project => project.name === this[_name]));
 		}
 		tabs.appendChild(this.tab = html`
-			<div class="tab${(this[_saved] = !!projectData.saved) ? " saved" : ""}">
+			<div class="tab${(this[_saved] = !!value.saved) ? " saved" : ""}">
 				<div class="label">$${this[_name]}</div>
 				<div class="close material-icons"></div>
 			</div>
 		`);
 		this.tab[_proj] = this;
-		this.location = validLocation ? projectData.location : null;
-		this.data = projectData.data || {
+		this.location = validLocation ? value.location : null;
+		this.data = value.data || {
 			...baseData,
-			assets: []
+			assets: [],
+			objs: []
 		};
 		this.selected = [];
 		this.open = [];
 		const id = String(++projID);
-		(proj[id] = this).id = id;
-		select(id);
+		select((proj[id] = this).id = id);
 		for(const assetElem of assets.querySelectorAll(".asset.group")) {
 			assetElem.classList.add("open");
 		}
@@ -810,27 +837,28 @@ class Project {
 	}
 }
 const _asset = Symbol("asset");
+const findAsset = id => proj[sel].data.assets.find(asset => asset.id === id);
 const getAssetElemByID = id => assets.querySelector(`#asset_${id}`);
-class Asset {
-	constructor(assetData) {
-		if(!(assetData instanceof Object)) {
-			throw new MiroError("The `assetData` parameter must be an object.");
+class DynamicAsset {
+	constructor(value) {
+		if(!(value instanceof Object)) {
+			throw new MiroError("The `value` parameter must be an object.");
 		}
-		this.type = assetData.type;
-		this[_name] = assetData.name;
+		this.type = value.type;
+		this[_name] = value.name;
 		if(this.type === "file") {
-			if(!assetData.mime.startsWith("image/") && !assetData.mime.startsWith("audio/")) {
+			if(!value.mime.startsWith("image/") && !value.mime.startsWith("audio/")) {
 				throw new MiroError("The `mime` value is invalid.");
 			}
-			this.mime = assetData.mime;
-			this.data = assetData.data;
+			this.mime = value.mime;
+			this.data = value.data;
 		} else if(this.type !== "group" && this.type !== "obj") {
 			throw new MiroError("The `type` value is invalid.");
 		}
-		if(assetData.parent) {
-			this.parent = assetData.parent;
+		if(value.parent) {
+			this.parent = findAsset(value.parent);
 		}
-		this.id = assetData.id || uid(proj[sel].data.assets.map(byID));
+		this.id = value.id || uid(proj[sel].data.assets.map(byID));
 	}
 	get name() {
 		return this[_name];
@@ -843,10 +871,14 @@ class Asset {
 		}
 	}
 	toJSON() {
-		return {
+		const obj = {
 			...this,
 			name: this.name
 		};
+		if(this.parent) {
+			obj.parent = this.parent.id;
+		}
+		return obj;
 	}
 	get url() {
 		if(this.type === "file") {
@@ -889,7 +921,7 @@ const appendAsset = asset => {
 		`;
 	}
 	assetElem[_asset] = asset;
-	(assetElem[_asset].parent ? getAssetElemByID(assetElem[_asset].parent).lastElementChild : assets).appendChild(assetElem);
+	(assetElem[_asset].parent ? getAssetElemByID(assetElem[_asset].parent.id).lastElementChild : assets).appendChild(assetElem);
 	return assetElem;
 };
 const storeAssets = () => {
@@ -898,7 +930,7 @@ const storeAssets = () => {
 		if(assetElem.parentNode === assets) {
 			delete assetElem[_asset].parent;
 		} else {
-			assetElem[_asset].parent = assetElem.parentNode.parentNode[_asset].id;
+			assetElem[_asset].parent = assetElem.parentNode.parentNode[_asset];
 		}
 		proj[sel].data.assets.push(assetElem[_asset]);
 	}
@@ -1056,6 +1088,7 @@ const loadIndeterminate = value => {
 	} else {
 		document.body.classList.remove("indeterminate");
 		win.setProgressBar(-1);
+		flashFrame();
 	}
 };
 const loadProgress = value => {
@@ -1068,6 +1101,7 @@ const loadProgress = value => {
 		loading.style.width = "";
 		win.setProgressBar(-1);
 		block(false);
+		flashFrame();
 	} else {
 		loading.style.width = `${100 * value}%`;
 		win.setProgressBar(value);
@@ -1097,7 +1131,8 @@ const save = async as => {
 		try {
 			await fs.writeFile(proj[sel].location, await zip(JSON.stringify(proj[sel].data)));
 		} catch(err) {
-			new Miro.dialog("Error", `An error occurred while trying to save.\n${err.message}`);
+			console.warn(err);
+			new Miro.dialog("Error", "An error occurred while trying to save.");
 			loadIndeterminate(false);
 			return;
 		}
@@ -1129,35 +1164,40 @@ const open = async location => {
 				throw null;
 			}
 		} catch(err) {
+			console.warn(err);
 			new Miro.dialog("Error", "That is not a valid MWD file.");
 			loadIndeterminate(false);
 			return false;
 		}
+		const project = new DynamicProject({
+			saved: true,
+			location
+		});
 		loadIndeterminate(false);
 		loadProgress(0);
 		for(let i = 0; i < data.assets.length; i++) {
 			loadProgress(i / data.assets.length);
 			try {
-				if((data.assets[i] = new Asset(data.assets[i])).type === "file") {
+				const asset = new DynamicAsset(data.assets[i]);
+				proj[sel].data.assets.push(asset);
+				appendAsset(asset);
+				if(asset.type === "file") {
 					await new Promise((resolve, reject) => {
-						const media = new (data.assets[i].mime.startsWith("image/") ? Image : Audio)();
-						media.src = data.assets[i].url;
+						const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
+						media.src = asset.url;
 						media.addEventListener(media instanceof Image ? "load" : "canplay", resolve);
 						media.addEventListener("error", reject);
 					});
 				}
 			} catch(err) {
+				console.warn(err);
 				new Miro.dialog("Error", html`
 					<span class="bold">${data.assets[i].name}</span> is not a valid asset.
 				`);
 			}
 		}
 		loadProgress(1);
-		return new Project({
-			saved: true,
-			location,
-			data
-		});
+		return project;
 	} else {
 		return false;
 	}
@@ -1228,7 +1268,7 @@ const addFiles = async files => {
 		if(ctxTarget.parentNode[_asset].type === "group") {
 			assetParent = ctxTarget.parentNode.lastElementChild;
 		} else if(ctxTarget.parentNode[_asset].parent) {
-			assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent).lastElementChild;
+			assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent.id).lastElementChild;
 		}
 	}
 	setActive(assetContainer);
@@ -1244,6 +1284,7 @@ const addFiles = async files => {
 				reader.readAsArrayBuffer(files[i]);
 			})).target.result).toString("base64");
 		} catch(err) {
+			console.warn(err);
 			new Miro.dialog("Error", html`
 				An error occurred while encoding <span class="bold">${files[i].name}</span>.
 			`);
@@ -1256,7 +1297,7 @@ const addFiles = async files => {
 		}
 		let asset;
 		try {
-			asset = new Asset({
+			asset = new DynamicAsset({
 				type: "file",
 				name,
 				mime: files[i].type,
@@ -1269,6 +1310,7 @@ const addFiles = async files => {
 				media.addEventListener("error", reject);
 			});
 		} catch(err) {
+			console.warn(err);
 			new Miro.dialog("Error", html`
 				<span class="bold">${files[i].name}</span> is not a valid asset.
 			`);
@@ -1315,6 +1357,7 @@ const addFileFromURI = uri => {
 			});
 		}).once("error", error);
 	} catch(err) {
+		console.warn(err);
 		error();
 	}
 };
@@ -1347,6 +1390,8 @@ const onMouseDown = evt => {
 	}
 	if(assetContainer.contains(mouseTarget)) {
 		setActive(assetContainer);
+	} else if(contentContainer.contains(mouseTarget)) {
+		setActive(contentContainer);
 	} else {
 		setActive();
 	}
@@ -1476,6 +1521,7 @@ const handleMouseUp = (evt, evtButton) => {
 	if(mouseDown === -1) {
 		return;
 	}
+	backUpKeyStates(evt);
 	const evtButton0 = evtButton === 0;
 	const evtButton2 = evtButton === 2;
 	if(mouseTarget && (evtButton0 || evtButton2)) {
@@ -1484,7 +1530,7 @@ const handleMouseUp = (evt, evtButton) => {
 				if(mouseTarget.classList.contains("assetBar") && mouseMoved) {
 					if(assetDrag.classList.contains("hidden")) {
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-							// TODO: Add asset to canvas
+							addToCanvas();
 						}
 					} else {
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
@@ -1554,7 +1600,7 @@ const handleMouseUp = (evt, evtButton) => {
 				} else if(evt.target === mouseTarget0) {
 					if(mouseTarget0.parentNode === toolbar) {
 						if(mouseTarget0 === newProj) {
-							new Project();
+							new DynamicProject();
 						} else if(mouseTarget0 === openProj) {
 							open();
 						} else if(mouseTarget0 === saveProj) {
@@ -1602,6 +1648,7 @@ const handleMouseUp = (evt, evtButton) => {
 	if(evtButton2 && evt.target === mouseTarget2) {
 		openCtx(mouseTarget2);
 	}
+	restoreKeyStates();
 };
 const onMouseUp = evt => {
 	handleMouseUp(evt, 0);
@@ -1660,13 +1707,12 @@ document.addEventListener("drop", evt => {
 			addFileFromURI(evt.dataTransfer.getData("text/uri-list"));
 		}
 		indicateTarget();
-		win.focus();
 	}
 }, true);
 document.addEventListener("dblclick", evt => {
 	if(!mouseMoved) {
 		if(evt.target === tabs) {
-			new Project();
+			new DynamicProject();
 		} else if(evt.target.classList.contains("handle")) {
 			if(evt.target.parentNode === layerContainer) {
 				const containerSize = parseInt(evt.target.parentNode.style.height = evt.target.parentNode.style.minHeight = timelineContainer.style.height);
@@ -1704,9 +1750,9 @@ document.addEventListener("focus", evt => {
 	}
 }, true);
 document.addEventListener("keydown", evt => {
+	shiftKey = evt.shiftKey;
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
-	shiftKey = evt.shiftKey;
 	if(evt.keyCode === 38) { // `up`
 		if(focused() && assetContainer.classList.contains("active")) {
 			evt.preventDefault();
@@ -1780,7 +1826,7 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
 			if(focused()) {
-				new Project();
+				new DynamicProject();
 			}
 		} else if(evt.keyCode === 79) { // ^`O`
 			if(focused()) {
@@ -1973,3 +2019,48 @@ const openAsset = (asset, selected, finish) => {
 		delete proj[sel].openAsset;
 	}
 };
+const updateLayers = () => {
+	
+};
+const updateTimeline = () => {
+	
+};
+class DynamicProperty extends Array {
+	constructor() {
+		super(...arguments);
+	}
+	push() {
+		for(let item of arguments) {
+			// TODO: Add keyframes
+			super.push(item);
+		}
+	}
+}
+DynamicProperty.prototype[Symbol.species] = Array;
+const findObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+class DynamicObject {
+	constructor(value) {
+		if(typeof value === "string") {
+			this.asset = findAsset(value);
+			proj[sel].data.objs.unshift(this);
+		} else if(value instanceof Object) {
+			Object.assign(this, value);
+			if(value.parent) {
+				this.parent = findObj(value.parent);
+			}
+		} else {
+			throw new MiroError("The `value` parameter must be an object.");
+		}
+		this.id = value.id || uid(proj[sel].data.objs.map(byID));
+	}
+	toJSON() {
+		const obj = {
+			...this,
+			asset: this.asset.id
+		};
+		if(this.parent) {
+			obj.parent = this.parent.id;
+		}
+		return obj;
+	}
+}

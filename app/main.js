@@ -59,7 +59,7 @@ electron.app.once("ready", () => {
 					addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
 				});
 				win.maximize();
-				win.loadURL(`${rootURL}/main/index.html`);
+				win.loadURL(`${rootURL}/index.html`);
 			});
 			noClosedIntent = false;
 			win.destroy();
