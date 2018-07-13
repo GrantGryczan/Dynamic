@@ -47,14 +47,12 @@ const removeObj = layerElem => {
 	if(layerElem[_obj].group) {
 		layerElem[_obj].timelineElement.lastElementChild.children.forEach(layerElem[_obj].timelineElement.before.bind(layerElem[_obj].timelineElement));
 	}
-	if(layerElem[_obj].asset.objects.length > 1) {
-		for(const otherObj of layerElem[_obj].asset.objects) {
-			otherObj.updateName();
-		}
-	}
 	layerElem.remove();
 	// TODO: layerElem[_obj].timelineElement.remove();
 	storeObjs();
+	for(const otherObj of layerElem[_obj].asset.objects) {
+		otherObj.updateName();
+	}
 	updateProperties();
 };
 const confirmRemoveObj = layerElem => {
