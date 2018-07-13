@@ -26,52 +26,129 @@ const appendLayer = obj => {
 	layers.insertBefore(layerElem, siblingElem);
 	return layerElem;
 };
-const storeObjs = () => {
-	// TODO: Continue
+const byZIndex = (a, b) => b.z - a.z;
+const updateLayers = () => {
+	for(const obj of proj[sel].data.objs.sort(byZIndex)) {
+		obj.layerElement.querySelector(".z").textContent = obj.z;
+		layers.appendChild(obj.layerElement);
+	}
 };
-const removeObj = objElem => {
-	if(`obj_${objElem[_obj].id}` === proj[sel].selectedAsset) {
-		proj[sel].selectedAsset = null;
+const storeObjs = () => {
+	// TODO
+	proj[sel].saved = false;
+};
+const removeObj = layerElem => {
+	if(proj[sel].selectedTimeline === `timeline_${layerElem[_obj].id}`) {
+		proj[sel].selectedTimeline = null;
 	}
-	if(objElem[_obj].group) {
-		objElem.lastElementChild.children.forEach(objElem.before.bind(objElem));
+	if(proj[sel].selectedLayer === `layer_${layerElem[_obj].id}`) {
+		proj[sel].selectedLayer = null;
 	}
-	objElem.remove();
+	if(layerElem[_obj].group) {
+		layerElem[_obj].timelineElement.lastElementChild.children.forEach(layerElem[_obj].timelineElement.before.bind(layerElem[_obj].timelineElement));
+	}
+	layerElem.remove();
+	// TODO: layerElem[_obj].timelineElement.remove();
+	storeObjs();
 	updateProperties();
 };
-const confirmRemoveObj = objElem => {
+const confirmRemoveObj = layerElem => {
 	const actuallyRemoveObj = value => {
 		if(value === 0) {
-			removeObj(objElem);
+			removeObj(layerElem);
 			storeObjs();
 		}
 	};
-	if(objElem[_obj].group) {
+	if(layerElem[_obj].group) {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${objElem[_obj].name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${layerElem[_obj].name}</span>?<br>
 			All objects inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveObj);
 	} else {
 		new Miro.Dialog("Remove Object", html`
-			Are you sure you want to remove <span class="bold">${objElem[_obj].name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${layerElem[_obj].name}</span>?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(actuallyRemoveObj);
 	}
 };
-const confirmRemoveObjs = objElems => {
-	if(objElems.length === 1) {
-		confirmRemoveObj(objElems[0]);
-	} else if(objElems.length > 1) {
+const confirmRemoveObjs = layerElems => {
+	if(layerElems.length === 1) {
+		confirmRemoveObj(layerElems[0]);
+	} else if(layerElems.length > 1) {
 		new Miro.Dialog("Remove Objects", html`
 			Are you sure you want to remove all those objects?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {
-				objElems.forEach(removeObj);
+				layerElems.forEach(removeObj);
 				storeObjs();
 			}
 		});
 	}
+};
+const removeSelectedLayers = () => {
+	confirmRemoveObjs(layers.querySelectorAll(".layer.selected"));
+};
+const deselectLayers = () => {
+	for(const layerElem of layers.querySelectorAll(".layer.selected")) {
+		layerElem.classList.remove("selected");
+		layerElem.classList.remove("focus");
+	}
+	proj[sel].selectedLayer = null;
+};
+const selectLayer = (target, evtButton) => {
+	if(typeof evtButton !== "number") {
+		evtButton = 0;
+	}
+	if(evtButton === 2 && !(superKey || shiftKey)) {
+		if(!target.classList.contains("selected")) {
+			for(const layerElem of layers.querySelectorAll(".layer.selected")) {
+				if(layerElem !== target) {
+					layerElem.classList.remove("selected");
+				}
+			}
+			target.classList.add("selected");
+			proj[sel].selectedLayer = target.id;
+		}
+	} else if(shiftKey) {
+		let selecting = !proj[sel].selectedLayer;
+		const classListMethod = superKey && proj[sel].selectedLayer && !layers.querySelector(`#${proj[sel].selectedLayer}`).classList.contains("selected") ? "remove" : "add";
+		for(const layerElem of layers.querySelectorAll(".layer")) {
+			if(layerElem.id === proj[sel].selectedLayer || layerElem.id === target.id) {
+				if(selecting) {
+					layerElem.classList[classListMethod]("selected");
+					selecting = false;
+					continue;
+				} else {
+					layerElem.classList[classListMethod]("selected");
+					if(proj[sel].selectedLayer !== target.id) {
+						selecting = true;
+					}
+				}
+			} else if(selecting) {
+				layerElem.classList[classListMethod]("selected");
+			} else if(!superKey) {
+				layerElem.classList.remove("selected");
+			}
+		}
+	} else {
+		proj[sel].selectedLayer = target.id;
+		if(superKey) {
+			target.classList.toggle("selected");
+		} else {
+			let othersSelected = false;
+			for(const layerElem of layers.querySelectorAll(".layer.selected")) {
+				if(layerElem !== target) {
+					othersSelected = true;
+					layerElem.classList.remove("selected");
+				}
+			}
+			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
+				proj[sel].selectedLayer = null;
+			}
+		}
+	}
+	setActive(layerContainer);
 };
 const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
 const byZ = obj => obj.z;
@@ -82,7 +159,7 @@ class DynamicObject {
 				throw new MiroError("Objects cannot reference asset groups.");
 			}
 			const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
-			this.z = isFinite(maxZ) ? maxZ + 1 : 1;
+			this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
 			proj[sel].data.objs.unshift(this);
 		} else if(value instanceof Object) {
 			Object.assign(this, value);
@@ -113,10 +190,14 @@ class DynamicObject {
 	get layerElement() {
 		return layers.querySelector(`#layer_${this.id}`);
 	}
+	get timelineElement() {
+		return layers.querySelector(`#timeline_${this.id}`);
+	}
 }
 const addToCanvas = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
 		appendLayer(new DynamicObject(assetElem[_asset].id));
 	}
+	proj[sel].saved = false;
 	setActive(contentContainer);
 };

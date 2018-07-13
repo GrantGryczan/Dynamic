@@ -33,7 +33,7 @@
 			<div id="projectPage" class="page hidden">
 				<div id="leftPanels" class="panelGroup">
 					<div id="topPanels" class="panelGroup">
-						<div id="assetContainer" class="panel">
+						<div id="assetContainer" class="container panel">
 							<div class="handle right"></div>
 							<div class="contents">
 								<div class="head">
@@ -44,15 +44,15 @@
 									</button>
 								</div>
 								<div id="assets">
-									<div id="assetDrag" class="hidden"></div>
+									<div class="drag hidden"></div>
 								</div>
 							</div>
 						</div>
-						<div id="contentContainer">
+						<div id="contentContainer" class="container">
 							<div id="content" class="mdc-elevation--z1"></div>
 						</div>
 					</div>
-					<div id="timelineContainer" class="panel">
+					<div id="timelineContainer" class="container panel">
 						<div class="handle top"></div>
 						<div class="contents">
 							<div id="assetPath">
@@ -67,7 +67,7 @@
 				</div>
 				<div id="rightPanels" class="panelGroup">
 					<div class="handle left"></div>
-					<div id="propertyContainer" class="panel">
+					<div id="propertyContainer" class="container panel">
 						<div class="contents">
 							<div class="head">
 								<span class="label spaced">Properties</span>
@@ -111,7 +111,7 @@
 							</div>
 						</div>
 					</div>
-					<div id="layerContainer" class="panel">
+					<div id="layerContainer" class="container panel">
 						<div class="handle top"></div>
 						<div class="contents">
 							<div class="head">
@@ -121,6 +121,7 @@
 								<table>
 									<tbody id="layers"></tbody>
 								</table>
+								<div class="drag hidden"></div>
 							</div>
 						</div>
 					</div>
@@ -134,14 +135,14 @@
 		<script src="./js/material.js"></script> <!-- https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js -->
 		<script src="./js/miro.js"></script>
 		<script src="./js/base.js"></script>
+		<script src="./js/storage.js"></script>
 		<script src="./js/assets.js"></script>
+		<script src="./js/objects.js"></script>
+		<script src="./js/timeline.js"></script>
+		<script src="./js/properties.js"></script>
+		<script src="./js/projects.js"></script>
+		<script src="./js/context.js"></script>
 		<script src="./js/input.js"></script>
 		<script src="./js/mouse.js"></script>
-		<script src="./js/objects.js"></script>
-		<script src="./js/projects.js"></script>
-		<script src="./js/properties.js"></script>
-		<script src="./js/storage.js"></script>
-		<script src="./js/timeline.js"></script>
-		<script src="./js/context.js"></script>
 	</body>
 </html>

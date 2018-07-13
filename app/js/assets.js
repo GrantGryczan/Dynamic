@@ -29,6 +29,9 @@ class DynamicAsset {
 		if(this.element) {
 			this.element.querySelector(".label").textContent = this.element.title = value;
 		}
+		for(const obj of this.objects) {
+			obj.layerElement.querySelector(".label").textContent = obj.name;
+		}
 	}
 	toJSON() {
 		const obj = {
@@ -47,6 +50,9 @@ class DynamicAsset {
 	}
 	get element() {
 		return assets.querySelector(`#asset_${this.id}`);
+	}
+	get objects() {
+		return proj[sel].data.objs.filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {
@@ -99,24 +105,22 @@ const storeAssets = () => {
 	}
 	proj[sel].saved = false;
 };
-const deselectAssets = () => {
-	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-		assetElem.classList.remove("selected");
-		assetElem.classList.remove("focus");
-	}
-	proj[sel].selectedAsset = null;
-};
 const removeAsset = assetElem => {
-	if(`asset_${assetElem[_asset].id}` === proj[sel].selectedAsset) {
+	if(proj[sel].selectedAsset === `asset_${assetElem[_asset].id}`) {
 		proj[sel].selectedAsset = null;
 	}
 	if(assetElem[_asset].type === "group") {
 		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
-	} else if(assetElem[_asset].type === "obj" && assetPath.querySelector(`#assetLink_${assetElem[_asset].id}`)) {
-		if(proj[sel].rootAsset === assetElem[_asset].id) {
-			rootAsset();
-		} else {
-			// TODO: Close asset upon removal
+	} else {
+		if(assetElem[_asset].type === "obj" && assetPath.querySelector(`#assetLink_${assetElem[_asset].id}`)) {
+			if(proj[sel].rootAsset === assetElem[_asset].id) {
+				rootAsset();
+			} else {
+				// TODO: Close asset upon removal
+			}
+		}
+		for(const obj of assetElem[_asset].objects) {
+			// TODO: removeObj(obj.timelineElement);
 		}
 	}
 	assetElem.remove();
@@ -168,8 +172,14 @@ const toggleAssetGroup = assetGroup => {
 	proj[sel].selectedAsset = null;
 	updateProperties();
 }
+const deselectAssets = () => {
+	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+		assetElem.classList.remove("selected");
+		assetElem.classList.remove("focus");
+	}
+	proj[sel].selectedAsset = null;
+};
 const selectAsset = (target, evtButton) => {
-	setActive(assetContainer);
 	if(typeof evtButton !== "number") {
 		evtButton = 0;
 	}
@@ -221,7 +231,7 @@ const selectAsset = (target, evtButton) => {
 			}
 		}
 	}
-	updateProperties();
+	setActive(assetContainer);
 };
 const byLowerCaseName = asset => asset.name.toLowerCase();
 const byID = asset => asset.id;
@@ -234,7 +244,6 @@ const addFiles = async files => {
 			assetParent = ctxTarget.parentNode[_asset].parent.element.lastElementChild;
 		}
 	}
-	setActive(assetContainer);
 	loadProgress(0);
 	deselectAssets();
 	for(let i = 0; i < files.length; i++) {
@@ -288,7 +297,7 @@ const addFiles = async files => {
 		}
 	}
 	storeAssets();
-	updateProperties();
+	setActive(assetContainer);
 	loadProgress(1);
 };
 const assetInput = document.createElement("input");

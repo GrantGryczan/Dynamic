@@ -40,7 +40,6 @@ const assetMenuItems = [{
 				assetParent = ctxTarget.parentNode[_asset].parent.element.lastElementChild;
 			}
 		}
-		setActive(assetContainer);
 		deselectAssets();
 		const names = proj[sel].data.assets.map(byLowerCaseName);
 		let name = "Object";
@@ -57,7 +56,7 @@ const assetMenuItems = [{
 		storeAssets();
 		assetElem.classList.add("selected");
 		proj[sel].selectedAsset = assetElem.id;
-		updateProperties();
+		setActive(assetContainer);
 	}
 }, {
 	label: "Create group",
@@ -172,25 +171,27 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 		storeAssets();
 	}
 }]);
-
 const deselectAssetMenuItem = {
 	label: "Deselect",
 	accelerator: "esc",
-	click: deselectAssets
+	click: () => {
+		deselectAssets();
+		updateProperties();
+	}
 };
 const assetBarMenuSingleItems = [{
-	label: "Remove asset",
+	label: "Remove",
 	click: removeSelectedAssets
 }, {
-	label: "Rename asset",
+	label: "Rename",
 	accelerator: "F2",
 	click: prop.name.elements[0].select.bind(prop.name.elements[0])
 }];
 const assetBarMenuMultipleItems = [{
-	label: "Remove assets",
+	label: "Remove",
 	click: removeSelectedAssets
 }, {
-	label: "Rename asset",
+	label: "Rename",
 	accelerator: "F2",
 	enabled: false
 }];
@@ -213,6 +214,7 @@ const assetBarMenuGroupItems = [{
 				proj[sel].focusedAsset = childrenToSelect[i].id;
 			}
 		}
+		updateProperties();
 	}
 }];
 const assetBarMenuNoGroupItems = [{
@@ -241,15 +243,29 @@ for(const assetBarMenuQuantityItems of [assetBarMenuMultipleItems, assetBarMenuS
 	Multiple	[0][0]		[0][1]		[0][2]
 	Single		[1][0]		[1][1]		[1][2]
 */
+const layerMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Remove",
+	click: removeSelectedLayers
+}, menuSeparator, {
+	label: "Deselect",
+	accelerator: "esc",
+	click: () => {
+		deselectLayers();
+		updateProperties();
+	}
+}]);
 let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
 	const items = [];
-	const targetAsset = ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset");
 	if(ctxTarget === assets) {
 		assetMenu.popup(win);
-	} else if(targetAsset) {
-		assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.typeGroup.selected") ? +!!assets.querySelector(".asset.selected:not(.typeGroup)") : 2].popup(win);
+	} else if(ctxTarget.classList.contains("bar")) {
+		if(ctxTarget.parentNode.classList.contains("asset")) {
+			assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.typeGroup.selected") ? +!!assets.querySelector(".asset.selected:not(.typeGroup)") : 2].popup(win);
+		} else if(ctxTarget.parentNode.parentNode.classList.contains("layer")) {
+			layerMenu.popup(win);
+		}
 	} else if(ctxTarget === sortAssets) {
 		sortAssetsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {

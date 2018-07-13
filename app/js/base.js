@@ -11,6 +11,10 @@ const _name = Symbol("name");
 const _location = Symbol("location");
 const _selectedAsset = Symbol("selectedAsset");
 const _focusedAsset = Symbol("focusedAsset");
+const _selectedLayer = Symbol("selectedLayer");
+const _focusedLayer = Symbol("focusedLayer");
+const _selectedObj = Symbol("selectedObj");
+const _focusedObj = Symbol("focusedObj");
 const _asset = Symbol("asset");
 const _obj = Symbol("obj");
 const slashes = /[\\\/]/g;
@@ -27,12 +31,13 @@ const saveProjAs = toolbar.querySelector("#saveProjAs");
 const exportProj = toolbar.querySelector("#exportProj");
 const homePage = container.querySelector("#homePage");
 const projectPage = container.querySelector("#projectPage");
+const panels = projectPage.querySelectorAll(".container");
 const assetContainer = projectPage.querySelector("#assetContainer");
 const assetHead = assetContainer.querySelector(".head");
 const addAsset = assetHead.querySelector("#addAsset");
 const sortAssets = assetHead.querySelector("#sortAssets");
 const assets = assetContainer.querySelector("#assets");
-const assetDrag = assets.querySelector("#assetDrag");
+const assetDrag = assets.querySelector(".drag");
 const content = projectPage.querySelector("#content");
 const timelineContainer = projectPage.querySelector("#timelineContainer");
 const assetPath = timelineContainer.querySelector("#assetPath");
@@ -49,7 +54,9 @@ const downloadAsset = prop.preview.querySelector("#downloadAsset");
 const fullPreview = container.querySelector("#fullPreview");
 const fullPreviewImage = fullPreview.querySelector("img");
 const layerContainer = projectPage.querySelector("#layerContainer");
-const layers = layerContainer.querySelector("#layers");
+const layerBox = layerContainer.querySelector("#layerBox");
+const layers = layerBox.querySelector("#layers");
+const layerDrag = layerBox.querySelector(".drag");
 const targetIndicator = container.querySelector("#targetIndicator");
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
@@ -171,6 +178,7 @@ const setActive = elem => {
 	if(elem) {
 		elem.classList.add("active");
 	}
+	updateProperties();
 };
 document.addEventListener("submit", evt => {
 	evt.preventDefault();

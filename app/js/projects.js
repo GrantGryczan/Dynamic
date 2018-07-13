@@ -5,8 +5,7 @@ let sel;
 const prevSel = [];
 const baseData = {
 	service: "Miroware Dynamic",
-	version: 0,
-	scrollAssets: 0
+	version: 0
 };
 class DynamicProject {
 	constructor(value) {
@@ -34,7 +33,12 @@ class DynamicProject {
 		this.data = value.data || {
 			...baseData,
 			assets: [],
-			objs: []
+			objs: [],
+			scrollAssets: 0,
+			scrollContentLeft: 0,
+			scrollContentTop: 0,
+			scrollLayers: 0,
+			scrollObjs: 0
 		};
 		this.selected = [];
 		this.open = [];
@@ -98,6 +102,44 @@ class DynamicProject {
 			scrollIntoView(assetElem);
 		}
 	}
+	get selectedLayer() {
+		return this[_selectedLayer];
+	}
+	set selectedLayer(value) {
+		this.focusedLayer = this[_selectedLayer] = value;
+	}
+	get focusedLayer() {
+		return this[_focusedLayer];
+	}
+	set focusedLayer(value) {
+		for(const layerElem of layers.querySelectorAll(".layer.focus")) {
+			layerElem.classList.remove("focus");
+		}
+		if(this[_focusedLayer] = value) {
+			const layerElem = layers.querySelector(`#${value}`);
+			layerElem.classList.add("focus");
+			scrollIntoView(layerElem);
+		}
+	}
+	get selectedObj() {
+		return this[_selectedObj];
+	}
+	set selectedObj(value) {
+		this.focusedObj = this[_selectedObj] = value;
+	}
+	get focusedObj() {
+		return this[_focusedObj];
+	}
+	set focusedObj(value) {
+		for(const timelineElem of objs.querySelectorAll(".timeline.focus")) {
+			timelineElem.classList.remove("focus");
+		}
+		if(this[_focusedObj] = value) {
+			const timelineElem = objs.querySelector(`#${value}`);
+			timelineElem.classList.add("focus");
+			scrollIntoView(timelineElem);
+		}
+	}
 }
 const select = id => {
 	if(!proj[id]) {
@@ -140,6 +182,7 @@ const select = id => {
 		homePage.classList.remove("hidden");
 	} else {
 		proj[sel].data.assets.forEach(appendAsset);
+		updateLayers();
 		for(const id of proj[sel].selected) {
 			projectPage.querySelector(`#${id}`).classList.add("selected");
 		}
@@ -148,6 +191,12 @@ const select = id => {
 		}
 		if(proj[sel].focusedAsset) {
 			assets.querySelector(`#${proj[sel].focusedAsset}`).classList.add("focus");
+		}
+		if(proj[sel].focusedLayer) {
+			layers.querySelector(`#${proj[sel].focusedLayer}`).classList.add("focus");
+		}
+		if(proj[sel].focusedObj) {
+			objs.querySelector(`#${proj[sel].focusedObj}`).classList.add("focus");
 		}
 		rootAsset(proj[sel].rootAsset ? getAsset(proj[sel].rootAsset) : null);
 		openAsset(proj[sel].openAsset ? getAsset(proj[sel].openAsset) : null);
@@ -234,7 +283,19 @@ const open = async location => {
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`
-					<span class="bold">${data.assets[i].name}</span> is not a valid asset.
+					<span class="bold">${data.assets[i].id}</span> is not a valid asset.
+				`);
+			}
+		}
+		for(const dataObj of data.objs) {
+			try {
+				const obj = new DynamicObject(dataObj);
+				proj[sel].data.objs.push(obj);
+				appendLayer(obj);
+			} catch(err) {
+				console.warn(err);
+				new Miro.Dialog("Error", html`
+					<span class="bold">${dataObj.id}</span> is not a valid object.
 				`);
 			}
 		}
