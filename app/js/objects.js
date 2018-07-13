@@ -47,6 +47,11 @@ const removeObj = layerElem => {
 	if(layerElem[_obj].group) {
 		layerElem[_obj].timelineElement.lastElementChild.children.forEach(layerElem[_obj].timelineElement.before.bind(layerElem[_obj].timelineElement));
 	}
+	if(layerElem[_obj].asset.objects.length > 1) {
+		for(const otherObj of layerElem[_obj].asset.objects) {
+			otherObj.updateName();
+		}
+	}
 	layerElem.remove();
 	// TODO: layerElem[_obj].timelineElement.remove();
 	storeObjs();
@@ -151,6 +156,7 @@ const selectLayer = (target, evtButton) => {
 	setActive(layerContainer);
 };
 const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+const byDate = (a, b) => a.date - b.date;
 const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
@@ -158,6 +164,7 @@ class DynamicObject {
 			if((this.asset = getAsset(value)).type === "group") {
 				throw new MiroError("Objects cannot reference asset groups.");
 			}
+			this.date = Date.now();
 			const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
 			this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
 			proj[sel].data.objs.unshift(this);
@@ -185,7 +192,11 @@ class DynamicObject {
 		return obj;
 	}
 	get name() {
-		return this.asset.name;
+		let name = this.asset.name;
+		if(this.asset.objects.length > 1) {
+			name += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
+		}
+		return name;
 	}
 	get layerElement() {
 		return layers.querySelector(`#layer_${this.id}`);
@@ -193,10 +204,19 @@ class DynamicObject {
 	get timelineElement() {
 		return layers.querySelector(`#timeline_${this.id}`);
 	}
+	updateName() {
+		this.layerElement.querySelector(".label").textContent = this.name; // TODO: Update other labels
+	}
 }
 const addToCanvas = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
-		appendLayer(new DynamicObject(assetElem[_asset].id));
+		const obj = new DynamicObject(assetElem[_asset].id);
+		appendLayer(obj);
+		if(obj.asset.objects.length > 1) {
+			for(const otherObj of obj.asset.objects) {
+				otherObj.updateName();
+			}
+		}
 	}
 	proj[sel].saved = false;
 	setActive(contentContainer);

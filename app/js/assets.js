@@ -30,7 +30,7 @@ class DynamicAsset {
 			this.element.querySelector(".label").textContent = this.element.title = value;
 		}
 		for(const obj of this.objects) {
-			obj.layerElement.querySelector(".label").textContent = obj.name;
+			obj.updateName();
 		}
 	}
 	toJSON() {

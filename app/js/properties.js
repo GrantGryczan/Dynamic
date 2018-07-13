@@ -34,7 +34,7 @@ const updateProperties = () => {
 	if(assetContainer.classList.contains("active")) {
 		const assetElems = assets.querySelectorAll(".asset.selected");
 		if(assetElems.length) {
-			if(prop.name.elements[0].readOnly = assetElems.length !== 1) {
+			if(prop.name.elements[0].readOnly = assetElems.length > 1) {
 				prop.name.elements[0].value = `< ${assetElems.length} selected >`;
 			} else {
 				prop.name.elements[0].value = assetElems[0][_asset].name;
@@ -78,6 +78,14 @@ const updateProperties = () => {
 	} else {
 		const objElems = layerContainer.classList.contains("active") ? layers.querySelectorAll(".layer.selected") : (timelineContainer.classList.contains("active") ? timelines.querySelectorAll(".timeline.selected") : []);
 		if(objElems.length) {
+			prop.name.elements[0].readOnly = true;
+			if(objElems.length === 1) {
+				prop.name.elements[0].value = objElems[0][_obj].asset.name;
+				prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
+			} else {
+				prop.name.elements[0].value = `< ${objElems.length} selected >`;
+			}
+			prop.name.classList.remove("hidden");
 			// TODO: Object properties
 		} else {
 			canvasProperties();
