@@ -231,7 +231,7 @@ class MiroDialog {
 		});
 	}
 }
-Miro.dialog = MiroDialog;
+Miro.Dialog = MiroDialog;
 Miro.prepare(document);
 const container = document.querySelector("#container");
 const tabs = container.querySelector("#tabs");
@@ -283,7 +283,7 @@ const store = () => {
 		localStorage.data = JSON.stringify(storage);
 	} catch(err) {
 		console.warn(err);
-		Miro.dialog("Error", "An error occurred while trying to save your user data.");
+		Miro.Dialog("Error", "An error occurred while trying to save your user data.");
 	}
 };
 const win = electron.remote.getCurrentWindow();
@@ -449,7 +449,7 @@ const updateProperties = () => {
 			}
 			prop.mime.classList.remove("hidden");
 			prop.mime.elements[0].value = mimeType || "< mixed >";
-			if(mimeType) {
+			if(mimeType && assetElems.length === 1) {
 				const previewMedia = mimeType.startsWith("image/") ? previewImage : previewAudio;
 				previewMedia.src = assetElems[0][_asset].url;
 				previewMedia.classList.remove("hidden");
@@ -494,11 +494,11 @@ const assetMenuItems = [{
 	label: "Create object",
 	click: () => {
 		let assetParent = assets;
-		if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
+		if(ctxTarget.classList.contains("bar")) {
 			if(ctxTarget.parentNode[_asset].type === "group") {
 				assetParent = ctxTarget.parentNode.lastElementChild;
 			} else if(ctxTarget.parentNode[_asset].parent) {
-				assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent.id).lastElementChild;
+				assetParent = ctxTarget.parentNode[_asset].parent.element.lastElementChild;
 			}
 		}
 		setActive(assetContainer);
@@ -539,7 +539,7 @@ const assetMenuItems = [{
 		});
 		proj[sel].data.assets.push(asset);
 		const assetGroup = appendAsset(asset);
-		if(ctxTarget.classList.contains("assetBar")) {
+		if(ctxTarget.classList.contains("bar")) {
 			ctxTarget.parentNode.before(assetGroup);
 			assetElems.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
 		}
@@ -641,8 +641,8 @@ const removeSelectedAssets = () => {
 	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 };
 const addToCanvas = () => {
-	for(const assetElem of assets.querySelectorAll(".asset:not(.group).selected")) {
-		new DynamicObject(assetElem[_asset].id);
+	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
+		appendLayer(new DynamicObject(assetElem[_asset].id));
 	}
 	setActive(contentContainer);
 };
@@ -670,14 +670,14 @@ const assetBarMenuMultipleItems = [{
 const assetBarMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
-		for(const assetElem of assets.querySelectorAll(".asset.group.selected > .assetChildren > .asset")) {
+		for(const assetElem of assets.querySelectorAll(".asset.typeGroup.selected > .assetChildren > .asset")) {
 			assetElem.classList.add("selected");
 		}
 	}
 }, {
 	label: "Deselect && select children",
 	click: () => {
-		const childrenToSelect = assets.querySelectorAll(".asset.group.selected > .assetChildren > .asset");
+		const childrenToSelect = assets.querySelectorAll(".asset.typeGroup.selected > .assetChildren > .asset");
 		deselectAssets();
 		for(let i = 0; i < childrenToSelect.length; i++) {
 			childrenToSelect[i].classList.add("selected");
@@ -718,11 +718,11 @@ let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
 	const items = [];
-	const targetAsset = ctxTarget.classList.contains("assetBar");
+	const targetAsset = ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset");
 	if(ctxTarget === assets) {
 		assetMenu.popup(win);
 	} else if(targetAsset) {
-		assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.group.selected") ? +!!assets.querySelector(".asset.selected:not(.group)") : 2].popup(win);
+		assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.typeGroup.selected") ? +!!assets.querySelector(".asset.selected:not(.typeGroup)") : 2].popup(win);
 	} else if(ctxTarget === sortAssets) {
 		sortAssetsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
@@ -777,7 +777,7 @@ class DynamicProject {
 		this.open = [];
 		const id = String(++projID);
 		select((proj[id] = this).id = id);
-		for(const assetElem of assets.querySelectorAll(".asset.group")) {
+		for(const assetElem of assets.querySelectorAll(".asset.typeGroup")) {
 			assetElem.classList.add("open");
 		}
 	}
@@ -803,7 +803,7 @@ class DynamicProject {
 		this.tab.classList[(saveProj.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
 	}
 	async close() {
-		if(!this.saved && await new Miro.dialog("Confirm", html`
+		if(!this.saved && await new Miro.Dialog("Confirm", html`
 			Are you sure you want to close <span class="bold">${this.name}</span>?<br>
 			All unsaved changes will be lost.
 		`, ["Yes", "No"]) !== 0) {
@@ -837,8 +837,7 @@ class DynamicProject {
 	}
 }
 const _asset = Symbol("asset");
-const findAsset = id => proj[sel].data.assets.find(asset => asset.id === id);
-const getAssetElemByID = id => assets.querySelector(`#asset_${id}`);
+const getAsset = id => proj[sel].data.assets.find(asset => asset.id === id);
 class DynamicAsset {
 	constructor(value) {
 		if(!(value instanceof Object)) {
@@ -856,7 +855,7 @@ class DynamicAsset {
 			throw new MiroError("The `type` value is invalid.");
 		}
 		if(value.parent) {
-			this.parent = findAsset(value.parent);
+			this.parent = getAsset(value.parent);
 		}
 		this.id = value.id || uid(proj[sel].data.assets.map(byID));
 	}
@@ -865,9 +864,8 @@ class DynamicAsset {
 	}
 	set name(value) {
 		this[_name] = value;
-		const assetElem = getAssetElemByID(this.id);
-		if(assetElem) {
-			assetElem.querySelector(".label").textContent = assetElem.title = value;
+		if(this.element) {
+			this.element.querySelector(".label").textContent = this.element.title = value;
 		}
 	}
 	toJSON() {
@@ -885,13 +883,16 @@ class DynamicAsset {
 			return `data:${this.mime};base64,${this.data}`;
 		}
 	}
+	get element() {
+		return assets.querySelector(`#asset_${this.id}`);
+	}
 }
 const appendAsset = asset => {
 	let assetElem;
 	if(asset.type === "group") {
 		assetElem = html`
-			<div id="asset_${asset.id}" class="asset group" title="$${asset.name}">
-				<div class="assetBar">
+			<div id="asset_${asset.id}" class="asset typeGroup" title="$${asset.name}">
+				<div class="bar">
 					<div class="icon material-icons"></div>
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
@@ -901,8 +902,8 @@ const appendAsset = asset => {
 		`;
 	} else if(asset.type === "file") {
 		assetElem = html`
-			<div id="asset_${asset.id}" class="asset file" title="$${asset.name}">
-				<div class="assetBar">
+			<div id="asset_${asset.id}" class="asset typeFile" title="$${asset.name}">
+				<div class="bar">
 					<div class="icon material-icons">${asset.mime.startsWith("image/") ? "image" : "audiotrack"}</div>
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
@@ -911,8 +912,8 @@ const appendAsset = asset => {
 		`;
 	} else if(asset.type === "obj") {
 		assetElem = html`
-			<div id="asset_${asset.id}" class="asset obj" title="$${asset.name}">
-				<div class="assetBar">
+			<div id="asset_${asset.id}" class="asset typeObj" title="$${asset.name}">
+				<div class="bar">
 					<div class="icon material-icons">widgets</div>
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
@@ -921,7 +922,7 @@ const appendAsset = asset => {
 		`;
 	}
 	assetElem[_asset] = asset;
-	(assetElem[_asset].parent ? getAssetElemByID(assetElem[_asset].parent.id).lastElementChild : assets).appendChild(assetElem);
+	(assetElem[_asset].parent ? assetElem[_asset].parent.element.lastElementChild : assets).appendChild(assetElem);
 	return assetElem;
 };
 const storeAssets = () => {
@@ -960,12 +961,12 @@ const confirmRemoveAsset = assetElem => {
 		}
 	};
 	if(assetElem[_asset].type === "file" || assetElem[_asset].type === "obj") {
-		new Miro.dialog("Remove Asset", html`
+		new Miro.Dialog("Remove Asset", html`
 			Are you sure you want to remove <span class="bold">${assetElem[_asset].name}</span>?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	} else if(assetElem[_asset].type === "group") {
-		new Miro.dialog("Remove Group", html`
+		new Miro.Dialog("Remove Group", html`
 			Are you sure you want to remove <span class="bold">${assetElem[_asset].name}</span>?<br>
 			All assets inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
@@ -975,7 +976,7 @@ const confirmRemoveAssets = assetElems => {
 	if(assetElems.length === 1) {
 		confirmRemoveAsset(assetElems[0]);
 	} else if(assetElems.length > 1) {
-		new Miro.dialog("Remove Assets", html`
+		new Miro.Dialog("Remove Assets", html`
 			Are you sure you want to remove all those assets?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(value => {
@@ -1045,8 +1046,8 @@ const select = id => {
 		if(proj[sel].focusedAsset) {
 			assets.querySelector(`#${proj[sel].focusedAsset}`).classList.add("focus");
 		}
-		rootAsset(proj[sel].rootAsset ? getAssetElemByID(proj[sel].rootAsset)[_asset] : null);
-		openAsset(proj[sel].openAsset ? getAssetElemByID(proj[sel].openAsset)[_asset] : null);
+		rootAsset(proj[sel].rootAsset ? getAsset(proj[sel].rootAsset) : null);
+		openAsset(proj[sel].openAsset ? getAsset(proj[sel].openAsset) : null);
 		saveProj.disabled = proj[sel].saved;
 		updateProperties();
 		proj[sel].tab.classList.add("current");
@@ -1132,7 +1133,7 @@ const save = async as => {
 			await fs.writeFile(proj[sel].location, await zip(JSON.stringify(proj[sel].data)));
 		} catch(err) {
 			console.warn(err);
-			new Miro.dialog("Error", "An error occurred while trying to save.");
+			new Miro.Dialog("Error", "An error occurred while trying to save.");
 			loadIndeterminate(false);
 			return;
 		}
@@ -1165,7 +1166,7 @@ const open = async location => {
 			}
 		} catch(err) {
 			console.warn(err);
-			new Miro.dialog("Error", "That is not a valid MWD file.");
+			new Miro.Dialog("Error", "That is not a valid MWD file.");
 			loadIndeterminate(false);
 			return false;
 		}
@@ -1191,7 +1192,7 @@ const open = async location => {
 				}
 			} catch(err) {
 				console.warn(err);
-				new Miro.dialog("Error", html`
+				new Miro.Dialog("Error", html`
 					<span class="bold">${data.assets[i].name}</span> is not a valid asset.
 				`);
 			}
@@ -1264,11 +1265,11 @@ const byLowerCaseName = asset => asset.name.toLowerCase();
 const byID = asset => asset.id;
 const addFiles = async files => {
 	let assetParent = assets;
-	if(ctxTarget && ctxTarget.classList.contains("assetBar")) {
+	if(ctxTarget && ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset")) {
 		if(ctxTarget.parentNode[_asset].type === "group") {
 			assetParent = ctxTarget.parentNode.lastElementChild;
 		} else if(ctxTarget.parentNode[_asset].parent) {
-			assetParent = getAssetElemByID(ctxTarget.parentNode[_asset].parent.id).lastElementChild;
+			assetParent = ctxTarget.parentNode[_asset].parent.element.lastElementChild;
 		}
 	}
 	setActive(assetContainer);
@@ -1285,7 +1286,7 @@ const addFiles = async files => {
 			})).target.result).toString("base64");
 		} catch(err) {
 			console.warn(err);
-			new Miro.dialog("Error", html`
+			new Miro.Dialog("Error", html`
 				An error occurred while encoding <span class="bold">${files[i].name}</span>.
 			`);
 			continue;
@@ -1311,7 +1312,7 @@ const addFiles = async files => {
 			});
 		} catch(err) {
 			console.warn(err);
-			new Miro.dialog("Error", html`
+			new Miro.Dialog("Error", html`
 				<span class="bold">${files[i].name}</span> is not a valid asset.
 			`);
 			continue;
@@ -1339,7 +1340,7 @@ const addFileFromURI = uri => {
 	loadIndeterminate(true);
 	const error = () => {
 		loadIndeterminate(false);
-		new Miro.dialog("Error", html`
+		new Miro.Dialog("Error", html`
 			An error occurred while fetching <span class="bold">${uri}</span>.
 		`);
 	};
@@ -1395,7 +1396,7 @@ const onMouseDown = evt => {
 	} else {
 		setActive();
 	}
-	if(mouseTarget.classList.contains("assetBar")) {
+	if(mouseTarget.classList.contains("bar") && mouseTarget.parentNode.classList.contains("asset")) {
 		proj[sel].focusedAsset = mouseTarget.parentNode.id;
 	} else if(evt.button === 0) {
 		if(mouseTarget0.classList.contains("tab")) {
@@ -1437,32 +1438,34 @@ document.addEventListener("mousemove", evt => {
 		return;
 	}
 	if(mouseTarget) {
-		if(mouseTarget.classList.contains("assetBar")) {
-			if(!mouseMoved) {
-				selectAsset(mouseTarget.parentNode, 2);
-			}
-			if(evt.target === assetContainer || assetContainer.contains(evt.target)) {
-				let side;
-				let minDist = Infinity;
-				let minAssetElem;
-				for(const assetElem of assets.querySelectorAll(".asset")) {
-					const distTop = mouseY - assetElem.firstElementChild.getBoundingClientRect().top - assetElem.firstElementChild.offsetHeight / 2;
-					const absDistTop = Math.abs(distTop);
-					if(absDistTop < minDist) {
-						minDist = absDistTop;
-						minAssetElem = assetElem;
-						side = distTop < 0 ? "before" : "after";
+		if(mouseTarget.classList.contains("bar")) {
+			if(mouseTarget.parentNode.classList.contains("asset")) {
+				if(!mouseMoved) {
+					selectAsset(mouseTarget.parentNode, 2);
+				}
+				if(evt.target === assetContainer || assetContainer.contains(evt.target)) {
+					let side;
+					let minDist = Infinity;
+					let minAssetElem;
+					for(const assetElem of assets.querySelectorAll(".asset")) {
+						const distTop = mouseY - assetElem.firstElementChild.getBoundingClientRect().top - assetElem.firstElementChild.offsetHeight / 2;
+						const absDistTop = Math.abs(distTop);
+						if(absDistTop < minDist) {
+							minDist = absDistTop;
+							minAssetElem = assetElem;
+							side = distTop < 0 ? "before" : "after";
+						}
 					}
-				}
-				if(side === "after" && minAssetElem[_asset].type === "group" && minAssetElem.classList.contains("open")) {
-					minAssetElem.lastElementChild.insertBefore(assetDrag, minAssetElem.lastElementChild.firstChild);
+					if(side === "after" && minAssetElem[_asset].type === "group" && minAssetElem.classList.contains("open")) {
+						minAssetElem.lastElementChild.insertBefore(assetDrag, minAssetElem.lastElementChild.firstChild);
+					} else {
+						minAssetElem[side](assetDrag);
+					}
+					assetDrag.classList.remove("hidden");
 				} else {
-					minAssetElem[side](assetDrag);
+					
+					assetDrag.classList.add("hidden");
 				}
-				assetDrag.classList.remove("hidden");
-			} else {
-				
-				assetDrag.classList.add("hidden");
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("tab")) {
@@ -1527,7 +1530,8 @@ const handleMouseUp = (evt, evtButton) => {
 	if(mouseTarget && (evtButton0 || evtButton2)) {
 		if(mouseTarget === assets || assets.contains(mouseTarget)) {
 			if(evtButton === mouseDown) {
-				if(mouseTarget.classList.contains("assetBar") && mouseMoved) {
+				const targetAssetBar = mouseTarget.classList.contains("bar") && mouseTarget.parentNode.classList.contains("asset");
+				if(mouseMoved && targetAssetBar) {
 					if(assetDrag.classList.contains("hidden")) {
 						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 							addToCanvas();
@@ -1547,9 +1551,9 @@ const handleMouseUp = (evt, evtButton) => {
 							deselectAssets();
 							updateProperties();
 						}
-					} else if(mouseTarget.classList.contains("assetBar")) {
+					} else if(targetAssetBar) {
 						selectAsset(mouseTarget.parentNode, evtButton);
-					} else if(evtButton0 && mouseTarget0.parentNode.classList.contains("assetBar")) {
+					} else if(evtButton0 && mouseTarget0.parentNode.classList.contains("bar") && mouseTarget0.parentNode.parentNode.classList.contains("asset")) {
 						if(mouseTarget0.classList.contains("close")) {
 							confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
 						} else if(mouseTarget0.classList.contains("icon")) {
@@ -1558,6 +1562,10 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				}
 			}
+		} else if(mouseTarget === layerBox || layerBox.contains(mouseTarget)) {
+			if(evtButton === mouseDown && mouseTarget0.classList.contains("close")) {
+			   confirmRemoveObj(mouseTarget0.parentNode.parentNode.parentNode);
+		   }
 		} else if(evtButton0) {
 			if(mouseTarget0) {
 				if(mouseTarget0.classList.contains("tab")) {
@@ -1727,7 +1735,7 @@ document.addEventListener("dblclick", evt => {
 			}
 			store();
 			absoluteCenter(content);
-		} else if(evt.target.classList.contains("assetBar")) {
+		} else if(evt.target.classList.contains("bar") && evt.target.parentNode.classList.contains("asset")) {
 			selectAsset(evt.target.parentNode, 2);
 			if(evt.target.parentNode[_asset].type === "group") {
 				toggleAssetGroup(evt.target.parentNode);
@@ -1916,7 +1924,7 @@ document.addEventListener("change", evt => {
 	if(evt.target === prop.name.elements[0]) {
 		const names = proj[sel].data.assets.map(byLowerCaseName);
 		if(names.includes(evt.target.value)) {
-			new Miro.dialog("Error", "That asset name is already in use.");
+			new Miro.Dialog("Error", "That asset name is already in use.");
 		} else {
 			assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
 			proj[sel].saved = false;
@@ -1970,7 +1978,7 @@ window.onbeforeunload = () => {
 	if(shouldNotClose && notConfirmingClose) {
 		if(Object.values(proj).some(unsaved)) {
 			notConfirmingClose = false;
-			new Miro.dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
+			new Miro.Dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
 			return true;
 		}
 	}
@@ -2019,11 +2027,80 @@ const openAsset = (asset, selected, finish) => {
 		delete proj[sel].openAsset;
 	}
 };
-const updateLayers = () => {
-	
+const _obj = Symbol("_obj");
+const appendLayer = obj => {
+	const layerElem = html`
+		<table>
+			<tbody>
+				<tr id="layer_${obj.id}" class="layer" title="$${obj.name}">
+					<td class="z">${obj.z}</td>
+					<td class="barCell">
+						<div class="bar">
+							<div class="label">$${obj.name}</div>
+							<div class="close material-icons"></div>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	`.firstElementChild.firstElementChild;
+	layerElem[_obj] = obj;
+	let siblingElem = null;
+	for(const eachLayerElem of layers.querySelectorAll(".layer")) {
+		if(eachLayerElem[_obj].z < obj.z) {
+			siblingElem = eachLayerElem;
+			break;
+		}
+	}
+	layers.insertBefore(layerElem, siblingElem);
+	return layerElem;
 };
-const updateTimeline = () => {
-	
+const storeObjs = () => {
+	// TODO: Continue
+};
+const removeObj = objElem => {
+	if(`obj_${objElem[_obj].id}` === proj[sel].selectedAsset) {
+		proj[sel].selectedAsset = null;
+	}
+	if(objElem[_obj].group) {
+		objElem.lastElementChild.children.forEach(objElem.before.bind(objElem));
+	}
+	objElem.remove();
+	updateProperties();
+};
+const confirmRemoveObj = objElem => {
+	const actuallyRemoveObj = value => {
+		if(value === 0) {
+			removeObj(objElem);
+			storeObjs();
+		}
+	};
+	if(objElem[_obj].group) {
+		new Miro.Dialog("Remove Group", html`
+			Are you sure you want to remove <span class="bold">${objElem[_obj].name}</span>?<br>
+			All objects inside the group will be taken out.
+		`, ["Yes", "No"]).then(actuallyRemoveObj);
+	} else {
+		new Miro.Dialog("Remove Object", html`
+			Are you sure you want to remove <span class="bold">${objElem[_obj].name}</span>?<br>
+			This cannot be undone.
+		`, ["Yes", "No"]).then(actuallyRemoveObj);
+	}
+};
+const confirmRemoveObjs = objElems => {
+	if(objElems.length === 1) {
+		confirmRemoveObj(objElems[0]);
+	} else if(objElems.length > 1) {
+		new Miro.Dialog("Remove Objects", html`
+			Are you sure you want to remove all those objects?<br>
+			This cannot be undone.
+		`, ["Yes", "No"]).then(value => {
+			if(value === 0) {
+				objElems.forEach(removeObj);
+				storeObjs();
+			}
+		});
+	}
 };
 class DynamicProperty extends Array {
 	constructor() {
@@ -2037,19 +2114,27 @@ class DynamicProperty extends Array {
 	}
 }
 DynamicProperty.prototype[Symbol.species] = Array;
-const findObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
 		if(typeof value === "string") {
-			this.asset = findAsset(value);
+			if((this.asset = getAsset(value)).type === "group") {
+				throw new MiroError("Objects cannot reference asset groups.");
+			}
+			const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
+			this.z = isFinite(maxZ) ? maxZ + 1 : 1;
 			proj[sel].data.objs.unshift(this);
 		} else if(value instanceof Object) {
 			Object.assign(this, value);
 			if(value.parent) {
-				this.parent = findObj(value.parent);
+				this.parent = getObj(value.parent);
+			}
+			if(value.asset) {
+				this.asset = getAsset(value.asset);
 			}
 		} else {
-			throw new MiroError("The `value` parameter must be an object.");
+			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
 		this.id = value.id || uid(proj[sel].data.objs.map(byID));
 	}
@@ -2062,5 +2147,11 @@ class DynamicObject {
 			obj.parent = this.parent.id;
 		}
 		return obj;
+	}
+	get name() {
+		return this.asset.name;
+	}
+	get layerElement() {
+		return layers.querySelector(`#layer_${this.id}`);
 	}
 }

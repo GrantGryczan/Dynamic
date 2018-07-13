@@ -133,14 +133,41 @@ label:not(.mdc-floating-label) {
 	pointer-events: none;
 	background-color: #f4f4f4;
 }
-.label {
+.barCell {
+	width: 100%;
+}
+.bar {
+	display: flex;
+	position: relative;
+	height: 24px;
+	pointer-events: initial;
+}
+.focus > .bar {
+	background-color: rgba(128, 0, 255, 0.05);
+}
+.selected > .bar {
+	background-color: rgba(128, 0, 255, 0.1);
+}
+.active .selected > .bar {
+	background-color: rgba(128, 0, 255, 0.15);
+}
+.bar > .icon {
+	min-width: 24px;
+	margin-right: 4px;
 	pointer-events: none;
+}
+.bar > .close {
+	background-color: transparent;
+}
+.label {
 	line-height: 24px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
+.label:not(td) {
+	pointer-events: none;
+}
 .close {
-	position: absolute;
 	top: 3px;
 	right: 3px;
 	border-radius: 50%;
@@ -149,6 +176,9 @@ label:not(.mdc-floating-label) {
 	transform: scale(0);
 	transition: transform 0.08s ease-out;
 	font-size: 18px;
+}
+.close:not(td) {
+	position: absolute;
 }
 .close::after {
 	opacity: 0.25;
@@ -379,53 +409,30 @@ label:not(.mdc-floating-label) {
 	overflow: visible;
 	pointer-events: none;
 }
-.assetBar {
-	display: flex;
-	position: relative;
-	height: 24px;
-	pointer-events: initial;
-}
-.asset.focus > .assetBar {
-	background-color: rgba(128, 0, 255, 0.05);
-}
-.asset.selected > .assetBar {
-	background-color: rgba(128, 0, 255, 0.1);
-}
-#assets.active .asset.selected > .assetBar {
-	background-color: rgba(128, 0, 255, 0.15);
-}
-.assetBar > .icon {
-	min-width: 24px;
-	margin-right: 4px;
-	pointer-events: none;
-}
-.asset.group > .assetBar > .icon {
+.asset.typeGroup > .bar > .icon {
 	pointer-events: initial;
 	cursor: pointer;
 	transform: rotate(0);
 	transition: transform 0.08s ease-out;
 }
-.asset.group > .assetBar > .icon::after {
+.asset.typeGroup > .bar > .icon::after {
 	opacity: 0.25;
 	content: "chevron_right";
 }
-.asset.group > .assetBar > .icon:hover::after {
+.asset.typeGroup > .bar > .icon:hover::after {
 	opacity: 0.625;
 }
-.asset.group > .assetBar > .icon:active::after {
+.asset.typeGroup > .bar > .icon:active::after {
 	opacity: 1;
 }
-.asset.group.open > .assetBar > .icon {
+.asset.typeGroup.open > .bar > .icon {
 	transform: rotate(90deg);
-}
-.assetBar > .close {
-	background-color: transparent;
 }
 .assetChildren {
 	margin-left: 24px;
 	overflow: visible;
 }
-.asset.group:not(.open) > .assetChildren {
+.asset.typeGroup:not(.open) > .assetChildren {
 	display: none;
 }
 #assetDrag {
@@ -513,11 +520,13 @@ label:not(.mdc-floating-label) {
 #layerBox table {
 	border-spacing: 0;
 }
-#layerBox tr {
+.layer {
 	height: 24px;
+	cursor: default;
 }
-#layerBox td {
-	padding: 0 4px;
+.layer td:first-child {
+	padding: 0 8px 0 6px;
+	opacity: 0.5;
 }
 #targetIndicator {
 	position: absolute;
