@@ -206,9 +206,6 @@ label:not(.mdc-floating-label) {
 	margin-bottom: -2px;
 	background-color: #8000ff;
 }
-td .drag {
-	top: -2px;
-}
 #container {
 	display: flex;
 	flex-grow: 1;
