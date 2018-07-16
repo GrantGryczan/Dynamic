@@ -40,13 +40,12 @@ const assets = assetContainer.querySelector("#assets");
 const assetDrag = assets.querySelector(".drag");
 const content = projectPage.querySelector("#content");
 const timelineContainer = projectPage.querySelector("#timelineContainer");
-const assetPath = timelineContainer.querySelector("#assetPath");
 const propertyContainer = projectPage.querySelector("#propertyContainer");
 const properties = propertyContainer.querySelector("#properties");
-const propElems = properties.querySelectorAll(".property");
+const propElems = properties.querySelectorAll("[data-key]");
 const prop = {};
 for(const propElem of propElems) {
-	prop[propElem.getAttribute("data-property")] = propElem;
+	prop[propElem.getAttribute("data-key")] = propElem;
 }
 const previewImage = prop.preview.querySelector("img");
 const previewAudio = prop.preview.querySelector("audio");
@@ -57,6 +56,11 @@ const layerContainer = projectPage.querySelector("#layerContainer");
 const layerBox = layerContainer.querySelector("#layerBox");
 const layers = layerBox.querySelector("#layers");
 const layerDrag = layerBox.querySelector(".drag");
+const statusElems = projectPage.querySelectorAll("#statusBar [data-key]");
+const status = {};
+for(const statusElem of statusElems) {
+	status[statusElem.getAttribute("data-key")] = statusElem;
+}
 const targetIndicator = container.querySelector("#targetIndicator");
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);

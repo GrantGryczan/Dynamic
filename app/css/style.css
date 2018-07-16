@@ -318,6 +318,7 @@ label:not(.mdc-floating-label) {
 .page {
 	display: flex;
 	flex-grow: 1;
+	flex-direction: column;
 	width: 100%;
 }
 #homePage {
@@ -329,6 +330,9 @@ label:not(.mdc-floating-label) {
 .panelGroup {
 	display: flex;
 	position: relative;
+}
+#allPanels {
+	flex-grow: 1;
 }
 #leftPanels {
 	flex-grow: 1;
@@ -473,16 +477,6 @@ label:not(.mdc-floating-label) {
 	box-shadow: 0 -3px 1px -2px rgba(0, 0, 0, 0.2);
 	z-index: 1;
 }
-#assetPath {
-	cursor: default;
-}
-#assetPath .assetLink:last-child {
-	pointer-events: none;
-}
-#assetPath .assetLink span {
-	margin: 0 -8px;
-	vertical-align: bottom;
-}
 #propertyContainer {
 	flex-grow: 1;
 	border-bottom: 1px solid #d0d0d0;
@@ -492,22 +486,22 @@ label:not(.mdc-floating-label) {
 .property {
 	position: relative;
 }
-.property[data-property="canvasSize"] .mdc-text-field {
+.property[data-key="canvasSize"] .mdc-text-field {
 	display; inline-block;
 	width: initial;
 	height: initial !important;
 }
-.property[data-property="canvasSize"] input {
+.property[data-key="canvasSize"] input {
 	padding-top: 0;
 	text-align: center;
 }
-.property[data-property="preview"] img {
+.property[data-key="preview"] img {
 	max-width: 100%;
 	background-position: 0px 0px, 10px 10px;
 	background-size: 20px 20px;
 	cursor: pointer;
 }
-.property[data-property="preview"] audio[controls] {
+.property[data-key="preview"] audio[controls] {
 	width: 100%;
 }
 #downloadAsset {
@@ -545,13 +539,40 @@ label:not(.mdc-floating-label) {
 	padding: 0 8px 0 6px;
 	opacity: 0.5;
 }
+#statusBar {
+	display: flex;
+	height: 26px;
+	padding: 4px 8px;
+	border-top: 1px solid #d0d0d0;
+	background-color: #e8e8e8;
+	font-size: 14px;
+	color: #909090;
+	pointer-events: none;
+}
+#statusBar > div {
+	display: inline-block;
+	text-overflow: ellipsis;
+}
+#statusBar .separator {
+	width: 1px;
+	height: 100%;
+	margin: 0 8px;
+	background-color: #d0d0d0;
+}
+#statusBar .material-icons {
+	position: relative;
+	top: -1px;
+	padding-top: 2px;
+	vertical-align: bottom;
+	font-size: 15px;
+}
 #targetIndicator {
 	position: absolute;
 	background-color: #8000ff;
 	opacity: 0;
 	z-index: 5;
 	pointer-events: none;
-	transition: all 0.15s ease-out;
+	transition: opacity 0.15s ease-out;
 }
 #targetIndicator.visible {
 	opacity: 0.2;

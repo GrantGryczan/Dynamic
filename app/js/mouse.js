@@ -1,6 +1,8 @@
 "use strict";
 let mouseX = 0;
 let mouseY = 0;
+let contentX = 0;
+let contentY = 0;
 let mouseTarget;
 let mouseTarget0;
 let mouseTarget2;
@@ -78,8 +80,9 @@ document.addEventListener("mousemove", evt => {
 	if(evt.clientX === mouseX && evt.clientY === mouseY) {
 		return;
 	}
-	mouseX = evt.clientX;
-	mouseY = evt.clientY;
+	const contentRect = content.getBoundingClientRect();
+	status.mouseX.textContent = contentX = Math.floor((mouseX = evt.clientX) - contentRect.left);
+	status.mouseY.textContent = contentY = Math.floor((mouseY = evt.clientY) - contentRect.top);
 	if(mouseDown === -1) {
 		return;
 	}
@@ -248,7 +251,7 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				} else {
 					if(mouseTarget.classList.contains("bar")) {
-						selectLayer(mouseTarget.parentNode.parentNode, evtButton);
+						selectLayer(mouseTarget.parentNode.parentNode, downActive === assetContainer ? 2 : evtButton);
 					} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
 						confirmRemoveObj(mouseTarget0.parentNode.parentNode.parentNode);
 					} else {
@@ -316,12 +319,6 @@ const handleMouseUp = (evt, evtButton) => {
 							openCtx(assets);
 						} else if(mouseTarget0 === sortAssets) {
 							openCtx(sortAssets);
-						}
-					} else if(mouseTarget0.parentNode.parentNode === assetPath) {
-						if(mouseTarget0.parentNode === assetPath.firstElementChild) {
-							rootAsset();
-						} else {
-							// TODO
 						}
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
