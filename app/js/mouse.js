@@ -230,12 +230,9 @@ const handleMouseUp = (evt, evtButton) => {
 					if(!layerDrag.classList.contains("hidden")) {
 						const zs = proj[sel].data.objs.map(byZ);
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
+						layerDrag.parentNode.parentNode[side](layerDrag);
 						for(const layerElem of layers.querySelectorAll(".layer.selected")) {
-							try {
-								layerDrag.parentNode.parentNode[side](layerElem);
-							} catch(err) {
-								console.warn(err);
-							}
+							layerDrag.before(layerElem);
 						}
 						layerDrag.classList.add("hidden");
 						const layerElems = layers.querySelectorAll(".layer");
