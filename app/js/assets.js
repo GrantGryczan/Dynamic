@@ -70,9 +70,9 @@ const appendAsset = asset => {
 		`;
 	} else if(asset.type === "file") {
 		assetElem = html`
-			<div id="asset_${asset.id}" class="asset typeFile" title="$${asset.name}">
+			<div id="asset_${asset.id}" class="asset typeFile" title="$${asset.name}" data-mime="$${asset.mime}">
 				<div class="bar">
-					<div class="icon material-icons">${asset.mime.startsWith("image/") ? "image" : "audiotrack"}</div>
+					<div class="icon material-icons"></div>
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
 				</div>
@@ -82,7 +82,7 @@ const appendAsset = asset => {
 		assetElem = html`
 			<div id="asset_${asset.id}" class="asset typeObj" title="$${asset.name}">
 				<div class="bar">
-					<div class="icon material-icons">widgets</div>
+					<div class="icon material-icons"></div>
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
 				</div>
