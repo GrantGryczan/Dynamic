@@ -33,7 +33,7 @@ document.addEventListener("keydown", evt => {
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
 	if(evt.keyCode === 38) { // `up`
-		if(focused()) {
+		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const assetElems = assets.querySelectorAll(".asset");
@@ -51,7 +51,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 40) { // `down`
-		if(focused()) {
+		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const assetElems = assets.querySelectorAll(".asset");
@@ -113,7 +113,7 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
-			if(focused()) {
+			if(focused() && notTyping()) {
 				if(assetContainer.classList.contains("active")) {
 					for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
 						assetElem.classList.add("selected");
@@ -160,7 +160,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
-		if(focused()) {
+		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 			} else if(layerContainer.classList.contains("active")) {
@@ -168,7 +168,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		if(focused() && assetContainer.classList.contains("active")) {
+		if(focused() && notTyping() && assetContainer.classList.contains("active")) {
 			const focusedAssetElem = assets.querySelector(".asset.focus");
 			if(focusedAssetElem && focusedAssetElem[_asset].type === "obj") {
 				rootAsset(focusedAssetElem[_asset]);
@@ -181,7 +181,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 27) { // `esc`
-		if(focused()) {
+		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				deselectAssets();
 				updateProperties();

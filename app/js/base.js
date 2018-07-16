@@ -170,6 +170,16 @@ const indicateTarget = target => {
 		targetIndicator.classList.remove("visible");
 	}
 };
+const setProperties = elem => {
+	const active = container.querySelector(".activeProperties");
+	if(active) {
+		active.classList.remove("activeProperties");
+	}
+	if(elem) {
+		elem.classList.add("activeProperties");
+	}
+	updateProperties();
+};
 const setActive = elem => {
 	const active = container.querySelector(".active");
 	if(active) {
@@ -177,8 +187,10 @@ const setActive = elem => {
 	}
 	if(elem) {
 		elem.classList.add("active");
+		if(elem.classList.contains("panel") && elem !== propertyContainer) {
+			setProperties(elem);
+		}
 	}
-	updateProperties();
 };
 document.addEventListener("submit", evt => {
 	evt.preventDefault();

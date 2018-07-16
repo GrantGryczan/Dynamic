@@ -9,6 +9,7 @@ let mouseMoved = false;
 let mouseUp = 0;
 let initialTargetPos;
 let targetOffset;
+let downActive;
 const onMouseDown = evt => {
 	if(mouseDown !== -1) {
 		onMouseUp(evt);
@@ -28,10 +29,13 @@ const onMouseDown = evt => {
 			return;
 		}
 	}
-	for(const panel of panels) {
-		if(panel !== propertyContainer && panel.contains(mouseTarget)) {
-			setActive(panel);
-			break;
+	const active = projectPage.querySelector(".container.active");
+	if(!(active && active.contains(mouseTarget))) {
+		for(const panel of panels) {
+			if(panel.contains(mouseTarget)) {
+				setActive(downActive = panel);
+				break;
+			}
 		}
 	}
 	if(mouseTarget.classList.contains("bar")) {
@@ -215,7 +219,7 @@ const handleMouseUp = (evt, evtButton) => {
 						updateProperties();
 					}
 				} else if(mouseTarget.classList.contains("bar")) {
-					selectAsset(mouseTarget.parentNode, evtButton);
+					selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : evtButton);
 				} else if(evtButton0) {
 					if(mouseTarget0.classList.contains("close")) {
 						confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
@@ -348,6 +352,7 @@ const handleMouseUp = (evt, evtButton) => {
 		openCtx(mouseTarget2);
 	}
 	restoreKeyStates();
+	downActive = null;
 };
 const onMouseUp = evt => {
 	handleMouseUp(evt, 0);
