@@ -135,6 +135,7 @@ label:not(.mdc-floating-label) {
 }
 .barCell {
 	width: 100%;
+	max-width: 0;
 	padding: 0;
 	overflow: visible;
 }

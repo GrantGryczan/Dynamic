@@ -203,7 +203,8 @@ class DynamicObject {
 		return layers.querySelector(`#timeline_${this.id}`);
 	}
 	updateName() {
-		this.layerElement.querySelector(".label").textContent = this.name; // TODO: Update other labels
+		const label = this.layerElement.querySelector(".label");
+		label.textContent = label.title = this.name; // TODO: Update other labels
 	}
 }
 const addToCanvas = () => {
