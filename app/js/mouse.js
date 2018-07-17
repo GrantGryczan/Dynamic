@@ -68,9 +68,9 @@ const onMouseDown = evt => {
 			} else if(mouseTarget0.classList.contains("top")) {
 				targetOffset = evt.clientY - rect.top + rect.bottom;
 			} else if(mouseTarget0.classList.contains("right")) {
-				targetOffset = rect.right - evt.clientX + rect.left;
+				targetOffset = rect.right - evt.clientX - rect.left;
 			} else if(mouseTarget0.classList.contains("bottom")) {
-				targetOffset = rect.bottom - evt.clientX + rect.top;
+				targetOffset = rect.bottom - evt.clientX - rect.top;
 			}
 		}
 	}

@@ -112,11 +112,14 @@ const unzip = data => new Promise((resolve, reject) => {
 		}
 	});
 });
-const scrollIntoView = elem => {
-	if(elem.offsetTop < elem.parentNode.scrollTop) {
-		elem.parentNode.scrollTop = elem.offsetTop;
-	} else if(elem.offsetTop + elem.offsetHeight > elem.parentNode.scrollTop + elem.parentNode.offsetHeight) {
-		elem.parentNode.scrollTop = elem.offsetTop + elem.offsetHeight - elem.parentNode.offsetHeight;
+const scrollIntoView = (elem, parent) => {
+	if(!parent) {
+		parent = elem.parentNode;
+	}
+	if(elem.offsetTop < parent.scrollTop) {
+		parent.scrollTop = elem.offsetTop;
+	} else if(elem.offsetTop + elem.offsetHeight > parent.scrollTop + parent.offsetHeight) {
+		parent.scrollTop = elem.offsetTop + elem.offsetHeight - parent.offsetHeight;
 	}
 };
 const absoluteCenter = elem => {

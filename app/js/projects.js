@@ -118,26 +118,7 @@ class DynamicProject {
 		if(this[_focusedLayer] = value) {
 			const layerElem = layers.querySelector(`#${value}`);
 			layerElem.classList.add("focus");
-			scrollIntoView(layerElem);
-		}
-	}
-	get selectedObj() {
-		return this[_selectedObj];
-	}
-	set selectedObj(value) {
-		this.focusedObj = this[_selectedObj] = value;
-	}
-	get focusedObj() {
-		return this[_focusedObj];
-	}
-	set focusedObj(value) {
-		for(const timelineElem of objs.querySelectorAll(".timeline.focus")) {
-			timelineElem.classList.remove("focus");
-		}
-		if(this[_focusedObj] = value) {
-			const timelineElem = objs.querySelector(`#${value}`);
-			timelineElem.classList.add("focus");
-			scrollIntoView(timelineElem);
+			scrollIntoView(layerElem, layerBox);
 		}
 	}
 }

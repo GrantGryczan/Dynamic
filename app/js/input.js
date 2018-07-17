@@ -32,7 +32,45 @@ document.addEventListener("keydown", evt => {
 	shiftKey = evt.shiftKey;
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
-	if(evt.keyCode === 38) { // `up`
+	if(evt.keyCode === 35) { // `end`
+		if(focused() && notTyping()) {
+			if(assetContainer.classList.contains("active")) {
+				evt.preventDefault();
+				const assetElems = assets.querySelectorAll(".asset");
+				const assetElem = assetElems[assetElems.length - 1];
+				if(!superKey) {
+					selectAsset(assetElem);
+				}
+				proj[sel].focusedAsset = assetElem.id;
+			} else if(layerContainer.classList.contains("active")) {
+				evt.preventDefault();
+				const layerElems = layers.querySelectorAll(".layer");
+				const layerElem = layerElems[layerElems.length - 1];
+				if(!superKey) {
+					selectLayer(layerElem);
+				}
+				proj[sel].focusedLayer = layerElem.id;
+			}
+		}
+	} else if(evt.keyCode === 36) { // `home`
+		if(focused() && notTyping()) {
+			if(assetContainer.classList.contains("active")) {
+				evt.preventDefault();
+				const assetElem = assets.querySelector(".asset");
+				if(!superKey) {
+					selectAsset(assetElem);
+				}
+				proj[sel].focusedAsset = assetElem.id;
+			} else if(layerContainer.classList.contains("active")) {
+				evt.preventDefault();
+				const layerElem = layers.querySelector(".layer");
+				if(!superKey) {
+					selectLayer(layerElem);
+				}
+				proj[sel].focusedLayer = layerElem.id;
+			}
+		}
+	} else if(evt.keyCode === 38) { // `up`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
@@ -43,6 +81,7 @@ document.addEventListener("keydown", evt => {
 				}
 				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
+				evt.preventDefault();
 				const layerElem = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 				if(!superKey) {
 					selectLayer(layerElem);
@@ -61,6 +100,7 @@ document.addEventListener("keydown", evt => {
 				}
 				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
+				evt.preventDefault();
 				const layerElem = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 				if(!superKey) {
 					selectLayer(layerElem);
