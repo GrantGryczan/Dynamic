@@ -43,9 +43,9 @@ const onMouseDown = evt => {
 	if(mouseTarget.classList.contains("bar")) {
 		if(mouseTarget.parentNode.classList.contains("asset")) {
 			proj[sel].focusedAsset = mouseTarget.parentNode.id;
-		} else if(mouseTarget.parentNode.parentNode.classList.contains("layer")) {
-			proj[sel].focusedLayer = mouseTarget.parentNode.parentNode.id;
 		}
+	} else if(mouseTarget.parentNode.classList.contains("layer")) {
+		proj[sel].focusedLayer = mouseTarget.parentNode.id;
 	} else if(evt.button === 0) {
 		if(mouseTarget0.classList.contains("tab")) {
 			if(mouseTarget0 === homeTab) {
@@ -116,28 +116,28 @@ document.addEventListener("mousemove", evt => {
 					indicateTarget(contentContainer.contains(evt.target) ? contentContainer : (layerContainer.contains(evt.target) ? layerContainer : null));
 					assetDrag.classList.add("hidden");
 				}
-			} else if(mouseTarget.parentNode.parentNode.classList.contains("layer")) {
-				if(!mouseMoved) {
-					selectLayer(mouseTarget.parentNode.parentNode, 2);
-				}
-				if(layerContainer.contains(evt.target)) {
-					let side;
-					let minDist = Infinity;
-					let minLayerElem;
-					for(const layerElem of layers.querySelectorAll(".layer")) {
-						const distTop = mouseY - layerElem.firstElementChild.getBoundingClientRect().top - layerElem.firstElementChild.offsetHeight / 2;
-						const absDistTop = Math.abs(distTop);
-						if(absDistTop < minDist) {
-							minDist = absDistTop;
-							minLayerElem = layerElem;
-							side = distTop < 0 ? "before" : "after";
-						}
+			}
+		} else if(mouseTarget.parentNode.classList.contains("layer")) {
+			if(!mouseMoved) {
+				selectLayer(mouseTarget.parentNode, 2);
+			}
+			if(layerContainer.contains(evt.target)) {
+				let side;
+				let minDist = Infinity;
+				let minLayerElem;
+				for(const layerElem of layers.querySelectorAll(".layer")) {
+					const distTop = mouseY - layerElem.firstElementChild.getBoundingClientRect().top - layerElem.firstElementChild.offsetHeight / 2;
+					const absDistTop = Math.abs(distTop);
+					if(absDistTop < minDist) {
+						minDist = absDistTop;
+						minLayerElem = layerElem;
+						side = distTop < 0 ? "before" : "after";
 					}
-					minLayerElem.querySelector(".bar")[side](layerDrag);
-					layerDrag.classList.remove("hidden");
-				} else {
-					layerDrag.classList.add("hidden");
 				}
+				minLayerElem.querySelector(".bar")[side](layerDrag);
+				layerDrag.classList.remove("hidden");
+			} else {
+				layerDrag.classList.add("hidden");
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("tab")) {
@@ -170,13 +170,8 @@ document.addEventListener("mousemove", evt => {
 					}
 				}
 			} else if(mouseTarget0.classList.contains("handle")) {
-				const horizontalHandle = mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right");
-				const sign = mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1;
-				mouseTarget0.parentNode.style[horizontalHandle ? "width" : "height"] = `${storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + sign * evt[horizontalHandle ? "clientX" : "clientY"])}px`;
-				if(mouseTarget0.parentNode.style.height) {
-					mouseTarget0.parentNode.style.minHeight = mouseTarget0.parentNode.style.height;
-				}
-				absoluteCenter(content);
+				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
+				updatePanels();
 			}
 		}
 	}
@@ -233,7 +228,7 @@ const handleMouseUp = (evt, evtButton) => {
 			}
 		} else if(layerBox.contains(mouseTarget) && evtButton === mouseDown) {
 			if(layerBox.contains(mouseTarget)) {
-				if(mouseMoved && mouseTarget.classList.contains("bar")) {
+				if(mouseMoved && mouseTarget.parentNode.classList.contains("layer")) {
 					if(!layerDrag.classList.contains("hidden")) {
 						const zs = proj[sel].data.objs.map(byZ);
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
@@ -250,8 +245,8 @@ const handleMouseUp = (evt, evtButton) => {
 						proj[sel].saved = false;
 					}
 				} else {
-					if(mouseTarget.classList.contains("bar")) {
-						selectLayer(mouseTarget.parentNode.parentNode, downActive === assetContainer ? 2 : evtButton);
+					if(mouseTarget.parentNode.classList.contains("layer")) {
+						selectLayer(mouseTarget.parentNode, downActive === assetContainer ? 2 : evtButton);
 					} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
 						confirmRemoveObj(mouseTarget0.parentNode.parentNode.parentNode);
 					} else {
@@ -416,18 +411,17 @@ document.addEventListener("dblclick", evt => {
 			new DynamicProject();
 		} else if(evt.target.classList.contains("handle")) {
 			if(evt.target.parentNode === layerContainer) {
-				const containerSize = parseInt(evt.target.parentNode.style.height = evt.target.parentNode.style.minHeight = timelineContainer.style.height);
+				const containerSize = parseInt(timelineContainer.style.height);
 				if(containerSize) {
 					storage.size.layerContainer = containerSize;
 				} else {
 					delete storage.size.layerContainer;
 				}
 			} else {
-				evt.target.parentNode.style.width = evt.target.parentNode.style.height = evt.target.parentNode.style.minHeight = "";
 				delete storage.size[evt.target.parentNode.id];
 			}
 			store();
-			absoluteCenter(content);
+			updatePanels();
 		} else if(evt.target.classList.contains("bar") && evt.target.parentNode.classList.contains("asset")) {
 			selectAsset(evt.target.parentNode, 2);
 			if(evt.target.parentNode[_asset].type === "group") {

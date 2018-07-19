@@ -263,9 +263,9 @@ const openCtx = target => {
 	} else if(ctxTarget.classList.contains("bar")) {
 		if(ctxTarget.parentNode.classList.contains("asset")) {
 			assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.typeGroup.selected") ? +!!assets.querySelector(".asset.selected:not(.typeGroup)") : 2].popup(win);
-		} else if(ctxTarget.parentNode.parentNode.classList.contains("layer")) {
-			layerMenu.popup(win);
 		}
+	} else if(ctxTarget.parentNode.classList.contains("layer")) {
+		layerMenu.popup(win);
 	} else if(ctxTarget === sortAssets) {
 		sortAssetsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {

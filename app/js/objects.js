@@ -204,7 +204,7 @@ class DynamicObject {
 	}
 	updateName() {
 		const label = this.layerElement.querySelector(".label");
-		label.textContent = label.title = this.name; // TODO: Update other labels
+		label.textContent = this.layerElement.title = this.name; // TODO: Update other labels
 	}
 }
 const addToCanvas = () => {

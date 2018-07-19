@@ -47,8 +47,8 @@ electron.app.once("ready", () => {
 				win = new electron.BrowserWindow({
 					title: "Miroware Dynamic",
 					show: false,
-					minWidth: 650,
-					minHeight: 450
+					minWidth: 480,
+					minHeight: 480
 				});
 				noClosedIntent = true;
 				win.webContents.once("did-finish-load", () => {

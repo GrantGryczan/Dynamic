@@ -192,7 +192,7 @@ const select = id => {
 		contentContainer.scrollLeft = proj[sel].scrollContentLeft;
 		contentContainer.scrollTop = proj[sel].scrollContentTop;
 		layers.scrollTop = proj[sel].scrollLayers;
-		absoluteCenter(content);
+		updatePanels();
 	}
 };
 select("home");

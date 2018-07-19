@@ -32,6 +32,7 @@ const exportProj = toolbar.querySelector("#exportProj");
 const homePage = container.querySelector("#homePage");
 const projectPage = container.querySelector("#projectPage");
 const panels = projectPage.querySelectorAll(".container");
+const handles = projectPage.querySelectorAll(".handle");
 const assetContainer = projectPage.querySelector("#assetContainer");
 const assetHead = assetContainer.querySelector(".head");
 const addAsset = assetHead.querySelector("#addAsset");
@@ -161,7 +162,9 @@ const loadProgress = value => {
 		win.setProgressBar(value);
 	}
 };
+let indicated;
 const indicateTarget = target => {
+	const indicated = target;
 	if(target) {
 		const rect = target.getBoundingClientRect();
 		targetIndicator.style.left = `${rect.left}px`;
@@ -202,11 +205,34 @@ const setActive = elem => {
 document.addEventListener("submit", evt => {
 	evt.preventDefault();
 }, true);
-window.addEventListener("resize", () => {
+const updatePanels = () => {
+	for(const handle of handles) {
+		handle.parentNode.style.width = handle.parentNode.style.height = handle.parentNode.style.minHeight = "";
+	}
+	for(const id of Object.keys(storage.size)) {
+		const elem = document.querySelector(`#${id}`);
+		if(elem) {
+			const handle = elem.querySelector(".handle");
+			if(handle) {
+				const verticalHandle = handle.classList.contains("top") || handle.classList.contains("bottom");
+				const px = `${storage.size[id]}px`;
+				elem.style[verticalHandle ? "height" : "width"] = px;
+				if(verticalHandle) {
+					elem.style.minHeight = px;
+				}
+			}
+		}
+	}
+	const statusTop = statusBar.getBoundingClientRect().top;
+	timelineContainer.style.height = timelineContainer.style.minHeight = `${Math.max(150, statusTop - timelineContainer.getBoundingClientRect().top)}px`;
+	layerContainer.style.height = layerContainer.style.minHeight = `${Math.max(150, statusTop - layerContainer.getBoundingClientRect().top)}px`;
 	absoluteCenter(content);
+};
+window.addEventListener("resize", () => {
 	if(!fullPreview.classList.contains("hidden")) {
 		absoluteCenter(fullPreviewImage);
 	}
+	updatePanels();
 });
 let notConfirmingClose = true;
 let shouldNotClose = true;

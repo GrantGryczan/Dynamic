@@ -250,11 +250,9 @@ document.addEventListener("input", evt => {
 	}
 	if(evt.target === prop.canvasSize.elements[0]) {
 		content.style.width = `${proj[sel].data.width = evt.target.value}px`;
-		store();
 		absoluteCenter(content);
 	} else if(evt.target === prop.canvasSize.elements[1]) {
 		content.style.height = `${proj[sel].data.height = evt.target.value}px`;
-		store();
 		absoluteCenter(content);
 	}
 }, true);
