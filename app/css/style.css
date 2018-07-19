@@ -493,18 +493,25 @@ label:not(.mdc-floating-label) {
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	width: 301px;
-	padding-right: 13px;
+	width: 298px;
+	padding-right: 3px;
 }
 #timelineItemContainer > .handle {
-	width: 13px;
-	padding: 0 6px;
+	width: 7px;
+	padding: 0 3px;
 	background-clip: content-box;
 	background-color: #d0d0d0;
 }
 #timelineArea {
+	display: flex;
 	flex-grow: 1;
+	flex-direction: column;
 	min-width: 150px;
+	margin-left: -4px;
+	border-right: 1px solid #d0d0d0;
+}
+#timelineArea > * {
+	margin-right: -1px;
 }
 #propertyContainer {
 	flex-grow: 1;
