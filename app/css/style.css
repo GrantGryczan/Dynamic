@@ -332,7 +332,7 @@ label:not(.mdc-floating-label) {
 }
 #homePage {
 	background-color: #e0e0e0;
-	background-image: url(../icon.gif);
+	background-image: url(../images/icon.gif);
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -354,6 +354,7 @@ label:not(.mdc-floating-label) {
 }
 #rightPanels {
 	display: flex;
+	flex-shrink: 0;
 	flex-direction: column;
 	width: 300px;
 	min-width: 150px;
@@ -389,6 +390,7 @@ label:not(.mdc-floating-label) {
 	background-color: #f0f0f0;
 }
 .head {
+	height: 24px;
 	min-height: 24px;
 	line-height: 24px;
 }
@@ -491,6 +493,7 @@ label:not(.mdc-floating-label) {
 }
 #timelineItemContainer {
 	display: flex;
+	flex-shrink: 0;
 	flex-direction: column;
 	position: relative;
 	width: 298px;
@@ -502,6 +505,9 @@ label:not(.mdc-floating-label) {
 	background-clip: content-box;
 	background-color: #d0d0d0;
 }
+#timelineItems {
+	overflow-x: scroll;
+}
 #timelineArea {
 	display: flex;
 	flex-grow: 1;
@@ -512,6 +518,48 @@ label:not(.mdc-floating-label) {
 }
 #timelineArea > * {
 	margin-right: -1px;
+	padding: 0 50px 0 1px;
+}
+#timelineRuler {
+	height: 30px;
+	min-height: 30px;
+	white-space: nowrap;
+}
+.timeUnitGroup {
+	display: inline-block;
+	position: relative;
+	height: 100%;
+	overflow: visible;
+}
+.timeUnitGroup > .label {
+	position: absolute;
+	bottom: 10px;
+	padding-left: 1px;
+	font-size: 12px;
+	line-height: 13px;
+	color: #808080;
+}
+.timeUnit {
+	display: inline-block;
+	position: relative;
+	width: 10px;
+	height: 100%;
+}
+.timeUnit::after {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 1px;
+	height: 10px;
+	background-color: #d0d0d0;
+	content: "";
+}
+.timeUnit:nth-child(6)::after {
+	height: 25px;
+}
+#timelines {
+	margin-top: 0;
+	overflow-x: scroll;
 }
 #propertyContainer {
 	flex-grow: 1;
