@@ -34,10 +34,10 @@ const assetMenuItems = [{
 	click: () => {
 		let assetParent = assets;
 		if(ctxTarget.classList.contains("bar")) {
-			if(ctxTarget.parentNode[_asset].type === "group") {
+			if(ctxTarget.parentNode._asset.type === "group") {
 				assetParent = ctxTarget.parentNode.lastElementChild;
-			} else if(ctxTarget.parentNode[_asset].parent) {
-				assetParent = ctxTarget.parentNode[_asset].parent.element.lastElementChild;
+			} else if(ctxTarget.parentNode._asset.parent) {
+				assetParent = ctxTarget.parentNode._asset.parent.element.lastElementChild;
 			}
 		}
 		deselectAssets();
@@ -53,6 +53,9 @@ const assetMenuItems = [{
 		proj[sel].data.assets.push(asset);
 		const assetElem = appendAsset(asset);
 		assetParent.appendChild(assetElem);
+		if(!assetParent.parentNode.classList.contains("open")) {
+			assetParent.parentNode.classList.add("open");
+		}
 		storeAssets();
 		assetElem.classList.add("selected");
 		proj[sel].selectedAsset = assetElem.id;
@@ -101,9 +104,9 @@ const assetMenuItems = [{
 	}
 }];
 const assetMenu = electron.remote.Menu.buildFromTemplate(assetMenuItems);
-const byAssets = assetElem => assetElem[_asset];
+const byAssets = assetElem => assetElem._asset;
 const numericAssetType = asset => asset.type === "group" ? 0 : (asset.type === "obj" ? 1 : (asset.mime.startsWith("image/") ? 2 : 3));
-const assetElemsAlphabetically = assetElem => `${"abcd"[numericAssetType(assetElem[_asset])]} ${assetElem[_asset].name.toLowerCase()}`;
+const assetElemsAlphabetically = assetElem => `${"abcd"[numericAssetType(assetElem._asset)]} ${assetElem._asset.name.toLowerCase()}`;
 const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Sort by asset type",
 	click: () => {
@@ -113,12 +116,12 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 			let afterObj = null;
 			let afterImage = null;
 			for(const assetElem of assetElems) {
-				if(assetElem[_asset].type === "obj") {
+				if(assetElem._asset.type === "obj") {
 					if(!afterGroup) {
 						afterGroup = assetElem;
 					}
-				} else if(assetElem[_asset].type === "file") {
-					if(assetElem[_asset].mime.startsWith("image/")) {
+				} else if(assetElem._asset.type === "file") {
+					if(assetElem._asset.mime.startsWith("image/")) {
 						if(!afterObj) {
 							afterObj = assetElem;
 						}
@@ -136,12 +139,12 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 				afterGroup = afterObj;
 			}
 			for(const assetElem of assetElems) {
-				if(assetElem[_asset].type === "group") {
+				if(assetElem._asset.type === "group") {
 					assetChildren.insertBefore(assetElem, afterGroup);
-				} else if(assetElem[_asset].type === "obj") {
+				} else if(assetElem._asset.type === "obj") {
 					assetChildren.insertBefore(assetElem, afterObj);
-				} else if(assetElem[_asset].type === "file") {
-					if(assetElem[_asset].mime.startsWith("image/")) {
+				} else if(assetElem._asset.type === "file") {
+					if(assetElem._asset.mime.startsWith("image/")) {
 						assetChildren.insertBefore(assetElem, afterImage);
 					} else {
 						assetChildren.appendChild(assetElem);
@@ -157,7 +160,7 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 		for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
 			const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
 			for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
-				assetChildren.lastChild.after(assetElems.find(assetElem => assetElem[_asset].name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+				assetChildren.lastChild.after(assetElems.find(assetElem => assetElem._asset.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
 			}
 		}
 		storeAssets();

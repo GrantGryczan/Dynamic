@@ -15,10 +15,10 @@ const appendLayer = obj => {
 			</tbody>
 		</table>
 	`.firstElementChild.firstElementChild;
-	layerElem[_obj] = obj;
+	layerElem._obj = obj;
 	let siblingElem = null;
 	for(const eachLayerElem of layers.querySelectorAll(".layer")) {
-		if(eachLayerElem[_obj].z < obj.z) {
+		if(eachLayerElem._obj.z < obj.z) {
 			siblingElem = eachLayerElem;
 			break;
 		}
@@ -38,19 +38,19 @@ const storeObjs = () => {
 	proj[sel].saved = false;
 };
 const removeObj = layerElem => {
-	if(proj[sel].selectedTimeline === `timeline_${layerElem[_obj].id}`) {
+	if(proj[sel].selectedTimeline === `timeline_${layerElem._obj.id}`) {
 		proj[sel].selectedTimeline = null;
 	}
-	if(proj[sel].selectedLayer === `layer_${layerElem[_obj].id}`) {
+	if(proj[sel].selectedLayer === `layer_${layerElem._obj.id}`) {
 		proj[sel].selectedLayer = null;
 	}
-	if(layerElem[_obj].group) {
-		layerElem[_obj].timelineElement.lastElementChild.children.forEach(layerElem[_obj].timelineElement.before.bind(layerElem[_obj].timelineElement));
+	if(layerElem._obj.group) {
+		layerElem._obj.timelineElement.lastElementChild.children.forEach(layerElem._obj.timelineElement.before.bind(layerElem._obj.timelineElement));
 	}
 	layerElem.remove();
-	// TODO: layerElem[_obj].timelineElement.remove();
+	// TODO: layerElem._obj.timelineElement.remove();
 	storeObjs();
-	for(const otherObj of layerElem[_obj].asset.objects) {
+	for(const otherObj of layerElem._obj.asset.objects) {
 		otherObj.updateName();
 	}
 	updateProperties();
@@ -62,14 +62,14 @@ const confirmRemoveObj = layerElem => {
 			storeObjs();
 		}
 	};
-	if(layerElem[_obj].group) {
+	if(layerElem._obj.group) {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${layerElem[_obj].name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${layerElem._obj.name}</span>?<br>
 			All objects inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveObj);
 	} else {
 		new Miro.Dialog("Remove Object", html`
-			Are you sure you want to remove <span class="bold">${layerElem[_obj].name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${layerElem._obj.name}</span>?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(actuallyRemoveObj);
 	}
@@ -209,7 +209,7 @@ class DynamicObject {
 }
 const addToCanvas = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
-		const obj = new DynamicObject(assetElem[_asset].id);
+		const obj = new DynamicObject(assetElem._asset.id);
 		appendLayer(obj);
 		if(obj.asset.objects.length > 1) {
 			for(const otherObj of obj.asset.objects) {

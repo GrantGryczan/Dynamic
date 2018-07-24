@@ -118,12 +118,12 @@ document.addEventListener("keydown", evt => {
 			if(focused()) {
 				if(sel === "home") {
 					if(Object.keys(proj).length) {
-						select(tabs.lastElementChild[_proj].id);
+						select(tabs.lastElementChild._proj.id);
 					}
 				} else if(proj[sel].tab.previousElementSibling === homeTab) {
 					select("home");
 				} else {
-					select(proj[sel].tab.previousElementSibling[_proj].id);
+					select(proj[sel].tab.previousElementSibling._proj.id);
 				}
 			}
 		} else if(shiftKey) {
@@ -138,10 +138,10 @@ document.addEventListener("keydown", evt => {
 			if(focused()) {
 				if(sel === "home") {
 					if(Object.keys(proj).length) {
-						select(homeTab.nextElementSibling[_proj].id);
+						select(homeTab.nextElementSibling._proj.id);
 					}
 				} else if(proj[sel].tab.nextElementSibling) {
-					select(proj[sel].tab.nextElementSibling[_proj].id);
+					select(proj[sel].tab.nextElementSibling._proj.id);
 				} else {
 					select("home");
 				}
@@ -149,7 +149,7 @@ document.addEventListener("keydown", evt => {
 		} else if(evt.keyCode === 57) { // ^`9`
 			if(focused()) {
 				if(Object.keys(proj).length) {
-					select(tabs.lastElementChild[_proj].id);
+					select(tabs.lastElementChild._proj.id);
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
@@ -189,7 +189,7 @@ document.addEventListener("keydown", evt => {
 		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
 			if(focused()) {
 				if(Object.keys(proj).length) {
-					select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)[_proj].id);
+					select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._proj.id);
 				}
 			}
 		}
@@ -210,11 +210,11 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 13) { // `enter`
 		if(focused() && notTyping() && assetContainer.classList.contains("active")) {
 			const focusedAssetElem = assets.querySelector(".asset.focus");
-			if(focusedAssetElem && focusedAssetElem[_asset].type === "obj") {
-				rootAsset(focusedAssetElem[_asset]);
+			if(focusedAssetElem && focusedAssetElem._asset.type === "obj") {
+				rootAsset(focusedAssetElem._asset);
 			} else {
 				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-					if(assetElem[_asset].type === "group") {
+					if(assetElem._asset.type === "group") {
 						assetElem.classList.toggle("open");
 					}
 				}
@@ -265,9 +265,11 @@ document.addEventListener("change", evt => {
 		if(names.includes(evt.target.value)) {
 			new Miro.Dialog("Error", "That asset name is already in use.");
 		} else {
-			assets.querySelector(".asset.selected")[_asset].name = evt.target.value;
+			assets.querySelector(".asset.selected")._asset.name = evt.target.value;
 			proj[sel].saved = false;
 		}
+	} else if(evt.target === prop.fps.elements[0]) {
+		proj[sel].data.fps = prop.fps.elements[0].value;
 	}
 }, true);
 document.addEventListener("paste", async evt => {

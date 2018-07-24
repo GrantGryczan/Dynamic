@@ -5,7 +5,6 @@ const zlib = require("zlib");
 const http = require("http");
 const https = require("https");
 const electron = require("electron");
-const _proj = Symbol("proj");
 const _saved = Symbol("saved");
 const _name = Symbol("name");
 const _location = Symbol("location");
@@ -15,9 +14,6 @@ const _selectedLayer = Symbol("selectedLayer");
 const _focusedLayer = Symbol("focusedLayer");
 const _selectedObj = Symbol("selectedObj");
 const _focusedObj = Symbol("focusedObj");
-const _asset = Symbol("asset");
-const _obj = Symbol("obj");
-const _value = Symbol("value");
 const slashes = /[\\\/]/g;
 const htmlFilenameTest = /\/([^\/]+?)"/;
 const container = document.querySelector("#container");
@@ -40,10 +36,12 @@ const addAsset = assetHead.querySelector("#addAsset");
 const sortAssets = assetHead.querySelector("#sortAssets");
 const assets = assetContainer.querySelector("#assets");
 const assetDrag = assets.querySelector(".drag");
+assetDrag.remove();
 const content = projectPage.querySelector("#content");
 const timelineContainer = projectPage.querySelector("#timelineContainer");
+const timelineContainerContents = timelineContainer.querySelector(".contents");
 const timelineItems = timelineContainer.querySelector("#timelineItems");
-const timelineRuler = timelineContainer.querySelector("#timelineRuler");
+const timeRuler = timelineContainer.querySelector("#timeRuler");
 const timelines = timelineContainer.querySelector("#timelines");
 const propertyContainer = projectPage.querySelector("#propertyContainer");
 const properties = propertyContainer.querySelector("#properties");
@@ -61,6 +59,7 @@ const layerContainer = projectPage.querySelector("#layerContainer");
 const layerBox = layerContainer.querySelector("#layerBox");
 const layers = layerBox.querySelector("#layers");
 const layerDrag = layerBox.querySelector(".drag");
+layerDrag.remove();
 const statusElems = projectPage.querySelectorAll("#statusBar [data-key]");
 const status = {};
 for(const statusElem of statusElems) {
@@ -231,6 +230,15 @@ const updatePanels = () => {
 	timelineContainer.style.height = timelineContainer.style.minHeight = `${Math.max(150, statusTop - timelineContainer.getBoundingClientRect().top)}px`;
 	layerContainer.style.height = layerContainer.style.minHeight = `${Math.max(150, statusTop - layerContainer.getBoundingClientRect().top)}px`;
 	absoluteCenter(content);
+	timelineContainerContents.style.width = "";
+	for(const child of timelineContainerContents.children) {
+		child.classList.add("hidden");
+	}
+	timelineContainerContents.style.width = `${timelineContainerContents.offsetWidth}px`;
+	for(const child of timelineContainerContents.children) {
+		child.classList.remove("hidden");
+	}
+	updateTimeRuler();
 };
 window.addEventListener("resize", () => {
 	if(!fullPreview.classList.contains("hidden")) {

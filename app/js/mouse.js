@@ -51,7 +51,7 @@ const onMouseDown = evt => {
 			if(mouseTarget0 === homeTab) {
 				select("home");
 			} else {
-				select(mouseTarget0[_proj].id);
+				select(mouseTarget0._proj.id);
 				const prevTabPos = mouseTarget0.offsetLeft;
 				targetOffset = evt.clientX - prevTabPos;
 				mouseTarget0.style.left = "";
@@ -105,16 +105,15 @@ document.addEventListener("mousemove", evt => {
 							side = distTop < 0 ? "before" : "after";
 						}
 					}
-					if(side === "after" && minAssetElem[_asset].type === "group" && minAssetElem.classList.contains("open")) {
+					if(side === "after" && minAssetElem._asset.type === "group" && minAssetElem.classList.contains("open")) {
 						minAssetElem.lastElementChild.insertBefore(assetDrag, minAssetElem.lastElementChild.firstChild);
 					} else {
 						minAssetElem[side](assetDrag);
 					}
-					assetDrag.classList.remove("hidden");
 					indicateTarget();
 				} else {
 					indicateTarget(contentContainer.contains(evt.target) ? contentContainer : (layerContainer.contains(evt.target) ? layerContainer : null));
-					assetDrag.classList.add("hidden");
+					assetDrag.remove();
 				}
 			}
 		} else if(mouseTarget.parentNode.classList.contains("layer")) {
@@ -135,9 +134,8 @@ document.addEventListener("mousemove", evt => {
 					}
 				}
 				minLayerElem.querySelector(".bar")[side](layerDrag);
-				layerDrag.classList.remove("hidden");
 			} else {
-				layerDrag.classList.add("hidden");
+				layerDrag.remove();
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("tab")) {
@@ -197,7 +195,7 @@ const handleMouseUp = (evt, evtButton) => {
 	if(mouseTarget && (evtButton0 || evtButton2)) {
 		if(assets.contains(mouseTarget) && evtButton === mouseDown) {
 			if(mouseMoved && mouseTarget.classList.contains("bar")) {
-				if(assetDrag.classList.contains("hidden")) {
+				if(!assetDrag.parentNode) {
 					addToCanvas();
 				} else {
 					for(const assetElem of assets.querySelectorAll(".asset.selected")) {
@@ -208,7 +206,7 @@ const handleMouseUp = (evt, evtButton) => {
 						}
 					}
 					storeAssets();
-					assetDrag.classList.add("hidden");
+					assetDrag.remove();
 				}
 			} else {
 				if(mouseTarget === assets) {
@@ -229,17 +227,17 @@ const handleMouseUp = (evt, evtButton) => {
 		} else if(layerBox.contains(mouseTarget) && evtButton === mouseDown) {
 			if(layerBox.contains(mouseTarget)) {
 				if(mouseMoved && mouseTarget.parentNode.classList.contains("layer")) {
-					if(!layerDrag.classList.contains("hidden")) {
+					if(layerDrag.parentNode) {
 						const zs = proj[sel].data.objs.map(byZ);
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
 						layerDrag.parentNode.parentNode[side](layerDrag);
 						for(const layerElem of layers.querySelectorAll(".layer.selected")) {
 							layerDrag.before(layerElem);
 						}
-						layerDrag.classList.add("hidden");
+						layerDrag.remove();
 						const layerElems = layers.querySelectorAll(".layer");
 						for(let i = 0; i < layerElems.length; i++) {
-							layerElems[i][_obj].z = zs[i]; // set property
+							layerElems[i]._obj.z = zs[i]; // set property
 						}
 						updateLayers();
 						proj[sel].saved = false;
@@ -322,7 +320,7 @@ const handleMouseUp = (evt, evtButton) => {
 						setTimeout(makeFullPreviewOpaque);
 						setActive(fullPreview);
 					} else if(mouseTarget0 === downloadAsset) {
-						const selectedAsset = assets.querySelector(".selected")[_asset];
+						const selectedAsset = assets.querySelector(".selected")._asset;
 						const path = electron.remote.dialog.showSaveDialog(win, {
 							defaultPath: selectedAsset.name
 						});
@@ -331,7 +329,7 @@ const handleMouseUp = (evt, evtButton) => {
 						}
 					} else if(mouseTarget0.classList.contains("close")) {
 						if(mouseTarget0.parentNode.classList.contains("tab")) {
-							mouseTarget0.parentNode[_proj].close();
+							mouseTarget0.parentNode._proj.close();
 						}
 					} else if(fullPreviewImage.contains(mouseTarget0) || (mouseTarget0 === fullPreview && !mouseTarget0.classList.contains("hoverScrollbar"))) {
 						hideFullPreview();
@@ -424,11 +422,27 @@ document.addEventListener("dblclick", evt => {
 			updatePanels();
 		} else if(evt.target.classList.contains("bar") && evt.target.parentNode.classList.contains("asset")) {
 			selectAsset(evt.target.parentNode, 2);
-			if(evt.target.parentNode[_asset].type === "group") {
+			if(evt.target.parentNode._asset.type === "group") {
 				toggleAssetGroup(evt.target.parentNode);
-			} else if(evt.target.parentNode[_asset].type === "obj") {
-				rootAsset(evt.target.parentNode[_asset]);
+			} else if(evt.target.parentNode._asset.type === "obj") {
+				rootAsset(evt.target.parentNode._asset);
 			}
 		}
+	}
+}, true);
+document.addEventListener("scroll", evt => {
+	if(evt.target === timeRuler) {
+		if(timeRuler.scrollLeft !== timelines.scrollLeft) {
+			timelines.scrollLeft = timeRuler.scrollLeft;
+		}
+		updateTimeRuler();
+	} else if(evt.target === timelines) {
+		if(timelines.scrollLeft !== timeRuler.scrollLeft) {
+			timeRuler.scrollLeft = timelines.scrollLeft;
+		}
+		if(timelines.scrollTop !== timelineItems.scrollTop) {
+			timelineItems.scrollTop !== timelines.scrollTop;
+		}
+		updateTimelines();
 	}
 }, true);

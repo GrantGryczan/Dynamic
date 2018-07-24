@@ -89,37 +89,37 @@ const appendAsset = asset => {
 			</div>
 		`;
 	}
-	assetElem[_asset] = asset;
-	(assetElem[_asset].parent ? assetElem[_asset].parent.element.lastElementChild : assets).appendChild(assetElem);
+	assetElem._asset = asset;
+	(assetElem._asset.parent ? assetElem._asset.parent.element.lastElementChild : assets).appendChild(assetElem);
 	return assetElem;
 };
 const storeAssets = () => {
 	proj[sel].data.assets = [];
 	for(const assetElem of assets.querySelectorAll(".asset")) {
 		if(assetElem.parentNode === assets) {
-			delete assetElem[_asset].parent;
+			delete assetElem._asset.parent;
 		} else {
-			assetElem[_asset].parent = assetElem.parentNode.parentNode[_asset];
+			assetElem._asset.parent = assetElem.parentNode.parentNode._asset;
 		}
-		proj[sel].data.assets.push(assetElem[_asset]);
+		proj[sel].data.assets.push(assetElem._asset);
 	}
 	proj[sel].saved = false;
 };
 const removeAsset = assetElem => {
-	if(proj[sel].selectedAsset === `asset_${assetElem[_asset].id}`) {
+	if(proj[sel].selectedAsset === `asset_${assetElem._asset.id}`) {
 		proj[sel].selectedAsset = null;
 	}
-	if(assetElem[_asset].type === "group") {
+	if(assetElem._asset.type === "group") {
 		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
 	} else {
-		if(assetElem[_asset].type === "obj" && assetPath.querySelector(`#assetLink_${assetElem[_asset].id}`)) {
-			if(proj[sel].rootAsset === assetElem[_asset].id) {
+		if(assetElem._asset.type === "obj" && assetPath.querySelector(`#assetLink_${assetElem._asset.id}`)) {
+			if(proj[sel].rootAsset === assetElem._asset.id) {
 				rootAsset();
 			} else {
 				// TODO: Close asset upon removal
 			}
 		}
-		for(const obj of assetElem[_asset].objects) {
+		for(const obj of assetElem._asset.objects) {
 			// TODO: removeObj(obj.timelineElement);
 		}
 	}
@@ -133,14 +133,14 @@ const confirmRemoveAsset = assetElem => {
 			storeAssets();
 		}
 	};
-	if(assetElem[_asset].type === "file" || assetElem[_asset].type === "obj") {
+	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
 		new Miro.Dialog("Remove Asset", html`
-			Are you sure you want to remove <span class="bold">${assetElem[_asset].name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
-	} else if(assetElem[_asset].type === "group") {
+	} else if(assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${assetElem[_asset].name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
 			All assets inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	}
@@ -164,11 +164,7 @@ const removeSelectedAssets = () => {
 	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 };
 const toggleAssetGroup = assetGroup => {
-	if(!assetGroup.classList.toggle("open")) {
-		for(const assetElem of assetGroup.querySelectorAll(".asset.selected")) {
-			assetElem.classList.remove("selected");
-		}
-	}
+	assetGroup.classList.toggle("open");
 	proj[sel].selectedAsset = null;
 	updateProperties();
 }
@@ -238,10 +234,10 @@ const byID = asset => asset.id;
 const addFiles = async files => {
 	let assetParent = assets;
 	if(ctxTarget && ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset")) {
-		if(ctxTarget.parentNode[_asset].type === "group") {
+		if(ctxTarget.parentNode._asset.type === "group") {
 			assetParent = ctxTarget.parentNode.lastElementChild;
-		} else if(ctxTarget.parentNode[_asset].parent) {
-			assetParent = ctxTarget.parentNode[_asset].parent.element.lastElementChild;
+		} else if(ctxTarget.parentNode._asset.parent) {
+			assetParent = ctxTarget.parentNode._asset.parent.element.lastElementChild;
 		}
 	}
 	loadProgress(0);
@@ -291,6 +287,9 @@ const addFiles = async files => {
 		proj[sel].data.assets.push(asset);
 		const assetFile = appendAsset(asset);
 		assetParent.appendChild(assetFile);
+		if(!assetParent.parentNode.classList.contains("open")) {
+			assetParent.parentNode.classList.add("open");
+		}
 		assetFile.classList.add("selected");
 		if(i === 0) {
 			proj[sel].selectedAsset = assetFile.id;

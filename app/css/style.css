@@ -354,7 +354,6 @@ label:not(.mdc-floating-label) {
 }
 #rightPanels {
 	display: flex;
-	flex-shrink: 0;
 	flex-direction: column;
 	width: 300px;
 	min-width: 150px;
@@ -407,6 +406,10 @@ label:not(.mdc-floating-label) {
 	font-size: 18px !important;
 }
 .panel > .contents {
+	height: 100%;
+}
+.filler {
+	display: inline-block;
 	height: 100%;
 }
 #assetContainer {
@@ -493,7 +496,6 @@ label:not(.mdc-floating-label) {
 }
 #timelineItemContainer {
 	display: flex;
-	flex-shrink: 0;
 	flex-direction: column;
 	position: relative;
 	width: 298px;
@@ -511,6 +513,7 @@ label:not(.mdc-floating-label) {
 #timelineArea {
 	display: flex;
 	flex-grow: 1;
+	flex-shrink: 1000;
 	flex-direction: column;
 	min-width: 150px;
 	margin-left: -4px;
@@ -518,26 +521,43 @@ label:not(.mdc-floating-label) {
 }
 #timelineArea > * {
 	margin-right: -1px;
-	padding: 0 50px 0 1px;
+	padding-left: 1px;
 }
-#timelineRuler {
+#timeRuler {
 	height: 30px;
 	min-height: 30px;
 	white-space: nowrap;
+	color: #808080;
 }
-.timeUnitGroup {
+.timeUnitSuperGroup, .timeUnitGroup {
 	display: inline-block;
 	position: relative;
 	height: 100%;
 	overflow: visible;
 }
-.timeUnitGroup > .label {
+#timeRuler .label {
 	position: absolute;
-	bottom: 10px;
 	padding-left: 1px;
+}
+.timeUnitSuperGroup > .label {
+	bottom: 21px;
+	font-size: 10px;
+	line-height: 11px;
+}
+.timeUnitGroup > .label {
+	bottom: 9px;
 	font-size: 12px;
 	line-height: 13px;
-	color: #808080;
+}
+.second > .timeUnitSuperGroup > .label {
+	bottom: 18px;
+	font-size: 12px;
+	line-height: 13px;
+}
+.second > .timeUnitSuperGroup > .timeUnitGroup > .label {
+	bottom: 10px;
+	font-size: 10px;
+	line-height: 11px;
 }
 .timeUnit {
 	display: inline-block;
@@ -545,17 +565,24 @@ label:not(.mdc-floating-label) {
 	width: 10px;
 	height: 100%;
 }
-.timeUnit::after {
+.timeUnitSuperGroup::before, .timeUnitGroup::before, .timeUnit::before {
 	position: absolute;
 	right: 0;
 	bottom: 0;
 	width: 1px;
 	height: 10px;
 	background-color: #d0d0d0;
+	pointer-events: none;
 	content: "";
 }
-.timeUnit:nth-child(6)::after {
-	height: 25px;
+.timeUnitGroup::before, .timeUnitSuperGroup::before {
+	left: -1px;
+}
+.timeUnitGroup::before {
+	height: 20px;
+}
+.timeUnitSuperGroup::before {
+	height: 30px;
 }
 #timelines {
 	margin-top: 0;

@@ -13,9 +13,7 @@ const store = () => {
 		new Miro.Dialog("Error", "An error occurred while trying to save your user data.");
 	}
 };
-if(storage.size instanceof Object) {
-	updatePanels();
-} else {
+if(!(storage.size instanceof Object)) {
 	storage.size = {};
 }
 if(typeof storage.canvasWidth !== "number") {
@@ -23,5 +21,8 @@ if(typeof storage.canvasWidth !== "number") {
 }
 if(typeof storage.canvasHeight !== "number") {
 	storage.canvasHeight = 450;
+}
+if(typeof storage.fps !== "number") {
+	storage.fps = 60;
 }
 store();

@@ -22,6 +22,7 @@ fullPreview.addEventListener("mousemove", evt => {
 	}
 });
 const canvasProperties = () => {
+	prop.fps.classList.remove("hidden");
 	prop.canvasSize.classList.remove("hidden");
 };
 const updateProperties = () => {
@@ -37,7 +38,7 @@ const updateProperties = () => {
 			if(prop.name.elements[0].readOnly = assetElems.length > 1) {
 				prop.name.elements[0].value = `< ${assetElems.length} selected >`;
 			} else {
-				prop.name.elements[0].value = assetElems[0][_asset].name;
+				prop.name.elements[0].value = assetElems[0]._asset.name;
 				prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
 			}
 			prop.name.classList.remove("hidden");
@@ -45,18 +46,18 @@ const updateProperties = () => {
 			let typeObj = false;
 			let typeFile = false;
 			for(const assetElem of assetElems) {
-				if(assetElem[_asset].type === "group") {
+				if(assetElem._asset.type === "group") {
 					typeGroup = true;
-				} else if(assetElem[_asset].type === "obj") {
+				} else if(assetElem._asset.type === "obj") {
 					typeObj = true;
-				} else if(assetElem[_asset].type === "file") {
+				} else if(assetElem._asset.type === "file") {
 					typeFile = true;
 				}
 			}
 			if(!typeGroup && !typeObj && typeFile) {
-				let mimeType = assetElems[0][_asset].mime;
+				let mimeType = assetElems[0]._asset.mime;
 				for(let i = 1; i < assetElems.length; i++) {
-					if(assetElems[i][_asset].mime !== mimeType) {
+					if(assetElems[i]._asset.mime !== mimeType) {
 						mimeType = false;
 						break;
 					}
@@ -66,7 +67,7 @@ const updateProperties = () => {
 					prop.mime.elements[0].value = mimeType;
 					if(assetElems.length === 1) {
 						const previewMedia = mimeType.startsWith("image/") ? previewImage : previewAudio;
-						previewMedia.src = assetElems[0][_asset].url;
+						previewMedia.src = assetElems[0]._asset.url;
 						previewMedia.classList.remove("hidden");
 						prop.preview.classList.remove("hidden");
 					}
@@ -80,7 +81,7 @@ const updateProperties = () => {
 		if(objElems.length) {
 			prop.name.elements[0].readOnly = true;
 			if(objElems.length === 1) {
-				prop.name.elements[0].value = objElems[0][_obj].asset.name;
+				prop.name.elements[0].value = objElems[0]._obj.name;
 				prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
 			} else {
 				prop.name.elements[0].value = `< ${objElems.length} selected >`;

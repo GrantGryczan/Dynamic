@@ -28,7 +28,7 @@ class DynamicProject {
 				<div class="close material-icons"></div>
 			</div>
 		`);
-		this.tab[_proj] = this;
+		this.tab._proj = this;
 		this.location = validLocation ? value.location : null;
 		this.data = value.data || {
 			...baseData,
@@ -38,15 +38,20 @@ class DynamicProject {
 			scrollContentLeft: 0,
 			scrollContentTop: 0,
 			scrollLayers: 0,
-			scrollObjs: 0
+			scrollTimelinesLeft: 0,
+			scrollTimelinesTop: 0,
+			duration: storage.fps,
+			fps: storage.fps
 		};
 		this.selected = [];
 		this.open = [];
+		this.timeRulerChildren = [];
 		const id = String(++projID);
 		select((proj[id] = this).id = id);
 		for(const assetElem of assets.querySelectorAll(".asset.typeGroup")) {
 			assetElem.classList.add("open");
 		}
+		addTimeUnits(this.data.duration);
 	}
 	get location() {
 		return this[_location];
@@ -136,6 +141,8 @@ const select = id => {
 		proj[sel].scrollContentLeft = contentContainer.scrollLeft;
 		proj[sel].scrollContentTop = contentContainer.scrollTop;
 		proj[sel].scrollLayers = layers.scrollTop;
+		proj[sel].scrollTimelinesLeft = timelines.scrollLeft;
+		proj[sel].scrollTimelinesTop = timelines.scrollTop;
 		projectPage.classList.add("hidden");
 	} else {
 		homePage.classList.add("hidden");
@@ -179,12 +186,16 @@ const select = id => {
 		if(proj[sel].focusedObj) {
 			objs.querySelector(`#${proj[sel].focusedObj}`).classList.add("focus");
 		}
+		saveProj.disabled = proj[sel].saved;
 		rootAsset(proj[sel].rootAsset ? getAsset(proj[sel].rootAsset) : null);
 		openAsset(proj[sel].openAsset ? getAsset(proj[sel].openAsset) : null);
-		saveProj.disabled = proj[sel].saved;
+		for(let i = timeRuler.children.length - 2; i >= 1; i--) {
+			timeRuler.children[i].remove();
+		}
 		updateProperties();
 		proj[sel].tab.classList.add("current");
 		projectPage.classList.remove("hidden");
+		prop.fps.elements[0].value = proj[sel].data.fps;
 		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.canvasWidth}px`;
 		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.canvasHeight}px`;
 		assets.scrollTop = proj[sel].scrollAssets;
