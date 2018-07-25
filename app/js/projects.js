@@ -159,6 +159,7 @@ const select = id => {
 			}
 			assetElem.remove();
 		}
+		removeTimeRulerChildren();
 	}
 	prevSel.push(sel = id);
 	for(const tab of tabs.children) {
@@ -189,9 +190,6 @@ const select = id => {
 		saveProj.disabled = proj[sel].saved;
 		rootAsset(proj[sel].rootAsset ? getAsset(proj[sel].rootAsset) : null);
 		openAsset(proj[sel].openAsset ? getAsset(proj[sel].openAsset) : null);
-		for(let i = timeRuler.children.length - 2; i >= 1; i--) {
-			timeRuler.children[i].remove();
-		}
 		updateProperties();
 		proj[sel].tab.classList.add("current");
 		projectPage.classList.remove("hidden");

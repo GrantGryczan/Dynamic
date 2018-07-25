@@ -562,7 +562,6 @@ label:not(.mdc-floating-label) {
 .timeUnit {
 	display: inline-block;
 	position: relative;
-	width: 10px;
 	height: 100%;
 }
 .timeUnitSuperGroup::before, .timeUnitGroup::before, .timeUnit::before {

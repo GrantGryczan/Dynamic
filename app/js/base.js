@@ -241,10 +241,12 @@ const updatePanels = () => {
 	updateTimeRuler();
 };
 window.addEventListener("resize", () => {
-	if(!fullPreview.classList.contains("hidden")) {
-		absoluteCenter(fullPreviewImage);
+	if(sel !== "home") {
+		if(!fullPreview.classList.contains("hidden")) {
+			absoluteCenter(fullPreviewImage);
+		}
+		updatePanels();
 	}
-	updatePanels();
 });
 let notConfirmingClose = true;
 let shouldNotClose = true;

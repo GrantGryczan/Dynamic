@@ -270,6 +270,7 @@ document.addEventListener("change", evt => {
 		}
 	} else if(evt.target === prop.fps.elements[0]) {
 		proj[sel].data.fps = prop.fps.elements[0].value;
+		refreshTimeRulerChildren();
 	}
 }, true);
 document.addEventListener("paste", async evt => {

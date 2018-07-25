@@ -25,4 +25,7 @@ if(typeof storage.canvasHeight !== "number") {
 if(typeof storage.fps !== "number") {
 	storage.fps = 60;
 }
+if(typeof storage.timeUnitWidth !== "number") {
+	storage.timeUnitWidth = 10;
+}
 store();
