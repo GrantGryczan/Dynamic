@@ -539,6 +539,7 @@ label:not(.mdc-floating-label) {
 #timeRuler .label {
 	position: absolute;
 	padding-left: 1px;
+	z-index: 1;
 }
 .timeUnitSuperGroup > .label {
 	bottom: 21px;
