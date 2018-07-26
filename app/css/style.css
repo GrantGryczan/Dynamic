@@ -247,6 +247,9 @@ label:not(.mdc-floating-label) {
 	min-height: 24px;
 	cursor: default;
 }
+#tabs:not(:-webkit-full-screen) {
+	padding-top: 1px;
+}
 .tab {
 	position: relative;
 	left: 0;
