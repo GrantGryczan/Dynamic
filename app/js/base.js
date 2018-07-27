@@ -41,6 +41,8 @@ const content = projectPage.querySelector("#content");
 const timelineContainer = projectPage.querySelector("#timelineContainer");
 const timelineContainerContents = timelineContainer.querySelector(".contents");
 const timelineItems = timelineContainer.querySelector("#timelineItems");
+const timelineItemDrag = timelineItems.querySelector(".drag");
+timelineItemDrag.remove();
 const timeRuler = timelineContainer.querySelector("#timeRuler");
 const timelines = timelineContainer.querySelector("#timelines");
 const propertyContainer = projectPage.querySelector("#propertyContainer");

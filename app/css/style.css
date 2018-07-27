@@ -439,7 +439,7 @@ label:not(.mdc-floating-label) {
 	overflow-y: auto;
 	background-color: #e8e8e8;
 }
-.asset {
+.asset, .timelineItem {
 	overflow: visible;
 	pointer-events: none;
 }

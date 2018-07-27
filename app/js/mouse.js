@@ -43,6 +43,8 @@ const onMouseDown = evt => {
 	if(mouseTarget.classList.contains("bar")) {
 		if(mouseTarget.parentNode.classList.contains("asset")) {
 			proj[sel].focusedAsset = mouseTarget.parentNode.id;
+		} else if(mouseTarget.parentNode.classList.contains("timelineItem")) {
+			proj[sel].focusedTimelineItem = mouseTarget.parentNode.id;
 		}
 	} else if(mouseTarget.parentNode.classList.contains("layer")) {
 		proj[sel].focusedLayer = mouseTarget.parentNode.id;
@@ -115,6 +117,28 @@ document.addEventListener("mousemove", evt => {
 					indicateTarget(contentContainer.contains(evt.target) ? contentContainer : (layerContainer.contains(evt.target) ? layerContainer : null));
 					assetDrag.remove();
 				}
+			} else if(mouseTarget.parentNode.classList.contains("timelineItem")) {
+				if(!mouseMoved) {
+					selectTimelineItem(mouseTarget.parentNode, 2);
+				}
+				let side;
+				let minDist = Infinity;
+				let minTimelineItem;
+				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
+					const distTop = mouseY - timelineItem.firstElementChild.getBoundingClientRect().top - timelineItem.firstElementChild.offsetHeight / 2;
+					const absDistTop = Math.abs(distTop);
+					if(absDistTop < minDist) {
+						minDist = absDistTop;
+						minTimelineItem = timelineItem;
+						side = distTop < 0 ? "before" : "after";
+					}
+				}
+				if(side === "after" && minTimelineItem.classList.contains("open")) {
+					minTimelineItem.lastElementChild.insertBefore(timelineItemDrag, minTimelineItem.lastElementChild.firstChild);
+				} else {
+					minTimelineItem[side](timelineItemDrag);
+				}
+				indicateTarget();
 			}
 		} else if(mouseTarget.parentNode.classList.contains("layer")) {
 			if(!mouseMoved) {
@@ -256,27 +280,27 @@ const handleMouseUp = (evt, evtButton) => {
 				}
 			}
 		} else if(timelineItems.contains(mouseTarget) && evtButton === mouseDown) {
-			if(mouseMoved && mouseTarget.classList.contains("bar")) {/*
-				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+			if(mouseMoved && mouseTarget.classList.contains("bar")) {
+				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
 					try {
-						assetDrag.before(assetElem);
+						timelineItemDrag.before(timelineItem);
 					} catch(err) {
 						console.warn(err);
 					}
 				}
-				storeAssets();
-				assetDrag.remove();
-			*/} else {
+				storeObjs();
+				timelineItemDrag.remove();
+			} else {
 				if(mouseTarget === timelineItems) {
 					if(mouseX < timelineItems.getBoundingClientRect().left + timelineItems.scrollWidth) {
 						deselectTimelineItems();
 						updateProperties();
 					}
 				} else if(mouseTarget.classList.contains("bar")) {
-					//selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : evtButton);
+					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : evtButton);
 				} else if(evtButton0) {
 					if(mouseTarget0.classList.contains("close")) {
-						//confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
+						confirmRemoveTimelineItem(mouseTarget0.parentNode.parentNode);
 					} else if(mouseTarget0.classList.contains("icon")) {
 						mouseTarget0.parentNode.parentNode.classList.toggle("open");
 					}

@@ -220,6 +220,7 @@ const selectAsset = (target, evtButton) => {
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
 				proj[sel].selectedAsset = null;
+				proj[sel].focusedAsset = target.id;
 			}
 		}
 	}
