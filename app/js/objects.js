@@ -308,9 +308,7 @@ const addToCanvas = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
-		if(obj.group) {
-			timelineItem.classList.add("open");
-		}
+		timelineItem.classList.add("open");
 		timelineItems.firstElementChild.before(timelineItem);
 		if(obj.asset.objects.length > 1) {
 			for(const otherObj of obj.asset.objects) {

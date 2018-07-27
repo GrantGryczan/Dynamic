@@ -300,7 +300,7 @@ const handleMouseUp = (evt, evtButton) => {
 					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : evtButton);
 				} else if(evtButton0) {
 					if(mouseTarget0.classList.contains("close")) {
-						confirmRemoveTimelineItem(mouseTarget0.parentNode.parentNode);
+						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode);
 					} else if(mouseTarget0.classList.contains("icon")) {
 						mouseTarget0.parentNode.parentNode.classList.toggle("open");
 					}
