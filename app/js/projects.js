@@ -117,13 +117,32 @@ class DynamicProject {
 		return this[_focusedLayer];
 	}
 	set focusedLayer(value) {
-		for(const layerElem of layers.querySelectorAll(".layer.focus")) {
-			layerElem.classList.remove("focus");
+		for(const layer of layers.querySelectorAll(".layer.focus")) {
+			layer.classList.remove("focus");
 		}
 		if(this[_focusedLayer] = value) {
-			const layerElem = layers.querySelector(`#${value}`);
-			layerElem.classList.add("focus");
-			scrollIntoView(layerElem, layerBox);
+			const layer = layers.querySelector(`#${value}`);
+			layer.classList.add("focus");
+			scrollIntoView(layer, layerBox);
+		}
+	}
+	get selectedTimelineItem() {
+		return this[_selectedTimelineItem];
+	}
+	set selectedTimelineItem(value) {
+		this.focusedTimelineItem = this[_selectedTimelineItem] = value;
+	}
+	get focusedTimelineItem() {
+		return this[_focusedTimelineItem];
+	}
+	set focusedTimelineItem(value) {
+		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.focus")) {
+			timelineItem.classList.remove("focus");
+		}
+		if(this[_focusedTimelineItem] = value) {
+			const timelineItem = timelineItems.querySelector(`#${value}`);
+			timelineItem.classList.add("focus");
+			scrollIntoView(timelineItem, timelineItems);
 		}
 	}
 }
@@ -150,14 +169,14 @@ const select = id => {
 	if(proj[sel]) {
 		proj[sel].selected = [];
 		proj[sel].open = [];
-		for(const assetElem of assets.querySelectorAll(".asset")) {
-			if(assetElem.classList.contains("selected")) {
-				proj[sel].selected.push(assetElem.id);
+		for(const elem of projectPage.querySelectorAll(".asset, .layer, .timelineItem")) {
+			if(elem.classList.contains("selected")) {
+				proj[sel].selected.push(elem.id);
 			}
-			if(assetElem.classList.contains("open")) {
-				proj[sel].open.push(assetElem.id);
+			if(elem.classList.contains("open")) {
+				proj[sel].open.push(elem.id);
 			}
-			assetElem.remove();
+			elem.remove();
 		}
 		removeTimeRulerChildren();
 	}
@@ -171,6 +190,7 @@ const select = id => {
 		homePage.classList.remove("hidden");
 	} else {
 		proj[sel].data.assets.forEach(appendAsset);
+		proj[sel].data.objs.forEach(appendObj);
 		updateLayers();
 		for(const id of proj[sel].selected) {
 			projectPage.querySelector(`#${id}`).classList.add("selected");
@@ -281,7 +301,7 @@ const open = async location => {
 			try {
 				const obj = new DynamicObject(dataObj);
 				proj[sel].data.objs.push(obj);
-				appendLayer(obj);
+				appendObj(obj);
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`

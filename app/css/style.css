@@ -165,7 +165,7 @@ label:not(.mdc-floating-label) {
 }
 .bar > .close {
 	background-color: transparent;
-	pointer-events: all;
+	pointer-events: initial;
 }
 .label {
 	line-height: 24px;
@@ -253,12 +253,14 @@ label:not(.mdc-floating-label) {
 	left: 0;
 	width: 256px;
 	min-width: 36px;
-	margin-right: 1px;
 	padding: 0 4px;
 	border-radius: 6px 6px 0 0;
 	background-color: #e0e0e0;
 	text-align: center;
 	white-space: nowrap;
+}
+.tab + .tab {
+	margin-left: 1px;
 }
 .tab:not(.current):hover {
 	background-color: #e6e6e6;
@@ -441,23 +443,23 @@ label:not(.mdc-floating-label) {
 	overflow: visible;
 	pointer-events: none;
 }
-.asset.typeGroup > .bar > .icon {
+.typeGroup > .bar > .icon, .timelineItem > .bar > .icon {
 	pointer-events: initial;
 	cursor: pointer;
 	transform: rotate(0);
 	transition: transform 0.08s ease-out;
 }
-.asset.typeGroup > .bar > .icon::after {
+.asset.typeGroup > .bar > .icon::after, .timelineItem > .bar > .icon::after {
 	opacity: 0.25;
 	content: "chevron_right";
 }
-.asset.typeGroup > .bar > .icon:hover::after {
+.asset.typeGroup > .bar > .icon:hover::after, .timelineItem > .bar > .icon:hover::after {
 	opacity: 0.625;
 }
-.asset.typeGroup > .bar > .icon:active::after {
+.asset.typeGroup > .bar > .icon:active::after, .timelineItem > .bar > .icon:active::after {
 	opacity: 1;
 }
-.asset.typeGroup.open > .bar > .icon {
+.asset.typeGroup.open > .bar > .icon, .timelineItem.open > .bar > .icon {
 	transform: rotate(90deg);
 }
 .asset.typeObj > .bar > .icon::after {
@@ -469,11 +471,11 @@ label:not(.mdc-floating-label) {
 .asset.typeFile[data-mime^="audio/"] > .bar > .icon::after {
 	content: "audiotrack";
 }
-.assetChildren {
+.children {
 	margin-left: 24px;
 	overflow: visible;
 }
-.asset.typeGroup:not(.open) > .assetChildren {
+:not(.open) > .children {
 	display: none;
 }
 #contentContainer {

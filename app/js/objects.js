@@ -1,30 +1,56 @@
 "use strict";
-const appendLayer = obj => {
-	const layerElem = html`
-		<table>
-			<tbody>
-				<tr id="layer_${obj.id}" class="layer" title="$${obj.name}">
-					<td class="z">${obj.z}</td>
-					<td class="barCell">
-						<div class="bar">
-							<div class="label">$${obj.name}</div>
-							<div class="close material-icons"></div>
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	`.firstElementChild.firstElementChild;
-	layerElem._obj = obj;
-	let siblingElem = null;
-	for(const eachLayerElem of layers.querySelectorAll(".layer")) {
-		if(eachLayerElem._obj.z < obj.z) {
-			siblingElem = eachLayerElem;
-			break;
+const appendObj = obj => {
+	let timelineItem;
+	if(obj.group) {
+		timelineItem = html`
+			<div id="timelineItem_${obj.id}" class="timelineItem typeGroup" title="$${obj.name}">
+				<div class="bar">
+					<div class="icon material-icons"></div>
+					<div class="label">$${obj.name}</div>
+					<div class="close material-icons"></div>
+				</div>
+				<div class="children"></div>
+			</div>
+		`;
+	} else {
+		const layer = html`
+			<table>
+				<tbody>
+					<tr id="layer_${obj.id}" class="layer" title="$${obj.name}">
+						<td class="z">${obj.z}</td>
+						<td class="barCell">
+							<div class="bar">
+								<div class="label">$${obj.name}</div>
+								<div class="close material-icons"></div>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		`.firstElementChild.firstElementChild;
+		layer._obj = obj;
+		let siblingElem = null;
+		for(const eachLayer of layers.querySelectorAll(".layer")) {
+			if(eachLayer._obj.z < obj.z) {
+				siblingElem = eachLayer;
+				break;
+			}
 		}
+		layers.insertBefore(layer, siblingElem);
+		timelineItem = html`
+			<div id="timelineItem_${obj.id}" class="timelineItem typeObj" title="$${obj.name}">
+				<div class="bar">
+					<div class="icon material-icons"></div>
+					<div class="label">$${obj.name}</div>
+					<div class="close material-icons"></div>
+				</div>
+				<div class="children"></div>
+			</div>
+		`;
 	}
-	layers.insertBefore(layerElem, siblingElem);
-	return layerElem;
+	timelineItem._obj = obj;
+	(timelineItem._obj.parent ? timelineItem._obj.parent.timelineItemElement.lastElementChild : timelineItems).appendChild(timelineItem);
+	return timelineItem;
 };
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
@@ -34,68 +60,74 @@ const updateLayers = () => {
 	}
 };
 const storeObjs = () => {
-	// TODO
+	proj[sel].data.objs = [];
+	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
+		if(timelineItem.parentNode === timelineItems) {
+			delete timelineItem._obj.parent;
+		} else {
+			timelineItem._obj.parent = timelineItem.parentNode.parentNode._obj;
+		}
+		proj[sel].data.objs.push(timelineItem._obj);
+		timelineItem._obj.updateName();
+	}
 	proj[sel].saved = false;
 };
-const removeObj = layerElem => {
-	if(proj[sel].selectedTimeline === `timeline_${layerElem._obj.id}`) {
-		proj[sel].selectedTimeline = null;
+const removeObj = objElem => {
+	if(proj[sel].selectedTimelineItem === `timelineItem_${objElem._obj.id}`) {
+		proj[sel].selectedTimelineItem = null;
 	}
-	if(proj[sel].selectedLayer === `layer_${layerElem._obj.id}`) {
+	if(proj[sel].selectedLayer === `layer_${objElem._obj.id}`) {
 		proj[sel].selectedLayer = null;
 	}
-	if(layerElem._obj.group) {
-		layerElem._obj.timelineElement.lastElementChild.children.forEach(layerElem._obj.timelineElement.before.bind(layerElem._obj.timelineElement));
+	if(objElem._obj.group) {
+		objElem._obj.timelineItemElement.lastElementChild.children.forEach(objElem._obj.timelineElement.before.bind(objElem._obj.timelineElement));
 	}
-	layerElem.remove();
-	// TODO: layerElem._obj.timelineElement.remove();
-	storeObjs();
-	for(const otherObj of layerElem._obj.asset.objects) {
-		otherObj.updateName();
-	}
-	updateProperties();
+	objElem._obj.layerElement.remove();
+	objElem._obj.timelineItemElement.remove();
 };
-const confirmRemoveObj = layerElem => {
-	const actuallyRemoveObj = value => {
+const confirmRemoveObjElem = objElem => {
+	const actuallyRemoveObjElem = value => {
 		if(value === 0) {
-			removeObj(layerElem);
+			removeObj(objElem);
 			storeObjs();
+			updateProperties();
 		}
 	};
-	if(layerElem._obj.group) {
+	if(objElem._obj.group) {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${layerElem._obj.name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?<br>
 			All objects inside the group will be taken out.
-		`, ["Yes", "No"]).then(actuallyRemoveObj);
+		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	} else {
 		new Miro.Dialog("Remove Object", html`
-			Are you sure you want to remove <span class="bold">${layerElem._obj.name}</span>?<br>
+			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?<br>
 			This cannot be undone.
-		`, ["Yes", "No"]).then(actuallyRemoveObj);
+		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	}
 };
-const confirmRemoveObjs = layerElems => {
-	if(layerElems.length === 1) {
-		confirmRemoveObj(layerElems[0]);
-	} else if(layerElems.length > 1) {
+const confirmRemoveObjElems = objElems => {
+	if(objElems.length === 1) {
+		confirmRemoveObjElem(objElems[0]);
+	} else if(objElems.length > 1) {
 		new Miro.Dialog("Remove Objects", html`
 			Are you sure you want to remove all those objects?<br>
 			This cannot be undone.
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {
-				layerElems.forEach(removeObj);
+				objElems.forEach(removeObj);
 				storeObjs();
+				updateProperties();
 			}
 		});
 	}
 };
 const removeSelectedLayers = () => {
-	confirmRemoveObjs(layers.querySelectorAll(".layer.selected"));
+	confirmRemoveObjElems(layers.querySelectorAll(".layer.selected"));
 };
 const deselectLayers = () => {
-	for(const layerElem of layers.querySelectorAll(".layer.selected")) {
-		layerElem.classList.remove("selected");
-		layerElem.classList.remove("focus");
+	for(const layer of layers.querySelectorAll(".layer.selected")) {
+		layer.classList.remove("selected");
+		layer.classList.remove("focus");
 	}
 	proj[sel].selectedLayer = null;
 };
@@ -105,9 +137,9 @@ const selectLayer = (target, evtButton) => {
 	}
 	if(evtButton === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
-			for(const layerElem of layers.querySelectorAll(".layer.selected")) {
-				if(layerElem !== target) {
-					layerElem.classList.remove("selected");
+			for(const layer of layers.querySelectorAll(".layer.selected")) {
+				if(layer !== target) {
+					layer.classList.remove("selected");
 				}
 			}
 			target.classList.add("selected");
@@ -116,22 +148,22 @@ const selectLayer = (target, evtButton) => {
 	} else if(shiftKey) {
 		let selecting = !proj[sel].selectedLayer;
 		const classListMethod = superKey && proj[sel].selectedLayer && !layers.querySelector(`#${proj[sel].selectedLayer}`).classList.contains("selected") ? "remove" : "add";
-		for(const layerElem of layers.querySelectorAll(".layer")) {
-			if(layerElem.id === proj[sel].selectedLayer || layerElem.id === target.id) {
+		for(const layer of layers.querySelectorAll(".layer")) {
+			if(layer.id === proj[sel].selectedLayer || layer.id === target.id) {
 				if(selecting) {
-					layerElem.classList[classListMethod]("selected");
+					layer.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
-					layerElem.classList[classListMethod]("selected");
+					layer.classList[classListMethod]("selected");
 					if(proj[sel].selectedLayer !== target.id) {
 						selecting = true;
 					}
 				}
 			} else if(selecting) {
-				layerElem.classList[classListMethod]("selected");
+				layer.classList[classListMethod]("selected");
 			} else if(!superKey) {
-				layerElem.classList.remove("selected");
+				layer.classList.remove("selected");
 			}
 		}
 	} else {
@@ -140,10 +172,10 @@ const selectLayer = (target, evtButton) => {
 			target.classList.toggle("selected");
 		} else {
 			let othersSelected = false;
-			for(const layerElem of layers.querySelectorAll(".layer.selected")) {
-				if(layerElem !== target) {
+			for(const layer of layers.querySelectorAll(".layer.selected")) {
+				if(layer !== target) {
 					othersSelected = true;
-					layerElem.classList.remove("selected");
+					layer.classList.remove("selected");
 				}
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
@@ -152,6 +184,9 @@ const selectLayer = (target, evtButton) => {
 		}
 	}
 	setActive(layerContainer);
+};
+const removeSelectedTimelineItems = () => {
+	confirmRemoveObjElems(timelineItems.querySelectorAll(".timelineItem.selected"));
 };
 const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
 const byDate = (a, b) => a.date - b.date;
@@ -199,18 +234,21 @@ class DynamicObject {
 	get layerElement() {
 		return layers.querySelector(`#layer_${this.id}`);
 	}
-	get timelineElement() {
-		return layers.querySelector(`#timeline_${this.id}`);
+	get timelineItemElement() {
+		return timelineItems.querySelector(`#timelineItem_${this.id}`);
 	}
 	updateName() {
-		const label = this.layerElement.querySelector(".label");
-		label.textContent = this.layerElement.title = this.name; // TODO: Update other labels
+		this.layerElement.querySelector(".label").textContent = this.layerElement.title = this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this.name;
 	}
 }
 const addToCanvas = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
 		const obj = new DynamicObject(assetElem._asset.id);
-		appendLayer(obj);
+		const timelineItem = appendObj(obj);
+		if(obj.group) {
+			timelineItem.classList.add("open");
+		}
+		timelineItems.firstElementChild.before(timelineItem);
 		if(obj.asset.objects.length > 1) {
 			for(const otherObj of obj.asset.objects) {
 				otherObj.updateName();

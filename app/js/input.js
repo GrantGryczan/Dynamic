@@ -45,11 +45,11 @@ document.addEventListener("keydown", evt => {
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const layerElems = layers.querySelectorAll(".layer");
-				const layerElem = layerElems[layerElems.length - 1];
+				const layer = layerElems[layerElems.length - 1];
 				if(!superKey) {
-					selectLayer(layerElem);
+					selectLayer(layer);
 				}
-				proj[sel].focusedLayer = layerElem.id;
+				proj[sel].focusedLayer = layer.id;
 			}
 		}
 	} else if(evt.keyCode === 36) { // `home`
@@ -63,11 +63,11 @@ document.addEventListener("keydown", evt => {
 				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const layerElem = layers.querySelector(".layer");
+				const layer = layers.querySelector(".layer");
 				if(!superKey) {
-					selectLayer(layerElem);
+					selectLayer(layer);
 				}
-				proj[sel].focusedLayer = layerElem.id;
+				proj[sel].focusedLayer = layer.id;
 			}
 		}
 	} else if(evt.keyCode === 38) { // `up`
@@ -82,11 +82,11 @@ document.addEventListener("keydown", evt => {
 				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const layerElem = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
+				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 				if(!superKey) {
-					selectLayer(layerElem);
+					selectLayer(layer);
 				}
-				proj[sel].focusedLayer = layerElem.id;
+				proj[sel].focusedLayer = layer.id;
 			}
 		}
 	} else if(evt.keyCode === 40) { // `down`
@@ -101,11 +101,11 @@ document.addEventListener("keydown", evt => {
 				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const layerElem = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
+				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 				if(!superKey) {
-					selectLayer(layerElem);
+					selectLayer(layer);
 				}
-				proj[sel].focusedLayer = layerElem.id;
+				proj[sel].focusedLayer = layer.id;
 			}
 		}
 	} else if(evt.keyCode === 93) { // `context menu`
@@ -160,8 +160,8 @@ document.addEventListener("keydown", evt => {
 					}
 					updateProperties();
 				} else if(layerContainer.classList.contains("active")) {
-					for(const layerElem of layers.querySelectorAll(".layer:not(.selected)")) {
-						layerElem.classList.add("selected");
+					for(const layer of layers.querySelectorAll(".layer:not(.selected)")) {
+						layer.classList.add("selected");
 					}
 					updateProperties();
 				}
@@ -202,9 +202,9 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
-				confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
+				removeSelectedAssets();
 			} else if(layerContainer.classList.contains("active")) {
-				confirmRemoveObjs(layers.querySelectorAll(".layer.selected"));
+				removeSelectedLayers();
 			}
 		}
 	} else if(evt.keyCode === 13) { // `enter`

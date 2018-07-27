@@ -123,17 +123,17 @@ document.addEventListener("mousemove", evt => {
 			if(layerContainer.contains(evt.target)) {
 				let side;
 				let minDist = Infinity;
-				let minLayerElem;
-				for(const layerElem of layers.querySelectorAll(".layer")) {
-					const distTop = mouseY - layerElem.firstElementChild.getBoundingClientRect().top - layerElem.firstElementChild.offsetHeight / 2;
+				let minLayer;
+				for(const layer of layers.querySelectorAll(".layer")) {
+					const distTop = mouseY - layer.firstElementChild.getBoundingClientRect().top - layer.firstElementChild.offsetHeight / 2;
 					const absDistTop = Math.abs(distTop);
 					if(absDistTop < minDist) {
 						minDist = absDistTop;
-						minLayerElem = layerElem;
+						minLayer = layer;
 						side = distTop < 0 ? "before" : "after";
 					}
 				}
-				minLayerElem.querySelector(".bar")[side](layerDrag);
+				minLayer.querySelector(".bar")[side](layerDrag);
 			} else {
 				layerDrag.remove();
 			}
@@ -220,7 +220,7 @@ const handleMouseUp = (evt, evtButton) => {
 					if(mouseTarget0.classList.contains("close")) {
 						confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
 					} else if(mouseTarget0.classList.contains("icon")) {
-						toggleAssetGroup(mouseTarget0.parentNode.parentNode);
+						mouseTarget0.parentNode.parentNode.classList.toggle("open");
 					}
 				}
 			}
@@ -231,8 +231,8 @@ const handleMouseUp = (evt, evtButton) => {
 						const zs = proj[sel].data.objs.map(byZ);
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
 						layerDrag.parentNode.parentNode[side](layerDrag);
-						for(const layerElem of layers.querySelectorAll(".layer.selected")) {
-							layerDrag.before(layerElem);
+						for(const layer of layers.querySelectorAll(".layer.selected")) {
+							layerDrag.before(layer);
 						}
 						layerDrag.remove();
 						const layerElems = layers.querySelectorAll(".layer");
@@ -244,14 +244,41 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				} else {
 					if(mouseTarget.parentNode.classList.contains("layer")) {
-						selectLayer(mouseTarget.parentNode, downActive === assetContainer ? 2 : evtButton);
+						selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : evtButton);
 					} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
-						confirmRemoveObj(mouseTarget0.parentNode.parentNode.parentNode);
+						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode.parentNode);
 					} else {
 						if(mouseX < layerBox.getBoundingClientRect().left + layerBox.scrollWidth) {
 							deselectLayers();
 							updateProperties();
 						}
+					}
+				}
+			}
+		} else if(timelineItems.contains(mouseTarget) && evtButton === mouseDown) {
+			if(mouseMoved && mouseTarget.classList.contains("bar")) {/*
+				for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+					try {
+						assetDrag.before(assetElem);
+					} catch(err) {
+						console.warn(err);
+					}
+				}
+				storeAssets();
+				assetDrag.remove();
+			*/} else {
+				if(mouseTarget === timelineItems) {
+					if(mouseX < timelineItems.getBoundingClientRect().left + timelineItems.scrollWidth) {
+						deselectTimelineItems();
+						updateProperties();
+					}
+				} else if(mouseTarget.classList.contains("bar")) {
+					//selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : evtButton);
+				} else if(evtButton0) {
+					if(mouseTarget0.classList.contains("close")) {
+						//confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
+					} else if(mouseTarget0.classList.contains("icon")) {
+						mouseTarget0.parentNode.parentNode.classList.toggle("open");
 					}
 				}
 			}
@@ -423,7 +450,7 @@ document.addEventListener("dblclick", evt => {
 		} else if(evt.target.classList.contains("bar") && evt.target.parentNode.classList.contains("asset")) {
 			selectAsset(evt.target.parentNode, 2);
 			if(evt.target.parentNode._asset.type === "group") {
-				toggleAssetGroup(evt.target.parentNode);
+				evt.target.parentNode.classList.toggle("open");
 			} else if(evt.target.parentNode._asset.type === "obj") {
 				rootAsset(evt.target.parentNode._asset);
 			}

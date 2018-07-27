@@ -65,7 +65,7 @@ const appendAsset = asset => {
 					<div class="label">$${asset.name}</div>
 					<div class="close material-icons"></div>
 				</div>
-				<div class="assetChildren"></div>
+				<div class="children"></div>
 			</div>
 		`;
 	} else if(asset.type === "file") {
@@ -90,7 +90,7 @@ const appendAsset = asset => {
 		`;
 	}
 	assetElem._asset = asset;
-	(assetElem._asset.parent ? assetElem._asset.parent.element.lastElementChild : assets).appendChild(assetElem);
+	(assetElem._asset.parent && assetElem._asset.parent.type === "group" ? assetElem._asset.parent.element.lastElementChild : assets).appendChild(assetElem);
 	return assetElem;
 };
 const storeAssets = () => {
@@ -106,13 +106,13 @@ const storeAssets = () => {
 	proj[sel].saved = false;
 };
 const removeAsset = assetElem => {
-	if(proj[sel].selectedAsset === `asset_${assetElem._asset.id}`) {
+	if(proj[sel].selectedAsset === assetElem.id) {
 		proj[sel].selectedAsset = null;
 	}
 	if(assetElem._asset.type === "group") {
 		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
 	} else {
-		if(assetElem._asset.type === "obj" && assetPath.querySelector(`#assetLink_${assetElem._asset.id}`)) {
+		if(assetElem._asset.type === "obj") {
 			if(proj[sel].rootAsset === assetElem._asset.id) {
 				rootAsset();
 			} else {
@@ -124,13 +124,13 @@ const removeAsset = assetElem => {
 		}
 	}
 	assetElem.remove();
-	updateProperties();
 };
 const confirmRemoveAsset = assetElem => {
 	const actuallyRemoveAsset = value => {
 		if(value === 0) {
 			removeAsset(assetElem);
 			storeAssets();
+			updateProperties();
 		}
 	};
 	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
@@ -156,6 +156,7 @@ const confirmRemoveAssets = assetElems => {
 			if(value === 0) {
 				assetElems.forEach(removeAsset);
 				storeAssets();
+				updateProperties();
 			}
 		});
 	}
@@ -163,11 +164,6 @@ const confirmRemoveAssets = assetElems => {
 const removeSelectedAssets = () => {
 	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 };
-const toggleAssetGroup = assetGroup => {
-	assetGroup.classList.toggle("open");
-	proj[sel].selectedAsset = null;
-	updateProperties();
-}
 const deselectAssets = () => {
 	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 		assetElem.classList.remove("selected");

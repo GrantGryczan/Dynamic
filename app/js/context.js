@@ -110,8 +110,8 @@ const assetElemsAlphabetically = assetElem => `${"abcd"[numericAssetType(assetEl
 const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Sort by asset type",
 	click: () => {
-		for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
-			const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
+		for(const children of [assets, ...assets.querySelectorAll(".children")]) {
+			const assetElems = Array.prototype.filter.call(children.children, byAssets);
 			let afterGroup = null;
 			let afterObj = null;
 			let afterImage = null;
@@ -140,14 +140,14 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 			}
 			for(const assetElem of assetElems) {
 				if(assetElem._asset.type === "group") {
-					assetChildren.insertBefore(assetElem, afterGroup);
+					children.insertBefore(assetElem, afterGroup);
 				} else if(assetElem._asset.type === "obj") {
-					assetChildren.insertBefore(assetElem, afterObj);
+					children.insertBefore(assetElem, afterObj);
 				} else if(assetElem._asset.type === "file") {
 					if(assetElem._asset.mime.startsWith("image/")) {
-						assetChildren.insertBefore(assetElem, afterImage);
+						children.insertBefore(assetElem, afterImage);
 					} else {
-						assetChildren.appendChild(assetElem);
+						children.appendChild(assetElem);
 					}
 				}
 			}
@@ -157,10 +157,10 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 }, {
 	label: "Sort alphabetically",
 	click: () => {
-		for(const assetChildren of [assets, ...assets.querySelectorAll(".assetChildren")]) {
-			const assetElems = Array.prototype.filter.call(assetChildren.children, byAssets);
+		for(const children of [assets, ...assets.querySelectorAll(".children")]) {
+			const assetElems = Array.prototype.filter.call(children.children, byAssets);
 			for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
-				assetChildren.lastChild.after(assetElems.find(assetElem => assetElem._asset.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+				children.lastChild.after(assetElems.find(assetElem => assetElem._asset.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
 			}
 		}
 		storeAssets();
@@ -201,14 +201,14 @@ const assetBarMenuMultipleItems = [{
 const assetBarMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
-		for(const assetElem of assets.querySelectorAll(".asset.typeGroup.selected > .assetChildren > .asset")) {
+		for(const assetElem of assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset")) {
 			assetElem.classList.add("selected");
 		}
 	}
 }, {
 	label: "Deselect && select children",
 	click: () => {
-		const childrenToSelect = assets.querySelectorAll(".asset.typeGroup.selected > .assetChildren > .asset");
+		const childrenToSelect = assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset");
 		deselectAssets();
 		for(let i = 0; i < childrenToSelect.length; i++) {
 			childrenToSelect[i].classList.add("selected");
