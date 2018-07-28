@@ -34,12 +34,6 @@ class DynamicProject {
 			...baseData,
 			assets: [],
 			objs: [],
-			scrollAssets: 0,
-			scrollContentLeft: 0,
-			scrollContentTop: 0,
-			scrollLayers: 0,
-			scrollTimelinesLeft: 0,
-			scrollTimelinesTop: 0,
 			duration: storage.fps,
 			fps: storage.fps
 		};

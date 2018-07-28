@@ -1,7 +1,7 @@
 "use strict";
 const appendObj = obj => {
 	let timelineItem;
-	if(obj.group) {
+	if(obj.type === "group") {
 		timelineItem = html`
 			<div id="timelineItem_${obj.id}" class="timelineItem typeGroup" title="$${obj.name}">
 				<div class="bar">
@@ -55,7 +55,7 @@ const appendObj = obj => {
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
 	for(const obj of proj[sel].data.objs.sort(byZIndex)) {
-		if(!obj.group) {
+		if(obj.type !== "group") {
 			obj.layerElement.querySelector(".z").textContent = obj.z;
 			layers.appendChild(obj.layerElement);
 		}
@@ -70,7 +70,6 @@ const storeObjs = () => {
 			timelineItem._obj.parent = timelineItem.parentNode.parentNode._obj;
 		}
 		proj[sel].data.objs.push(timelineItem._obj);
-		timelineItem._obj.updateName();
 	}
 	proj[sel].saved = false;
 };
@@ -84,7 +83,7 @@ const removeObj = objElem => {
 	while(objElem._obj.timelineItemElement.lastElementChild.firstElementChild) {
 		objElem._obj.timelineItemElement.before(objElem._obj.timelineItemElement.lastElementChild.firstElementChild);
 	}
-	if(!objElem._obj.group) {
+	if(objElem._obj.type !== "group") {
 		objElem._obj.layerElement.remove();
 	}
 	objElem._obj.timelineItemElement.remove();
@@ -97,7 +96,7 @@ const confirmRemoveObjElem = objElem => {
 			updateProperties();
 		}
 	};
-	if(objElem._obj.group) {
+	if(objElem._obj.type === "group") {
 		new Miro.Dialog("Remove Group", html`
 			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?<br>
 			All objects inside the group will be taken out.
@@ -272,12 +271,13 @@ class DynamicObject {
 			if(value.parent) {
 				this.parent = getObj(value.parent);
 			}
-			if(!value.group) {
+			if(value.type !== "group") {
 				this.asset = getAsset(value.asset);
 			}
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
+		this.updateName();
 		this.id = value.id || uid(proj[sel].data.objs.map(byID));
 	}
 	toJSON() {
@@ -287,7 +287,7 @@ class DynamicObject {
 		if(this.parent) {
 			obj.parent = this.parent.id;
 		}
-		if(this.group) {
+		if(this.type === "group") {
 			obj.name = this.name;
 		} else {
 			obj.asset = this.asset.id;
@@ -295,18 +295,10 @@ class DynamicObject {
 		return obj;
 	}
 	get name() {
-		if(this.group) {
-			return this[_name];
-		} else {
-			let name = this.asset.name;
-			if(this.asset.objects.length > 1) {
-				name += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
-			}
-			return name;
-		}
+		return this[_name];
 	}
 	set name(value) {
-		if(this.group) {
+		if(this.type === "group") {
 			this[_name] = value;
 			this.updateName();
 		} else {
@@ -320,24 +312,33 @@ class DynamicObject {
 		return timelineItems.querySelector(`#timelineItem_${this.id}`);
 	}
 	updateName() {
+		if(this.asset) {
+			this[_name] = this.asset.name;
+			if(this.asset.objects.length > 1) {
+				this[_name] += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
+			}
+		}
 		if(this.timelineItemElement) {
-			this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this.name;
+			this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this[_name];
 		}
 		if(this.layerElement) {
-			this.layerElement.querySelector(".label").textContent = this.layerElement.title = this.name;
+			this.layerElement.querySelector(".label").textContent = this.layerElement.title = this[_name];
 		}
 	}
 }
 const addToCanvas = () => {
-	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
+	const assetElems = assets.querySelectorAll(".asset:not(.typeGroup).selected");
+	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
+		proj[sel].data.objs.unshift(obj);
 		timelineItems.firstElementChild.before(timelineItem);
 		timelineItem.classList.add("open");
-		if(obj.asset.objects.length > 1) {
-			for(const otherObj of obj.asset.objects) {
-				otherObj.updateName();
-			}
+	}
+	storeObjs();
+	for(const assetElem of assetElems) {
+		for(const obj of assetElem._asset.objects) {
+			obj.updateName();
 		}
 	}
 	proj[sel].saved = false;

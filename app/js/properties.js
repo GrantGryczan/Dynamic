@@ -81,7 +81,7 @@ const updateProperties = () => {
 		if(objElems.length) {
 			prop.name.elements[0].readOnly = true;
 			if(objElems.length === 1) {
-				if(objElems[0]._obj.group) {
+				if(objElems[0]._obj.type === "group") {
 					prop.name.elements[0].readOnly = false;
 				}
 				prop.name.elements[0].value = objElems[0]._obj.name;

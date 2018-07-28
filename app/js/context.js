@@ -270,7 +270,7 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			name = `Group ${i}`;
 		}
 		const obj = new DynamicObject({
-			group: true,
+			type: "group",
 			name
 		});
 		const timelineItem = appendObj(obj);
