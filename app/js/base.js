@@ -69,6 +69,7 @@ for(const statusElem of statusElems) {
 	status[statusElem.getAttribute("data-key")] = statusElem;
 }
 const targetIndicator = container.querySelector("#targetIndicator");
+const byInsensitiveName = obj => obj.name.trim().toLowerCase();
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
 win.setProgressBar(-1);

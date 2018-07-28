@@ -248,29 +248,34 @@ document.addEventListener("input", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === prop.canvasSize.elements[0]) {
+	if(evt.target === prop.fps.elements[0]) {
+		proj[sel].data.fps = prop.fps.elements[0].value;
+		refreshTimeRulerChildren();
+	} else if(evt.target === prop.canvasSize.elements[0]) {
 		content.style.width = `${proj[sel].data.width = evt.target.value}px`;
 		absoluteCenter(content);
 	} else if(evt.target === prop.canvasSize.elements[1]) {
 		content.style.height = `${proj[sel].data.height = evt.target.value}px`;
 		absoluteCenter(content);
+	} else if(evt.target === prop.name.elements[0]) {
+		if(assetContainer.classList.contains("activeProperties")) {
+			if(!proj[sel].data.assets.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
+				assets.querySelector(".asset.selected")._asset.name = evt.target.value;
+			}
+		} else if(timelineContainer.classList.contains("activeProperties")) {
+			if(!proj[sel].data.objs.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
+				timelineItems.querySelector(".timelineItem.selected")._obj.name = evt.target.value;
+			}
+		}
+		proj[sel].saved = false;
 	}
 }, true);
 document.addEventListener("change", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === prop.name.elements[0]) {
-		const names = proj[sel].data.assets.map(byLowerCaseName);
-		if(names.includes(evt.target.value)) {
-			new Miro.Dialog("Error", "That asset name is already in use.");
-		} else {
-			assets.querySelector(".asset.selected")._asset.name = evt.target.value;
-			proj[sel].saved = false;
-		}
-	} else if(evt.target === prop.fps.elements[0]) {
-		proj[sel].data.fps = prop.fps.elements[0].value;
-		refreshTimeRulerChildren();
+	if(evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
+		new Miro.Dialog("Error", "That asset name is already in use.");
 	}
 }, true);
 document.addEventListener("paste", async evt => {

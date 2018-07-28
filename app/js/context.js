@@ -41,7 +41,7 @@ const assetMenuItems = [{
 			}
 		}
 		deselectAssets();
-		const names = proj[sel].data.assets.map(byLowerCaseName);
+		const names = proj[sel].data.assets.map(byInsensitiveName);
 		let name = "Object";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Object ${i}`;
@@ -68,7 +68,7 @@ const assetMenuItems = [{
 		for(const assetElem of assetElems) {
 			assetElem.classList.remove("selected");
 		}
-		const names = proj[sel].data.assets.map(byLowerCaseName);
+		const names = proj[sel].data.assets.map(byInsensitiveName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Group ${i}`;
@@ -264,7 +264,7 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			timelineItem.classList.remove("selected");
 		}
 		deselectTimelineItems();
-		const names = proj[sel].data.objs.map(byLowerCaseName);
+		const names = proj[sel].data.objs.map(byInsensitiveName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Group ${i}`;

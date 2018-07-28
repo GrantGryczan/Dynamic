@@ -228,7 +228,6 @@ const selectAsset = (target, evtButton) => {
 	}
 	setActive(assetContainer);
 };
-const byLowerCaseName = asset => asset.name.toLowerCase();
 const byID = asset => asset.id;
 const addFiles = async files => {
 	let assetParent = assets;
@@ -257,7 +256,7 @@ const addFiles = async files => {
 			`);
 			continue;
 		}
-		const names = proj[sel].data.assets.map(byLowerCaseName);
+		const names = proj[sel].data.assets.map(byInsensitiveName);
 		let name = files[i].name;
 		for(let j = 2; names.includes(name.toLowerCase()); j++) {
 			name = `${files[i].name} ${j}`;

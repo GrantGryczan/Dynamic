@@ -77,10 +77,13 @@ const updateProperties = () => {
 			canvasProperties();
 		}
 	} else {
-		const objElems = layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : (timelineContainer.classList.contains("activeProperties") ? timelines.querySelectorAll(".timeline.selected") : []);
+		const objElems = layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : (timelineContainer.classList.contains("activeProperties") ? timelineItems.querySelectorAll(".timelineItem.selected") : []);
 		if(objElems.length) {
 			prop.name.elements[0].readOnly = true;
 			if(objElems.length === 1) {
+				if(objElems[0]._obj.group) {
+					prop.name.elements[0].readOnly = false;
+				}
 				prop.name.elements[0].value = objElems[0]._obj.name;
 				prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
 			} else {

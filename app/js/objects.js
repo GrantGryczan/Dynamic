@@ -308,6 +308,7 @@ class DynamicObject {
 	set name(value) {
 		if(this.group) {
 			this[_name] = value;
+			this.updateName();
 		} else {
 			throw new MiroError("The name of an object may only be set for groups.");
 		}
@@ -319,8 +320,11 @@ class DynamicObject {
 		return timelineItems.querySelector(`#timelineItem_${this.id}`);
 	}
 	updateName() {
-		if(!this.group) {
-			this.layerElement.querySelector(".label").textContent = this.layerElement.title = this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this.name;
+		if(this.timelineItemElement) {
+			this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this.name;
+		}
+		if(this.layerElement) {
+			this.layerElement.querySelector(".label").textContent = this.layerElement.title = this.name;
 		}
 	}
 }
