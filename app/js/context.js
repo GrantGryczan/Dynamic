@@ -50,7 +50,6 @@ const assetMenuItems = [{
 			type: "obj",
 			name
 		});
-		proj[sel].data.assets.push(asset);
 		const assetElem = appendAsset(asset);
 		assetParent.appendChild(assetElem);
 		if(!assetParent.parentNode.classList.contains("open")) {
@@ -78,7 +77,6 @@ const assetMenuItems = [{
 			type: "group",
 			name
 		});
-		proj[sel].data.assets.push(asset);
 		const assetGroup = appendAsset(asset);
 		if(ctxTarget.classList.contains("bar")) {
 			ctxTarget.parentNode.before(assetGroup);
@@ -275,8 +273,8 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			group: true,
 			name
 		});
-		proj[sel].data.objs.unshift(obj);
 		const timelineItem = appendObj(obj);
+		timelineItems.firstElementChild.before(timelineItem);
 		if(ctxTarget.classList.contains("bar")) {
 			ctxTarget.parentNode.before(timelineItem);
 			timelineItemArray.forEach(timelineItem.lastElementChild.appendChild.bind(timelineItem.lastElementChild));

@@ -283,7 +283,6 @@ const addFiles = async files => {
 			`);
 			continue;
 		}
-		proj[sel].data.assets.push(asset);
 		const assetFile = appendAsset(asset);
 		assetParent.appendChild(assetFile);
 		if(!assetParent.parentNode.classList.contains("open")) {

@@ -280,7 +280,6 @@ const open = async location => {
 			loadProgress(i / data.assets.length);
 			try {
 				const asset = new DynamicAsset(data.assets[i]);
-				proj[sel].data.assets.push(asset);
 				appendAsset(asset);
 				if(asset.type === "file") {
 					await new Promise((resolve, reject) => {
@@ -297,10 +296,10 @@ const open = async location => {
 				`);
 			}
 		}
+		storeAssets();
 		for(const dataObj of data.objs) {
 			try {
 				const obj = new DynamicObject(dataObj);
-				proj[sel].data.objs.push(obj);
 				appendObj(obj);
 			} catch(err) {
 				console.warn(err);
@@ -309,6 +308,7 @@ const open = async location => {
 				`);
 			}
 		}
+		storeObjs();
 		loadProgress(1);
 		return project;
 	} else {

@@ -267,7 +267,6 @@ class DynamicObject {
 			this.date = Date.now();
 			const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
 			this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
-			proj[sel].data.objs.unshift(this);
 		} else if(value instanceof Object) {
 			Object.assign(this, value);
 			if(value.parent) {
@@ -283,11 +282,15 @@ class DynamicObject {
 	}
 	toJSON() {
 		const obj = {
-			...this,
-			asset: this.asset.id
+			...this
 		};
 		if(this.parent) {
 			obj.parent = this.parent.id;
+		}
+		if(this.group) {
+			obj.name = this.name;
+		} else {
+			obj.asset = this.asset.id;
 		}
 		return obj;
 	}
@@ -325,8 +328,8 @@ const addToCanvas = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.typeGroup).selected")) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
-		timelineItem.classList.add("open");
 		timelineItems.firstElementChild.before(timelineItem);
+		timelineItem.classList.add("open");
 		if(obj.asset.objects.length > 1) {
 			for(const otherObj of obj.asset.objects) {
 				otherObj.updateName();
