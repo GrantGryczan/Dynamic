@@ -364,6 +364,8 @@ const handleMouseUp = (evt, evtButton) => {
 						} else if(mouseTarget0 === sortAssets) {
 							openCtx(sortAssets);
 						}
+					} else if(mouseTarget0 === addObj) {
+						openCtx(timelineItems);
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
 						fullPreview.classList.remove("hidden");

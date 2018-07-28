@@ -269,7 +269,7 @@ class DynamicObject {
 			if(value.parent) {
 				this.parent = getObj(value.parent);
 			}
-			if(value.asset) {
+			if(!value.group) {
 				this.asset = getAsset(value.asset);
 			}
 		} else {
@@ -288,11 +288,22 @@ class DynamicObject {
 		return obj;
 	}
 	get name() {
-		let name = this.asset.name;
-		if(this.asset.objects.length > 1) {
-			name += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
+		if(this.group) {
+			return this[_name];
+		} else {
+			let name = this.asset.name;
+			if(this.asset.objects.length > 1) {
+				name += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
+			}
+			return name;
 		}
-		return name;
+	}
+	set name(value) {
+		if(this.group) {
+			this[_name] = value;
+		} else {
+			throw new MiroError("The name of an object may only be set for groups.");
+		}
 	}
 	get layerElement() {
 		return layers.querySelector(`#layer_${this.id}`);
@@ -301,7 +312,9 @@ class DynamicObject {
 		return timelineItems.querySelector(`#timelineItem_${this.id}`);
 	}
 	updateName() {
-		this.layerElement.querySelector(".label").textContent = this.layerElement.title = this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this.name;
+		if(!this.group) {
+			this.layerElement.querySelector(".label").textContent = this.layerElement.title = this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this.name;
+		}
 	}
 }
 const addToCanvas = () => {

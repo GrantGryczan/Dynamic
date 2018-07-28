@@ -39,6 +39,7 @@ const assetDrag = assets.querySelector(".drag");
 assetDrag.remove();
 const content = projectPage.querySelector("#content");
 const timelineContainer = projectPage.querySelector("#timelineContainer");
+const addObj = timelineContainer.querySelector("#addObj");
 const timelineContainerContents = timelineContainer.querySelector(".contents");
 const timelineItems = timelineContainer.querySelector("#timelineItems");
 const timelineItemDrag = timelineItems.querySelector(".drag");

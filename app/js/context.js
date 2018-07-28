@@ -257,20 +257,52 @@ const layerMenu = electron.remote.Menu.buildFromTemplate([{
 		updateProperties();
 	}
 }]);
+const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Create group",
+	click: () => {
+		setActive(timelineContainer);
+		const timelineItemArray = timelineItems.querySelectorAll(".asset.selected");
+		for(const timelineItem of timelineItemArray) {
+			timelineItem.classList.remove("selected");
+		}
+		const names = proj[sel].data.objs.map(byLowerCaseName);
+		let name = "Group";
+		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+			name = `Group ${i}`;
+		}
+		const obj = new DynamicObject({
+			group: true,
+			name
+		});
+		proj[sel].data.objs.unshift(obj);
+		const timelineItem = appendObj(obj);
+		if(ctxTarget.classList.contains("bar")) {
+			ctxTarget.parentNode.before(timelineItem);
+			timelineItemArray.forEach(timelineItem.lastElementChild.appendChild.bind(timelineItem.lastElementChild));
+		}
+		timelineItem.classList.add("open");
+		storeObjs();
+		timelineItem.classList.add("selected");
+		proj[sel].selectedTimelineItem = timelineItem.id;
+		updateProperties();
+	}
+}]);
 let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
 	const items = [];
 	if(ctxTarget === assets) {
 		assetMenu.popup(win);
+	} else if(ctxTarget === sortAssets) {
+		sortAssetsMenu.popup(win);
 	} else if(ctxTarget.classList.contains("bar")) {
 		if(ctxTarget.parentNode.classList.contains("asset")) {
 			assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.typeGroup.selected") ? +!!assets.querySelector(".asset.selected:not(.typeGroup)") : 2].popup(win);
 		}
 	} else if(ctxTarget.parentNode.classList.contains("layer")) {
 		layerMenu.popup(win);
-	} else if(ctxTarget === sortAssets) {
-		sortAssetsMenu.popup(win);
+	} else if(ctxTarget === timelineItems) {
+		timelineItemsMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		textMenu.popup(win);
 	}
