@@ -55,8 +55,10 @@ const appendObj = obj => {
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
 	for(const obj of proj[sel].data.objs.sort(byZIndex)) {
-		obj.layerElement.querySelector(".z").textContent = obj.z;
-		layers.appendChild(obj.layerElement);
+		if(!obj.group) {
+			obj.layerElement.querySelector(".z").textContent = obj.z;
+			layers.appendChild(obj.layerElement);
+		}
 	}
 };
 const storeObjs = () => {
@@ -79,8 +81,12 @@ const removeObj = objElem => {
 	if(proj[sel].selectedLayer === `layer_${objElem._obj.id}`) {
 		proj[sel].selectedLayer = null;
 	}
-	objElem._obj.timelineItemElement.lastElementChild.children.forEach(objElem._obj.timelineItemElement.before.bind(objElem._obj.timelineItemElement));
-	objElem._obj.layerElement.remove();
+	while(objElem._obj.timelineItemElement.lastElementChild.firstElementChild) {
+		objElem._obj.timelineItemElement.before(objElem._obj.timelineItemElement.lastElementChild.firstElementChild);
+	}
+	if(!objElem._obj.group) {
+		objElem._obj.layerElement.remove();
+	}
 	objElem._obj.timelineItemElement.remove();
 };
 const confirmRemoveObjElem = objElem => {

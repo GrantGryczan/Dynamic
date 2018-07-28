@@ -110,7 +110,9 @@ const removeAsset = assetElem => {
 		proj[sel].selectedAsset = null;
 	}
 	if(assetElem._asset.type === "group") {
-		assetElem.lastElementChild.children.forEach(assetElem.before.bind(assetElem));
+		while(assetElem.lastElementChild.firstElementChild) {
+			assetElem.before(assetElem.lastElementChild.firstElementChild);
+		}
 	} else {
 		if(assetElem._asset.type === "obj") {
 			if(proj[sel].rootAsset === assetElem._asset.id) {

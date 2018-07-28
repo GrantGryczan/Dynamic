@@ -265,6 +265,7 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 		for(const timelineItem of timelineItemArray) {
 			timelineItem.classList.remove("selected");
 		}
+		deselectTimelineItems();
 		const names = proj[sel].data.objs.map(byLowerCaseName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
