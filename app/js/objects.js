@@ -79,9 +79,7 @@ const removeObj = objElem => {
 	if(proj[sel].selectedLayer === `layer_${objElem._obj.id}`) {
 		proj[sel].selectedLayer = null;
 	}
-	if(objElem._obj.group) {
-		objElem._obj.timelineItemElement.lastElementChild.children.forEach(objElem._obj.timelineElement.before.bind(objElem._obj.timelineElement));
-	}
+	objElem._obj.timelineItemElement.lastElementChild.children.forEach(objElem._obj.timelineItemElement.before.bind(objElem._obj.timelineItemElement));
 	objElem._obj.layerElement.remove();
 	objElem._obj.timelineItemElement.remove();
 };
