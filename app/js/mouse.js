@@ -114,7 +114,7 @@ document.addEventListener("mousemove", evt => {
 					}
 					indicateTarget();
 				} else {
-					indicateTarget(contentContainer.contains(evt.target) ? contentContainer : (layerContainer.contains(evt.target) ? layerContainer : null));
+					indicateTarget(contentContainer.contains(evt.target) ? contentContainer : (layerContainer.contains(evt.target) ? layerContainer : (timelineContainer.contains(evt.target) ? timelineContainer : null)));
 					assetDrag.remove();
 				}
 			} else if(mouseTarget.parentNode.classList.contains("timelineItem")) {

@@ -260,12 +260,20 @@ const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
 		if(typeof value === "string") {
-			if((this.asset = getAsset(value)).type === "group") {
-				throw new MiroError("Objects cannot reference asset groups.");
-			}
 			this.date = Date.now();
-			const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
-			this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
+			const asset = getAsset(value);
+			if(asset.type === "group") {
+				this.type = "group";
+				const names = proj[sel].data.objs.map(byInsensitiveName);
+				this[_name] = asset.name;
+				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
+					this[_name] = `${asset.name} ${i}`;
+				}
+			} else {
+				this.asset = asset;
+				const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
+				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
+			}
 		} else if(value instanceof Object) {
 			Object.assign(this, value);
 			if(value.parent) {
@@ -327,13 +335,24 @@ class DynamicObject {
 	}
 }
 const addToCanvas = () => {
-	const assetElems = assets.querySelectorAll(".asset:not(.typeGroup).selected");
+	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
+	const _parent = Symbol("parent");
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
-		proj[sel].data.objs.unshift(obj);
-		timelineItems.firstElementChild.before(timelineItem);
 		timelineItem.classList.add("open");
+		if(assetElem[_parent]) {
+			assetElem[_parent].appendChild(timelineItem);
+			delete assetElem[_parent];
+		} else {
+			timelineItems.firstElementChild.before(timelineItem);
+		}
+		if(obj.type === "group") {
+			for(const child of assetElem.lastElementChild.children) {
+				child[_parent] = timelineItem.lastElementChild;
+			}
+		}
+		proj[sel].data.objs.unshift(obj);
 	}
 	storeObjs();
 	for(const assetElem of assetElems) {
