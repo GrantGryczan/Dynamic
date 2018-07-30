@@ -256,6 +256,7 @@ const selectTimelineItem = (target, evtButton) => {
 };
 const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
 const byDate = (a, b) => a.date - b.date;
+const groupsOut = obj => obj.type !== "group";
 const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
@@ -271,7 +272,8 @@ class DynamicObject {
 				}
 			} else {
 				this.asset = asset;
-				const maxZ = Math.max(...proj[sel].data.objs.map(byZ));
+				const maxZ = Math.max(...proj[sel].data.objs.filter(groupsOut).map(byZ));
+				console.log(maxZ);
 				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
 			}
 		} else if(value instanceof Object) {
@@ -335,8 +337,13 @@ class DynamicObject {
 	}
 }
 const addToCanvas = () => {
-	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
 	const _parent = Symbol("parent");
+	if(timelineItems.firstElementChild) {
+		timelineItems.firstElementChild.before(timelineItemDrag);
+	} else {
+		timelineItems.appendChild(timelineItemDrag);
+	}
+	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
@@ -345,7 +352,7 @@ const addToCanvas = () => {
 			assetElem[_parent].appendChild(timelineItem);
 			delete assetElem[_parent];
 		} else {
-			timelineItems.firstElementChild.before(timelineItem);
+			timelineItemDrag.before(timelineItem);
 		}
 		if(obj.type === "group") {
 			for(const child of assetElem.lastElementChild.children) {
@@ -354,6 +361,7 @@ const addToCanvas = () => {
 		}
 		proj[sel].data.objs.unshift(obj);
 	}
+	timelineItemDrag.remove();
 	storeObjs();
 	for(const assetElem of assetElems) {
 		for(const obj of assetElem._asset.objects) {
