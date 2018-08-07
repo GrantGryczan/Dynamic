@@ -274,7 +274,7 @@ document.addEventListener("change", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
+	if(evt.target === prop.name.elements[0] && evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
 		new Miro.Dialog("Error", "That name is already in use.");
 	}
 }, true);
