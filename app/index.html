@@ -5,7 +5,7 @@
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self' data:">
 		<title>Miroware Dynamic</title>
 		<link rel="stylesheet" href="./css/MaterialIcons.css"> <!-- https://fonts.googleapis.com/icon?family=Material+Icons -->
-		<link rel="stylesheet" href="./css/material.css"> <!-- https://unpkg.com/material-components-web@0.36.1/dist/material-components-web.min.css -->
+		<link rel="stylesheet" href="./css/material.css"> <!-- https://unpkg.com/material-components-web@0.38.0/dist/material-components-web.min.css -->
 		<link rel="stylesheet" href="./css/style.css">
 	</head>
 	<body class="mdc-typography">
@@ -17,17 +17,9 @@
 			</div>
 			<div id="toolbar" class="mdc-elevation--z2">
 				<div id="loading"></div>
-				<button id="newProj" class="mdc-fab spaced" title="New Project">
-					<span class="mdc-fab__icon material-icons">add</span>
-				</button><button id="openProj" class="mdc-fab spaced" title="Open Project">
-					<span class="mdc-fab__icon material-icons">folder</span>
-				</button><button id="saveProj" class="mdc-fab spaced" title="Save Project" disabled>
-					<span class="mdc-fab__icon material-icons">save</span>
-				</button><button id="saveProjAs" class="mdc-fab double-fab spaced" title="Save Project As" disabled>
-					<span class="mdc-fab__icon material-icons">save</span><span class="mdc-fab__icon material-icons">edit</span>
-				</button><button id="exportProj" class="mdc-fab spaced" title="Export Project" disabled>
-					<span class="mdc-fab__icon material-icons">save_alt</span>
-				</button>
+				<button id="newProj" class="mdc-icon-button material-icons spaced" title="New Project">add</button><button id="openProj" class="mdc-icon-button material-icons spaced" title="Open Project">folder</button><button id="saveProj" class="mdc-icon-button material-icons spaced" title="Save Project" disabled>save</button><button id="saveProjAs" class="mdc-icon-button material-icons double-icon spaced" title="Save Project As" disabled>
+					<span>save</span><span>edit</span>
+				</button><button id="exportProj" class="mdc-icon-button material-icons spaced" title="Export Project" disabled>save_alt</button>
 			</div>
 			<div id="homePage" class="page hidden"></div>
 			<div id="projectPage" class="page hidden">
@@ -38,11 +30,7 @@
 								<div class="handle right"></div>
 								<div class="contents">
 									<div class="head">
-										<span class="label spaced">Assets</span><button id="addAsset" class="mdc-fab spaced" title="Add asset" type="button">
-											<span class="mdc-fab__icon material-icons">add</span>
-										</button><button id="sortAssets" class="mdc-fab spaced" title="Sort assets" type="button">
-											<span class="mdc-fab__icon material-icons">sort</span>
-										</button>
+										<span class="label spaced">Assets</span><button id="addAsset" class="mdc-icon-button material-icons spaced" title="Add asset">add</button><button id="sortAssets" class="mdc-icon-button material-icons spaced" title="Sort assets">sort</button>
 									</div>
 									<div id="assets" class="box">
 										<div class="drag"></div>
@@ -58,9 +46,7 @@
 							<div class="contents">
 								<div id="timelineItemContainer">
 									<div class="head">
-										<span class="label spaced">Timeline</span><button id="addObj" class="mdc-fab spaced" title="Add object" type="button">
-											<span class="mdc-fab__icon material-icons">add</span>
-										</button>
+										<span class="label spaced">Timeline</span><button id="addObj" class="mdc-icon-button material-icons spaced" title="Add object">add</button>
 									</div>
 									<div id="timelineItems" class="box">
 										<div class="drag"></div>

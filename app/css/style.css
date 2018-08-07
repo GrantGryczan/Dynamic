@@ -72,18 +72,26 @@ button:focus {
 button * {
 	pointer-events: none;
 }
-.mdc-fab .mdc-fab__icon {
-	width: inherit;
-	height: inherit;
+.mdc-icon-button {
+	padding: 0;
+	border-radius: 50%;
+	color: #ffffff !important;
 }
-.double-fab .material-icons:first-child {
+.mdc-icon-button::before, .mdc-icon-button::after {
+	border-radius: inherit;
+	background-color: #ffffff;
+}
+.double-icon > * {
+	display: inline-block;
+}
+.double-icon > :first-child {
 	position: relative;
-	left: 8px;
+	left: 5px;
 	top: -1px;
 }
-.double-fab .material-icons:last-child {
+.double-icon > :last-child {
 	position: relative;
-	left: -2px;
+	left: -11px;
 	top: 6px;
 	transform: scale(0.75);
 }
@@ -299,7 +307,6 @@ label:not(.mdc-floating-label) {
 	width: 36px;
 	height: 36px;
 	border-radius: 8px;
-	box-shadow: none;
 	background-color: #6e00db;
 }
 #loading {
@@ -399,14 +406,9 @@ label:not(.mdc-floating-label) {
 .head button {
 	width: 24px;
 	height: 24px;
-	box-shadow: none !important;
 	vertical-align: bottom;
+	font-size: 18px;
 	background-color: #6e00db;
-}
-.head button span {
-	width: 24px;
-	height: 24px;
-	font-size: 18px !important;
 }
 .panel > .contents {
 	height: 100%;
