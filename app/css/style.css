@@ -512,9 +512,6 @@ label:not(.mdc-floating-label) {
 	background-clip: content-box;
 	background-color: #d0d0d0;
 }
-#timelineItems {
-	overflow-x: scroll;
-}
 #timelineArea {
 	display: flex;
 	flex-grow: 1;

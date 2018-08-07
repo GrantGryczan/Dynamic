@@ -273,7 +273,6 @@ class DynamicObject {
 			} else {
 				this.asset = asset;
 				const maxZ = Math.max(...proj[sel].data.objs.filter(groupsOut).map(byZ));
-				console.log(maxZ);
 				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
 			}
 		} else if(value instanceof Object) {
