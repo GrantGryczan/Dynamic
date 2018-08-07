@@ -302,6 +302,8 @@ const openCtx = target => {
 		layerMenu.popup(win);
 	} else if(ctxTarget === timelineItems) {
 		timelineItemsMenu.popup(win);
+	} else if(ctxTarget === sortTimeline) {
+		sortTimelineMenu.popup(win); // TODO
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		textMenu.popup(win);
 	}
