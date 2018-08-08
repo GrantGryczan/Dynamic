@@ -531,59 +531,61 @@ label:not(.mdc-floating-label) {
 	white-space: nowrap;
 	color: #808080;
 }
-.timeUnitSuperGroup, .timeUnitGroup {
+.timeUnit {
 	display: inline-block;
 	position: relative;
 	height: 100%;
 	overflow: visible;
 }
-#timeRuler .label {
+.timeLabel, .timeUnitLabel {
 	position: absolute;
+	height: 100%;
 	padding-left: 1px;
 	z-index: 1;
+	overflow: visible;
 }
-.timeUnitSuperGroup > .label {
+.timeLabel > .label, .timeUnitLabel > .label {
+	position: absolute;
+}
+.timeLabel > .label {
 	bottom: 21px;
 	font-size: 10px;
 	line-height: 11px;
 }
-.timeUnitGroup > .label {
+.timeUnitLabel > .label {
 	bottom: 9px;
 	font-size: 12px;
 	line-height: 13px;
 }
-.second > .timeUnitSuperGroup > .label {
+.second .timeLabel > .label {
 	bottom: 18px;
 	font-size: 12px;
 	line-height: 13px;
 }
-.second > .timeUnitSuperGroup > .timeUnitGroup > .label {
+.second .timeUnitLabel > .label {
 	bottom: 10px;
 	font-size: 10px;
 	line-height: 11px;
 }
-.timeUnit {
-	display: inline-block;
-	position: relative;
-	height: 100%;
-}
-.timeUnitSuperGroup::before, .timeUnitGroup::before, .timeUnit::before {
+.timeLabel::before, .timeUnitLabel::before, .timeUnit::before {
 	position: absolute;
-	right: 0;
 	bottom: 0;
 	width: 1px;
-	height: 10px;
 	background-color: #d0d0d0;
 	pointer-events: none;
 	content: "";
 }
-.timeUnitGroup::before, .timeUnitSuperGroup::before {
+.timeUnit::before {
+	right: 0;
+	height: 10px;
+}
+.timeUnitLabel::before, .timeLabel::before {
 	left: -1px;
 }
-.timeUnitGroup::before {
+.timeUnitLabel::before {
 	height: 20px;
 }
-.timeUnitSuperGroup::before {
+.timeLabel::before {
 	height: 30px;
 }
 #timelines {

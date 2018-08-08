@@ -34,7 +34,7 @@ class DynamicProject {
 			...baseData,
 			assets: [],
 			objs: [],
-			duration: storage.fps,
+			duration: 0,
 			fps: storage.fps
 		};
 		this.selected = [];
@@ -45,7 +45,7 @@ class DynamicProject {
 		for(const assetElem of assets.querySelectorAll(".asset.typeGroup")) {
 			assetElem.classList.add("open");
 		}
-		addTimeUnits(this.data.duration);
+		addTimeUnits(this.data.fps);
 	}
 	get location() {
 		return this[_location];
