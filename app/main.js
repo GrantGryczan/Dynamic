@@ -2,7 +2,7 @@ const electron = require("electron");
 let win;
 const filesToOpen = [];
 let addFileToOpen = filesToOpen.push.bind(filesToOpen);
-if(process.argv[1]) {
+if(process.argv[1] && process.argv[2] !== "dev") {
 	addFileToOpen(process.argv[1]);
 }
 if(electron.app.makeSingleInstance(([, fileToOpen]) => {

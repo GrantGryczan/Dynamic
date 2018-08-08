@@ -1,10 +1,10 @@
 {
 	"name": "Dynamic",
-	"version": "0.16.11",
+	"version": "0.16.13",
 	"description": "Create HTML5 animations with ease!",
 	"main": "app/main.js",
 	"scripts": {
-		"start": "electron .",
+		"start": "electron . dev",
 		"build": "node ./build/build.js",
 		"pack": "asar pack . ./dist/app.asar --unpack-dir \"{node_modules,dist,build}/**\" && rd \"./dist/app.asar.unpacked\" /s /q"
 	},
