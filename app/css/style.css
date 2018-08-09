@@ -443,7 +443,7 @@ label:not(.mdc-floating-label) {
 	overflow: visible;
 	pointer-events: none;
 }
-.typeGroup > .bar:hover > .icon, .timelineItem.typeObj > .bar:hover > .icon {
+.typeGroup > .bar:hover > .icon, .timelineItem > .bar:hover > .icon {
 	pointer-events: initial;
 	cursor: pointer;
 	transform: rotate(0);
@@ -463,20 +463,20 @@ label:not(.mdc-floating-label) {
 .asset.typeFile[data-mime^="audio/"] > .bar > .icon::before, .timelineItem.typeAudio > .bar > .icon::before {
 	content: "audiotrack";
 }
-.typeGroup > .bar:hover > .icon::before, .timelineItem.typeObj > .bar:hover > .icon::before {
+.typeGroup > .bar:hover > .icon::before, .timelineItem > .bar:hover > .icon::before {
 	display: none;
 }
-.typeGroup > .bar:not(:hover) > .icon::after, .timelineItem.typeObj > .bar:not(:hover) > .icon::after {
+.typeGroup > .bar:not(:hover) > .icon::after, .timelineItem > .bar:not(:hover) > .icon::after {
 	display: none;
 }
-.typeGroup > .bar > .icon::after, .timelineItem.typeObj > .bar > .icon::after {
+.typeGroup > .bar > .icon::after, .timelineItem > .bar > .icon::after {
 	opacity: 0.25;
 	content: "chevron_right";
 }
-.typeGroup > .bar > .icon:hover::after, .timelineItem.typeObj > .bar > .icon:hover::after {
+.typeGroup > .bar > .icon:hover::after, .timelineItem > .bar > .icon:hover::after {
 	opacity: 0.625;
 }
-.typeGroup > .bar > .icon:active::after, .timelineItem.typeObj > .bar > .icon:active::after {
+.typeGroup > .bar > .icon:active::after, .timelineItem > .bar > .icon:active::after {
 	opacity: 1;
 }
 .children {

@@ -133,7 +133,7 @@ document.addEventListener("mousemove", evt => {
 						side = distTop < 0 ? "before" : "after";
 					}
 				}
-				if(side === "after" && minTimelineItem.classList.contains("open")) {
+				if(side === "after" && minTimelineItem.classList.contains("open") && minTimelineItem._obj.type !== "audio") {
 					minTimelineItem.lastElementChild.insertBefore(timelineItemDrag, minTimelineItem.lastElementChild.firstChild);
 				} else {
 					minTimelineItem[side](timelineItemDrag);
@@ -473,12 +473,16 @@ document.addEventListener("dblclick", evt => {
 			}
 			store();
 			updatePanels();
-		} else if(evt.target.classList.contains("bar") && evt.target.parentNode.classList.contains("asset")) {
-			selectAsset(evt.target.parentNode, 2);
-			if(evt.target.parentNode._asset.type === "group") {
+		} else if(evt.target.classList.contains("bar")) {
+			if(evt.target.parentNode.classList.contains("asset")) {
+				selectAsset(evt.target.parentNode, 2);
+				if(evt.target.parentNode._asset.type === "group") {
+					evt.target.parentNode.classList.toggle("open");
+				} else if(evt.target.parentNode._asset.type === "obj") {
+					rootAsset(evt.target.parentNode._asset);
+				}
+			} else if(evt.target.parentNode.classList.contains("timelineItem")) {
 				evt.target.parentNode.classList.toggle("open");
-			} else if(evt.target.parentNode._asset.type === "obj") {
-				rootAsset(evt.target.parentNode._asset);
 			}
 		}
 	}

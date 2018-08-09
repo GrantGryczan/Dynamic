@@ -66,6 +66,7 @@ const appendObj = obj => {
 						<div class="label">$${obj.name}</div>
 						<div class="close material-icons"></div>
 					</div>
+					<div class="children"></div>
 				</div>
 			`;
 		}
@@ -385,7 +386,7 @@ const addToCanvas = () => {
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
-		if(obj.type === "group" || obj.type === "obj") {
+		if(obj.type === "group") {
 			timelineItem.classList.add("open");
 		}
 		if(assetElem[_parent]) {
