@@ -12,6 +12,16 @@ const appendObj = obj => {
 				<div class="children"></div>
 			</div>
 		`;
+	} else if(obj.type === "audio") {
+		timelineItem = html`
+			<div id="timelineItem_${obj.id}" class="timelineItem typeAudio" title="$${obj.name}">
+				<div class="bar">
+					<div class="icon material-icons"></div>
+					<div class="label">$${obj.name}</div>
+					<div class="close material-icons"></div>
+				</div>
+			</div>
+		`;
 	} else {
 		const layer = html`
 			<table>
@@ -37,28 +47,39 @@ const appendObj = obj => {
 			}
 		}
 		layers.insertBefore(layer, siblingElem);
-		timelineItem = html`
-			<div id="timelineItem_${obj.id}" class="timelineItem typeObj" title="$${obj.name}">
-				<div class="bar">
-					<div class="icon material-icons"></div>
-					<div class="label">$${obj.name}</div>
-					<div class="close material-icons"></div>
+		if(obj.type === "obj") {
+			timelineItem = html`
+				<div id="timelineItem_${obj.id}" class="timelineItem typeObj" title="$${obj.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${obj.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+					<div class="children"></div>
 				</div>
-				<div class="children"></div>
-			</div>
-		`;
+			`;
+		} else if(obj.type === "image") {
+			timelineItem = html`
+				<div id="timelineItem_${obj.id}" class="timelineItem typeImage" title="$${obj.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${obj.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+				</div>
+			`;
+		}
 	}
 	timelineItem._obj = obj;
 	(timelineItem._obj.parent ? timelineItem._obj.parent.timelineItemElement.lastElementChild : timelineItems).appendChild(timelineItem);
 	return timelineItem;
 };
+const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
-	for(const obj of proj[sel].data.objs.sort(byZIndex)) {
-		if(obj.type !== "group") {
-			obj.layerElement.querySelector(".z").textContent = obj.z;
-			layers.appendChild(obj.layerElement);
-		}
+	for(const obj of proj[sel].data.objs.filter(onlyGraphics).sort(byZIndex)) {
+		obj.layerElement.querySelector(".z").textContent = obj.z;
+		layers.appendChild(obj.layerElement);
 	}
 };
 const storeObjs = () => {
@@ -83,7 +104,7 @@ const removeObj = objElem => {
 	while(objElem._obj.timelineItemElement.lastElementChild.firstElementChild) {
 		objElem._obj.timelineItemElement.before(objElem._obj.timelineItemElement.lastElementChild.firstElementChild);
 	}
-	if(objElem._obj.type !== "group") {
+	if(onlyGraphics(objElem._obj)) {
 		objElem._obj.layerElement.remove();
 	}
 	objElem._obj.timelineItemElement.remove();
@@ -93,6 +114,11 @@ const confirmRemoveObjElem = objElem => {
 		if(value === 0) {
 			removeObj(objElem);
 			storeObjs();
+			if(objElem._obj.asset) {
+				for(const obj of objElem._obj.asset.objects) {
+					obj.updateName();
+				}
+			}
 			updateProperties();
 		}
 	};
@@ -119,6 +145,13 @@ const confirmRemoveObjElems = objElems => {
 			if(value === 0) {
 				objElems.forEach(removeObj);
 				storeObjs();
+				for(const objElem of objElems) {
+					if(objElem._obj.asset) {
+						for(const obj of objElem._obj.asset.objects) {
+							obj.updateName();
+						}
+					}
+				}
 				updateProperties();
 			}
 		});
@@ -256,7 +289,6 @@ const selectTimelineItem = (target, evtButton) => {
 };
 const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
 const byDate = (a, b) => a.date - b.date;
-const groupsOut = obj => obj.type !== "group";
 const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
@@ -271,8 +303,15 @@ class DynamicObject {
 					this[_name] = `${asset.name} ${i}`;
 				}
 			} else {
+				if(asset.type === "obj") {
+					this.type = "obj";
+				} else {
+					this.type = asset.mime.slice(0, asset.mime.indexOf("/"));
+				}
 				this.asset = asset;
-				const maxZ = Math.max(...proj[sel].data.objs.filter(groupsOut).map(byZ));
+			}
+			if(onlyGraphics(this)) {
+				const maxZ = Math.max(...proj[sel].data.objs.filter(onlyGraphics).map(byZ));
 				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
 			}
 		} else if(value instanceof Object) {
@@ -346,7 +385,9 @@ const addToCanvas = () => {
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
 		const timelineItem = appendObj(obj);
-		timelineItem.classList.add("open");
+		if(obj.type === "group" || obj.type === "obj") {
+			timelineItem.classList.add("open");
+		}
 		if(assetElem[_parent]) {
 			assetElem[_parent].appendChild(timelineItem);
 			delete assetElem[_parent];

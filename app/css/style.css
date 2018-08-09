@@ -190,7 +190,6 @@ label:not(.mdc-floating-label) {
 	pointer-events: initial;
 	background-color: inherit;
 	transform: scale(0);
-	transition: transform 0.08s ease-out;
 	font-size: 18px;
 }
 .close:not(td) {
@@ -444,33 +443,41 @@ label:not(.mdc-floating-label) {
 	overflow: visible;
 	pointer-events: none;
 }
-.typeGroup > .bar > .icon, .timelineItem > .bar > .icon {
+.typeGroup > .bar:hover > .icon, .timelineItem.typeObj > .bar:hover > .icon {
 	pointer-events: initial;
 	cursor: pointer;
 	transform: rotate(0);
-	transition: transform 0.08s ease-out;
 }
-.asset.typeGroup > .bar > .icon::after, .timelineItem > .bar > .icon::after {
+.asset.open > .bar:hover > .icon, .timelineItem.open > .bar:hover > .icon {
+	transform: rotate(90deg);
+}
+.typeGroup > .bar > .icon::before {
+	content: "folder";
+}
+.typeObj > .bar > .icon::before {
+	content: "widgets";
+}
+.asset.typeFile[data-mime^="image/"] > .bar > .icon::before, .timelineItem.typeImage > .bar > .icon::before {
+	content: "image";
+}
+.asset.typeFile[data-mime^="audio/"] > .bar > .icon::before, .timelineItem.typeAudio > .bar > .icon::before {
+	content: "audiotrack";
+}
+.typeGroup > .bar:hover > .icon::before, .timelineItem.typeObj > .bar:hover > .icon::before {
+	display: none;
+}
+.typeGroup > .bar:not(:hover) > .icon::after, .timelineItem.typeObj > .bar:not(:hover) > .icon::after {
+	display: none;
+}
+.typeGroup > .bar > .icon::after, .timelineItem.typeObj > .bar > .icon::after {
 	opacity: 0.25;
 	content: "chevron_right";
 }
-.asset.typeGroup > .bar > .icon:hover::after, .timelineItem > .bar > .icon:hover::after {
+.typeGroup > .bar > .icon:hover::after, .timelineItem.typeObj > .bar > .icon:hover::after {
 	opacity: 0.625;
 }
-.asset.typeGroup > .bar > .icon:active::after, .timelineItem > .bar > .icon:active::after {
+.typeGroup > .bar > .icon:active::after, .timelineItem.typeObj > .bar > .icon:active::after {
 	opacity: 1;
-}
-.asset.typeGroup.open > .bar > .icon, .timelineItem.open > .bar > .icon {
-	transform: rotate(90deg);
-}
-.asset.typeObj > .bar > .icon::after {
-	content: "widgets";
-}
-.asset.typeFile[data-mime^="image/"] > .bar > .icon::after {
-	content: "image";
-}
-.asset.typeFile[data-mime^="audio/"] > .bar > .icon::after {
-	content: "audiotrack";
 }
 .children {
 	margin-left: 24px;

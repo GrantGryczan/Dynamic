@@ -122,7 +122,7 @@ const removeAsset = assetElem => {
 			}
 		}
 		for(const obj of assetElem._asset.objects) {
-			// TODO: removeObj(obj.timelineElement);
+			removeObj(obj.timelineItemElement);
 		}
 	}
 	assetElem.remove();
@@ -138,7 +138,7 @@ const confirmRemoveAsset = assetElem => {
 	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
 		new Miro.Dialog("Remove Asset", html`
 			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
-			This cannot be undone.
+			Objects using the asset will also be removed.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	} else if(assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
@@ -153,7 +153,7 @@ const confirmRemoveAssets = assetElems => {
 	} else if(assetElems.length > 1) {
 		new Miro.Dialog("Remove Assets", html`
 			Are you sure you want to remove all those assets?<br>
-			This cannot be undone.
+			Objects using the assets will also be removed.
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {
 				assetElems.forEach(removeAsset);
