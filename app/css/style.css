@@ -436,7 +436,6 @@ label:not(.mdc-floating-label) {
 	flex-grow: 1;
 	position: relative;
 	margin-top: 6px;
-	padding: 2px;
 	border: 1px solid #d0d0d0;
 	overflow-y: auto;
 	background-color: #e8e8e8;
