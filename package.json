@@ -1,6 +1,6 @@
 {
 	"name": "Dynamic",
-	"version": "0.16.18",
+	"version": "0.16.19",
 	"description": "Create HTML5 animations with ease!",
 	"main": "app/main.js",
 	"scripts": {
@@ -13,7 +13,7 @@
 		"email": "grantgryczan@gmail.com"
 	},
 	"build": {
-		"appId": "io.miroware.Dynamic",
+		"appId": "io.miroware.dynamic",
 		"productName": "Miroware Dynamic",
 		"fileAssociations": [
 			{
@@ -43,7 +43,6 @@
 		"electron-builder": "^19.45.5"
 	},
 	"dependencies": {
-		"fs-extra": "^6.0.1",
-		"snekfetch": "^4.0.4"
+		"fs-extra": "^6.0.1"
 	}
 }
