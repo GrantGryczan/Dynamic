@@ -116,7 +116,7 @@ const removeAsset = assetElem => {
 			}
 		}
 		for(const obj of assetElem._asset.objects) {
-			removeObj(obj.timelineItemElement);
+			removeObj(obj.timelineItem);
 		}
 	}
 	assetElem.remove();

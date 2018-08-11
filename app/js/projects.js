@@ -300,7 +300,7 @@ const open = async location => {
 		for(const dataObj of data.objs) {
 			try {
 				const obj = new DynamicObject(dataObj);
-				appendObj(obj, true);
+				project.data.objs.push(obj);
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`

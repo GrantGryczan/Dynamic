@@ -1,44 +1,6 @@
 "use strict";
 const appendObj = (obj, create) => {
-	let timelineItem;
-	if(obj.type === "group") {
-		timelineItem = html`
-			<div id="timelineItem_${obj.id}" class="timelineItem typeGroup" title="$${obj.name}">
-				<div class="bar">
-					<div class="icon material-icons"></div>
-					<div class="label">$${obj.name}</div>
-					<div class="close material-icons"></div>
-				</div>
-				<div class="children"></div>
-			</div>
-		`;
-	} else if(obj.type === "audio") {
-		timelineItem = html`
-			<div id="timelineItem_${obj.id}" class="timelineItem typeAudio" title="$${obj.name}">
-				<div class="bar">
-					<div class="icon material-icons"></div>
-					<div class="label">$${obj.name}</div>
-					<div class="close material-icons"></div>
-				</div>
-			</div>
-		`;
-	} else {
-		const layer = html`
-			<table>
-				<tbody>
-					<tr id="layer_${obj.id}" class="layer" title="$${obj.name}">
-						<td class="z">${obj.z}</td>
-						<td class="barCell">
-							<div class="bar">
-								<div class="label">$${obj.name}</div>
-								<div class="close material-icons"></div>
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		`.firstElementChild.firstElementChild;
-		layer._obj = obj;
+	if(obj.layer) {
 		let siblingElem = null;
 		for(const eachLayer of layers.querySelectorAll(".layer")) {
 			if(eachLayer._obj.z < obj.z) {
@@ -46,33 +8,9 @@ const appendObj = (obj, create) => {
 				break;
 			}
 		}
-		layers.insertBefore(layer, siblingElem);
-		if(obj.type === "obj") {
-			timelineItem = html`
-				<div id="timelineItem_${obj.id}" class="timelineItem typeObj" title="$${obj.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${obj.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-					<div class="children"></div>
-				</div>
-			`;
-		} else if(obj.type === "image") {
-			timelineItem = html`
-				<div id="timelineItem_${obj.id}" class="timelineItem typeImage" title="$${obj.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${obj.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-					<div class="children"></div>
-				</div>
-			`;
-		}
+		layers.insertBefore(obj.layer, siblingElem);
 	}
-	timelineItem._obj = obj;
-	(timelineItem._obj.parent ? timelineItem._obj.parent.timelineItemElement.lastElementChild : timelineItems).appendChild(timelineItem);
+	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
 	if(create) {
 		const frame = html`<div class="frame"></div>`;
 		frame.style.width = `${storage.frameWidth}px`;
@@ -85,14 +23,13 @@ const appendObj = (obj, create) => {
 		timeline._obj = obj;
 		updateTimelines();
 	}
-	return timelineItem;
 };
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
 	for(const obj of proj[sel].data.objs.filter(onlyGraphics).sort(byZIndex)) {
-		obj.layerElement.querySelector(".z").textContent = obj.z;
-		layers.appendChild(obj.layerElement);
+		obj.layer.querySelector(".z").textContent = obj.z;
+		layers.appendChild(obj.layer);
 	}
 };
 const storeObjs = () => {
@@ -114,13 +51,13 @@ const removeObj = objElem => {
 	if(proj[sel].selectedLayer === `layer_${objElem._obj.id}`) {
 		proj[sel].selectedLayer = null;
 	}
-	while(objElem._obj.timelineItemElement.lastElementChild.firstElementChild) {
-		objElem._obj.timelineItemElement.before(objElem._obj.timelineItemElement.lastElementChild.firstElementChild);
+	while(objElem._obj.timelineItem.lastElementChild.firstElementChild) {
+		objElem._obj.timelineItem.before(objElem._obj.timelineItem.lastElementChild.firstElementChild);
 	}
 	if(onlyGraphics(objElem._obj)) {
-		objElem._obj.layerElement.remove();
+		objElem._obj.layer.remove();
 	}
-	objElem._obj.timelineItemElement.remove();
+	objElem._obj.timelineItem.remove();
 	proj[sel].timelines.splice(proj[sel].timelines.indexOf(objElem._obj.timelineElement), 1);
 	updateTimelines();
 };
@@ -307,6 +244,9 @@ const byDate = (a, b) => a.date - b.date;
 const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
+		if(!value.id) {
+			this.id = uid(proj[sel].data.objs.map(byID));
+		}
 		if(typeof value === "string") {
 			this.date = Date.now();
 			const asset = getAsset(value);
@@ -340,8 +280,70 @@ class DynamicObject {
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
+		if(this.type === "group") {
+			this.timelineItem = html`
+				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+					<div class="children"></div>
+				</div>
+			`;
+		} else if(this.type === "audio") {
+			this.timelineItem = html`
+				<div id="timelineItem_${this.id}" class="timelineItem typeAudio" title="$${this.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+				</div>
+			`;
+		} else {
+			this.layer = html`
+				<table>
+					<tbody>
+						<tr id="layer_${this.id}" class="layer" title="$${this.name}">
+							<td class="z">${this.z}</td>
+							<td class="barCell">
+								<div class="bar">
+									<div class="label">$${this.name}</div>
+									<div class="close material-icons"></div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			`.firstElementChild.firstElementChild;
+			this.layer._obj = this;
+			if(this.type === "obj") {
+				this.timelineItem = html`
+					<div id="timelineItem_${this.id}" class="timelineItem typeObj" title="$${this.name}">
+						<div class="bar">
+							<div class="icon material-icons"></div>
+							<div class="label">$${this.name}</div>
+							<div class="close material-icons"></div>
+						</div>
+						<div class="children"></div>
+					</div>
+				`;
+			} else if(this.type === "image") {
+				this.timelineItem = html`
+					<div id="timelineItem_${this.id}" class="timelineItem typeImage" title="$${this.name}">
+						<div class="bar">
+							<div class="icon material-icons"></div>
+							<div class="label">$${this.name}</div>
+							<div class="close material-icons"></div>
+						</div>
+						<div class="children"></div>
+					</div>
+				`;
+			}
+		}
+		appendObj(this.timelineItem._obj = this, true);
 		this.updateName();
-		this.id = value.id || uid(proj[sel].data.objs.map(byID));
 	}
 	toJSON() {
 		const obj = {
@@ -355,6 +357,8 @@ class DynamicObject {
 		} else {
 			obj.asset = this.asset.id;
 		}
+		delete obj.layer;
+		delete obj.timelineItem;
 		return obj;
 	}
 	get name() {
@@ -368,12 +372,6 @@ class DynamicObject {
 			throw new MiroError("The name of an object may only be set for groups.");
 		}
 	}
-	get layerElement() {
-		return layers.querySelector(`#layer_${this.id}`);
-	}
-	get timelineItemElement() {
-		return timelineItems.querySelector(`#timelineItem_${this.id}`);
-	}
 	get timelineElement() {
 		return timelines.querySelector(`#timeline_${this.id}`);
 	}
@@ -384,11 +382,11 @@ class DynamicObject {
 				this[_name] += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
 			}
 		}
-		if(this.timelineItemElement) {
-			this.timelineItemElement.querySelector(".label").textContent = this.timelineItemElement.title = this[_name];
+		if(this.timelineItem) {
+			this.timelineItem.querySelector(".label").textContent = this.timelineItem.title = this[_name];
 		}
-		if(this.layerElement) {
-			this.layerElement.querySelector(".label").textContent = this.layerElement.title = this[_name];
+		if(this.layer) {
+			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
 		}
 	}
 }
@@ -402,19 +400,18 @@ const addToCanvas = () => {
 	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
-		const timelineItem = appendObj(obj, true);
 		if(obj.type === "group") {
-			timelineItem.classList.add("open");
+			obj.timelineItem.classList.add("open");
 		}
 		if(assetElem[_parent]) {
-			assetElem[_parent].appendChild(timelineItem);
+			assetElem[_parent].appendChild(obj.timelineItem);
 			delete assetElem[_parent];
 		} else {
-			timelineItemDrag.before(timelineItem);
+			timelineItemDrag.before(obj.timelineItem);
 		}
 		if(obj.type === "group") {
 			for(const child of assetElem.lastElementChild.children) {
-				child[_parent] = timelineItem.lastElementChild;
+				child[_parent] = obj.timelineItem.lastElementChild;
 			}
 		}
 		proj[sel].data.objs.unshift(obj);

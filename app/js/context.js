@@ -271,16 +271,15 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			type: "group",
 			name
 		});
-		const timelineItem = appendObj(obj, true);
-		timelineItems.firstElementChild.before(timelineItem);
+		timelineItems.firstElementChild.before(obj.timelineItem);
 		if(ctxTarget.classList.contains("bar")) {
-			timelineItemArray[0].before(timelineItem);
-			timelineItemArray.forEach(timelineItem.lastElementChild.appendChild.bind(timelineItem.lastElementChild));
+			timelineItemArray[0].before(obj.timelineItem);
+			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
-		timelineItem.classList.add("open");
+		obj.timelineItem.classList.add("open");
 		storeObjs();
-		timelineItem.classList.add("selected");
-		proj[sel].selectedTimelineItem = timelineItem.id;
+		obj.timelineItem.classList.add("selected");
+		proj[sel].selectedTimelineItem = obj.timelineItem.id;
 		updateProperties();
 	}
 }]);
