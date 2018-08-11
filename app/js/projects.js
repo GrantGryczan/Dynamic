@@ -37,8 +37,6 @@ class DynamicProject {
 			fps: storage.fps,
 			duration: storage.fps * 2
 		};
-		this.selected = [];
-		this.open = [];
 		this.timeRulerChildren = [];
 		const id = String(++projID);
 		select((proj[id] = this).id = id);
@@ -163,22 +161,8 @@ const select = id => {
 		homePage.classList.add("hidden");
 	}
 	if(proj[sel]) {
-		proj[sel].selected = [];
-		proj[sel].open = [];
-		for(const elem of projectPage.querySelectorAll(".asset, .layer, .timelineItem")) {
-			if(elem.classList.contains("selected")) {
-				proj[sel].selected.push(elem.id);
-			}
-			if(elem.classList.contains("open")) {
-				proj[sel].open.push(elem.id);
-			}
+		for(const elem of projectPage.querySelectorAll(".asset, .layer, .timeUnit, .timelineItem, .timeline")) {
 			elem.remove();
-		}
-		while(timeRuler.children.length > 2) {
-			timeRuler.children[1].remove();
-		}
-		while(timelines.children.length) {
-			timelines.lastElementChild.remove();
 		}
 	}
 	prevSel.push(sel = id);
@@ -193,21 +177,6 @@ const select = id => {
 		proj[sel].data.assets.forEach(appendAsset);
 		proj[sel].data.objs.forEach(appendObj);
 		updateLayers();
-		for(const id of proj[sel].selected) {
-			projectPage.querySelector(`#${id}`).classList.add("selected");
-		}
-		for(const id of proj[sel].open) {
-			projectPage.querySelector(`#${id}`).classList.add("open");
-		}
-		if(proj[sel].focusedAsset) {
-			assets.querySelector(`#${proj[sel].focusedAsset}`).classList.add("focus");
-		}
-		if(proj[sel].focusedLayer) {
-			layers.querySelector(`#${proj[sel].focusedLayer}`).classList.add("focus");
-		}
-		if(proj[sel].focusedObj) {
-			objs.querySelector(`#${proj[sel].focusedObj}`).classList.add("focus");
-		}
 		saveProj.disabled = proj[sel].saved;
 		rootAsset(proj[sel].rootAsset ? getAsset(proj[sel].rootAsset) : null);
 		openAsset(proj[sel].openAsset ? getAsset(proj[sel].openAsset) : null);
