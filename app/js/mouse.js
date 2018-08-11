@@ -252,7 +252,7 @@ const handleMouseUp = (evt, evtButton) => {
 			if(layerBox.contains(mouseTarget)) {
 				if(mouseMoved && mouseTarget.parentNode.classList.contains("layer")) {
 					if(layerDrag.parentNode) {
-						const zs = proj[sel].data.objs.map(byZ);
+						const zs = proj[sel].data.objs.filter(onlyGraphics).map(byZ);
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
 						layerDrag.parentNode.parentNode[side](layerDrag);
 						for(const layer of layers.querySelectorAll(".layer.selected")) {
