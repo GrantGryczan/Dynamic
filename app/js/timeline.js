@@ -41,8 +41,8 @@ let minStartFrame = 0;
 let maxStartFrame = 0;
 let minEndFrame = 0;
 let maxEndFrame = 0;
-let appendStart = false;
-let appendEnd = false;
+let appendStartFrame = false;
+let appendEndFrame = false;
 const updateTimeRuler = () => {
 	oldStartFrame = startFrame;
 	oldEndFrame = endFrame;
@@ -55,7 +55,7 @@ const updateTimeRuler = () => {
 	maxStartFrame = Math.max(oldStartFrame, startFrame) - 1;
 	minEndFrame = Math.min(oldEndFrame, endFrame);
 	maxEndFrame = Math.max(oldEndFrame, endFrame);
-	if(appendStart = startFrame === minStartFrame) {
+	if(appendStartFrame = startFrame === minStartFrame) {
 		for(let i = maxStartFrame; i >= minStartFrame; i--) {
 			timeRuler.firstElementChild.after(proj[sel].timeRulerChildren[i]);
 		}
@@ -64,7 +64,7 @@ const updateTimeRuler = () => {
 			proj[sel].timeRulerChildren[i].remove();
 		}
 	}
-	if(appendEnd = endFrame === maxEndFrame) {
+	if(appendEndFrame = endFrame === maxEndFrame) {
 		for(let i = minEndFrame; i < maxEndFrame; i++) {
 			timeRuler.lastElementChild.before(proj[sel].timeRulerChildren[i]);
 		}
@@ -78,24 +78,44 @@ const updateTimeRuler = () => {
 	timelines.style.width = `${storage.frameWidth * (endFrame - startFrame)}px`;
 	updateFrames();
 };
-const removeTimelines = () => {
-	while(timelines.children.length) {
-		timelines.lastElementChild.remove();
-	}
-};
+let oldStartTimeline = 0;
+let oldEndTimeline = 0;
+let startTimeline = 0;
+let endTimeline = 0;
 const updateTimelines = () => {
+	oldStartTimeline = startTimeline;
+	oldEndTimeline = endTimeline;
 	const totalHeight = 24 * proj[sel].data.objs.length;
-	const start = Math.floor(timelineBox.scrollTop / 24);
+	startTimeline = Math.floor(timelineBox.scrollTop / 24);
 	timelines.style.marginTop = `${totalHeight}px`;
 	timelines.style.marginBottom = "";
-	const end = Math.min(proj[sel].data.objs.length, start + Math.ceil(timelineBox.offsetHeight / 24));
-	removeTimelines();
-	for(let i = start; i < end; i++) {
-		timelines.appendChild(proj[sel].data.objs[i].timeline);
-		proj[sel].data.objs[i].updateFrames();
+	endTimeline = Math.min(proj[sel].data.objs.length, startTimeline + Math.ceil(timelineBox.offsetHeight / 24));
+	const minStartTimeline = Math.min(oldStartTimeline, startTimeline);
+	const maxStartTimeline = Math.max(oldStartTimeline, startTimeline) - 1;
+	const minEndTimeline = Math.min(oldEndTimeline, endTimeline);
+	const maxEndTimeline = Math.max(oldEndTimeline, endTimeline);
+	if(startTimeline === minStartTimeline) {
+		for(let i = maxStartTimeline; i >= minStartTimeline; i--) {
+			timelines.insertBefore(proj[sel].data.objs[i].timeline, timelines.firstElementChild);
+			proj[sel].data.objs[i].updateFrames();
+		}
+	} else {
+		for(let i = maxStartTimeline; i >= minStartTimeline; i--) {
+			proj[sel].data.objs[i].timeline.remove();
+		}
 	}
-	timelines.style.marginTop = `${24 * start}px`;
-	timelines.style.marginBottom = `${24 * (proj[sel].data.objs.length - end) - 4}px`;
+	if(endTimeline === maxEndTimeline) {
+		for(let i = minEndTimeline; i < maxEndTimeline; i++) {
+			timelines.appendChild(proj[sel].data.objs[i].timeline);
+			proj[sel].data.objs[i].updateFrames();
+		}
+	} else {
+		for(let i = minEndTimeline; i < maxEndTimeline; i++) {
+			proj[sel].data.objs[i].timeline.remove();
+		}
+	}
+	timelines.style.marginTop = `${24 * startTimeline}px`;
+	timelines.style.marginBottom = `${24 * (proj[sel].data.objs.length - endTimeline) - 4}px`;
 };
 const updateFrames = () => {
 	for(const obj of proj[sel].data.objs) {

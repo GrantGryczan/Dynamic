@@ -341,8 +341,8 @@ class DynamicObject {
 		}
 		appendObj(this.timelineItem._obj = (this.timeline = timeline)._obj = this);
 		updateTimelines();
-		this.updateName();
 		this.appendFrames();
+		this.updateName();
 	}
 	toJSON() {
 		const obj = {
@@ -393,7 +393,7 @@ class DynamicObject {
 		}
 	}
 	updateFrames() {
-		if(appendStart) {
+		if(appendStartFrame) {
 			for(let i = maxStartFrame; i >= minStartFrame; i--) {
 				this.timeline.insertBefore(this.frames[i], this.timeline.firstElementChild);
 			}
@@ -402,7 +402,7 @@ class DynamicObject {
 				this.frames[i].remove();
 			}
 		}
-		if(appendEnd) {
+		if(appendEndFrame) {
 			for(let i = minEndFrame; i < maxEndFrame; i++) {
 				this.timeline.appendChild(this.frames[i]);
 			}

@@ -553,7 +553,15 @@ label:not(.mdc-floating-label) {
 .timeUnit {
 	display: inline-block;
 	position: relative;
+	height: 100%;
+	padding-right: 1px;
 	overflow: visible;
+}
+.timeUnit.selected {
+	background: linear-gradient(to top, rgba(128, 0, 255, 0.25) 75%, transparent);
+}
+.timeUnit.focus {
+	background: linear-gradient(to top, rgba(128, 0, 255, 0.05) 75%, transparent);
 }
 .timeLabel, .timeUnitLabel {
 	position: absolute;
@@ -620,10 +628,29 @@ label:not(.mdc-floating-label) {
 	border-bottom: 1px solid #d0d0d0;
 	box-sizing: content-box;
 }
+.timeline.highlight, .frame.highlight {
+	background-color: rgba(128, 0, 255, 0.035);
+}
+.timeline.selected, .frame.selected {
+	background-color: rgba(128, 0, 255, 0.11);
+}
+.timeline.focus, .frame.focus {
+	background-color: rgba(128, 0, 255, 0.25);
+}
 .frame {
 	display: inline-block;
+	position: relative;
 	height: 100%;
 	border-right: 1px solid #d0d0d0;
+}
+.keyframe {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 7px;
+	height: 7px;
+	background-color: #bf4040;
+	transform: translate(calc(-50% - 0.5px), -50%) rotate(45deg);
 }
 #propertyContainer {
 	flex-grow: 1;
