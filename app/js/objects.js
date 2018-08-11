@@ -1,5 +1,5 @@
 "use strict";
-const appendObj = obj => {
+const appendObj = (obj, create) => {
 	let timelineItem;
 	if(obj.type === "group") {
 		timelineItem = html`
@@ -73,6 +73,18 @@ const appendObj = obj => {
 	}
 	timelineItem._obj = obj;
 	(timelineItem._obj.parent ? timelineItem._obj.parent.timelineItemElement.lastElementChild : timelineItems).appendChild(timelineItem);
+	if(create) {
+		const frame = html`<div class="frame"></div>`;
+		frame.style.width = `${storage.frameWidth}px`;
+		const timeline = html`<div id="timeline_${obj.id}" class="timeline"></div>`;
+		timeline._frames = [];
+		for(let i = 0; i < proj[sel].data.duration; i++) {
+			timeline._frames.push(frame.cloneNode(true));
+		}
+		proj[sel].timelines.push(timeline);
+		timeline._obj = obj;
+		updateTimelines();
+	}
 	return timelineItem;
 };
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
@@ -109,6 +121,8 @@ const removeObj = objElem => {
 		objElem._obj.layerElement.remove();
 	}
 	objElem._obj.timelineItemElement.remove();
+	proj[sel].timelines.splice(proj[sel].timelines.indexOf(objElem._obj.timelineElement), 1);
+	updateTimelines();
 };
 const confirmRemoveObjElem = objElem => {
 	const actuallyRemoveObjElem = value => {
@@ -360,6 +374,9 @@ class DynamicObject {
 	get timelineItemElement() {
 		return timelineItems.querySelector(`#timelineItem_${this.id}`);
 	}
+	get timelineElement() {
+		return timelines.querySelector(`#timeline_${this.id}`);
+	}
 	updateName() {
 		if(this.asset) {
 			this[_name] = this.asset.name;
@@ -385,7 +402,7 @@ const addToCanvas = () => {
 	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
-		const timelineItem = appendObj(obj);
+		const timelineItem = appendObj(obj, true);
 		if(obj.type === "group") {
 			timelineItem.classList.add("open");
 		}

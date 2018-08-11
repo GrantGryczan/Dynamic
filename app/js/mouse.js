@@ -487,18 +487,42 @@ document.addEventListener("dblclick", evt => {
 		}
 	}
 }, true);
+let scrollTimelineItems = true;
+let scrollTimeRuler = true;
+let scrollTimelines = true;
 document.addEventListener("scroll", evt => {
-	if(evt.target === timeRuler) {
-		if(timeRuler.scrollLeft !== timelines.scrollLeft) {
-			timelines.scrollLeft = timeRuler.scrollLeft;
+	if(evt.target === timelineItems) {
+		if(scrollTimelineItems) {
+			if(timelineItems.scrollTop !== timelineBox.scrollTop) {
+				scrollTimelines = false;
+				timelineBox.scrollTop = timelineItems.scrollTop;
+			}
+		} else {
+			scrollTimelineItems = true;
+		}
+		//updateTimelineItems();
+	} else if(evt.target === timeRuler) {
+		if(scrollTimeRuler) {
+			if(timeRuler.scrollLeft !== timelineBox.scrollLeft) {
+				scrollTimelines = false;
+				timelineBox.scrollLeft = timeRuler.scrollLeft;
+			}
+		} else {
+			scrollTimeRuler = true;
 		}
 		updateTimeRuler();
-	} else if(evt.target === timelines) {
-		if(timelines.scrollLeft !== timeRuler.scrollLeft) {
-			timeRuler.scrollLeft = timelines.scrollLeft;
-		}
-		if(timelines.scrollTop !== timelineItems.scrollTop) {
-			timelineItems.scrollTop !== timelines.scrollTop;
+	} else if(evt.target === timelineBox) {
+		if(scrollTimelines) {
+			if(timelineBox.scrollLeft !== timeRuler.scrollLeft) {
+				scrollTimeRuler = false;
+				timeRuler.scrollLeft = timelineBox.scrollLeft;
+			}
+			if(timelineBox.scrollTop !== timelineItems.scrollTop) {
+				scrollTimelineItems = false;
+				timelineItems.scrollTop = timelineBox.scrollTop;
+			}
+		} else {
+			scrollTimelines = true;
 		}
 		updateTimelines();
 	}

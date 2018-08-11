@@ -46,7 +46,8 @@ const timelineItems = timelineContainer.querySelector("#timelineItems");
 const timelineItemDrag = timelineItems.querySelector(".drag");
 timelineItemDrag.remove();
 const timeRuler = timelineContainer.querySelector("#timeRuler");
-const timelines = timelineContainer.querySelector("#timelines");
+const timelineBox = timelineContainer.querySelector("#timelineBox");
+const timelines = timelineBox.querySelector("#timelines");
 const propertyContainer = projectPage.querySelector("#propertyContainer");
 const properties = propertyContainer.querySelector("#properties");
 const propElems = properties.querySelectorAll("[data-key]");
@@ -244,6 +245,7 @@ const updatePanels = () => {
 		child.classList.remove("hidden");
 	}
 	updateTimeRuler();
+	updateTimelines();
 };
 window.addEventListener("resize", () => {
 	if(sel !== "home") {

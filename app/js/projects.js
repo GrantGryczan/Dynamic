@@ -40,6 +40,7 @@ class DynamicProject {
 		this.selected = [];
 		this.open = [];
 		this.timeRulerChildren = [];
+		this.timelines = [];
 		const id = String(++projID);
 		select((proj[id] = this).id = id);
 		for(const assetElem of assets.querySelectorAll(".asset.typeGroup")) {
@@ -100,7 +101,7 @@ class DynamicProject {
 		if(this[_focusedAsset] = value) {
 			const assetElem = assets.querySelector(`#${value}`);
 			assetElem.classList.add("focus");
-			scrollIntoView(assetElem);
+			scrollIntoView(assetElem.querySelector(".bar"), assets);
 		}
 	}
 	get selectedLayer() {
@@ -119,7 +120,7 @@ class DynamicProject {
 		if(this[_focusedLayer] = value) {
 			const layer = layers.querySelector(`#${value}`);
 			layer.classList.add("focus");
-			scrollIntoView(layer, layerBox);
+			scrollIntoView(layer.querySelector(".bar"), layerBox);
 		}
 	}
 	get selectedTimelineItem() {
@@ -138,7 +139,7 @@ class DynamicProject {
 		if(this[_focusedTimelineItem] = value) {
 			const timelineItem = timelineItems.querySelector(`#${value}`);
 			timelineItem.classList.add("focus");
-			scrollIntoView(timelineItem, timelineItems);
+			scrollIntoView(timelineItem.querySelector(".bar"), timelineItems);
 		}
 	}
 }
@@ -156,8 +157,8 @@ const select = id => {
 		proj[sel].scrollContentLeft = contentContainer.scrollLeft;
 		proj[sel].scrollContentTop = contentContainer.scrollTop;
 		proj[sel].scrollLayers = layers.scrollTop;
-		proj[sel].scrollTimelinesLeft = timelines.scrollLeft;
-		proj[sel].scrollTimelinesTop = timelines.scrollTop;
+		proj[sel].scrollTimelinesLeft = timelineBox.scrollLeft;
+		proj[sel].scrollTimelinesTop = timelineBox.scrollTop;
 		projectPage.classList.add("hidden");
 	} else {
 		homePage.classList.add("hidden");
@@ -175,6 +176,7 @@ const select = id => {
 			elem.remove();
 		}
 		removeTimeRulerChildren();
+		removeTimelines();
 	}
 	prevSel.push(sel = id);
 	for(const tab of tabs.children) {
@@ -212,12 +214,14 @@ const select = id => {
 		prop.fps.elements[0].value = proj[sel].data.fps;
 		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.canvasWidth}px`;
 		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.canvasHeight}px`;
+		updatePanels();
 		assets.scrollTop = proj[sel].scrollAssets;
 		propertyContainer.scrollTop = proj[sel].scrollProperties;
 		contentContainer.scrollLeft = proj[sel].scrollContentLeft;
 		contentContainer.scrollTop = proj[sel].scrollContentTop;
 		layers.scrollTop = proj[sel].scrollLayers;
-		updatePanels();
+		timelineBox.scrollLeft = proj[sel].scrollTimelinesLeft;
+		timelineBox.scrollTop = proj[sel].scrollTimelinesTop;
 	}
 };
 select("home");
@@ -296,7 +300,7 @@ const open = async location => {
 		for(const dataObj of data.objs) {
 			try {
 				const obj = new DynamicObject(dataObj);
-				appendObj(obj);
+				appendObj(obj, true);
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`

@@ -273,7 +273,7 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			type: "group",
 			name
 		});
-		const timelineItem = appendObj(obj);
+		const timelineItem = appendObj(obj, true);
 		timelineItems.firstElementChild.before(timelineItem);
 		if(ctxTarget.classList.contains("bar")) {
 			timelineItemArray[0].before(timelineItem);

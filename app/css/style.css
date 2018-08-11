@@ -518,6 +518,15 @@ label:not(.mdc-floating-label) {
 	background-clip: content-box;
 	background-color: #d0d0d0;
 }
+#timelineItems {
+	padding-bottom: 12px;
+}
+#timelineItems::-webkit-scrollbar {
+	width: 0;
+}
+.timelineItem > .bar {
+	border-bottom: 1px solid #d0d0d0;
+}
 #timelineArea {
 	display: flex;
 	flex-grow: 1;
@@ -529,18 +538,24 @@ label:not(.mdc-floating-label) {
 }
 #timelineArea > * {
 	margin-right: -1px;
-	padding-left: 1px;
 }
 #timeRuler {
 	height: 30px;
 	min-height: 30px;
+	padding: 0 1px;
+	overflow-x: scroll;
 	white-space: nowrap;
 	color: #808080;
+}
+#timeRuler.scrollPadding {
+	padding-right: 13px;
+}
+#timeRuler::-webkit-scrollbar {
+	display: none;
 }
 .timeUnit {
 	display: inline-block;
 	position: relative;
-	height: 100%;
 	overflow: visible;
 }
 .timeLabel, .timeUnitLabel {
@@ -594,9 +609,26 @@ label:not(.mdc-floating-label) {
 .timeLabel::before {
 	height: 30px;
 }
-#timelines {
+#timelineBox {
 	margin-top: 0;
 	overflow-x: scroll;
+	overflow-y: auto;
+}
+#timelines {
+	display: inline-block;
+	min-width: 100%;
+	margin-bottom: -4px;
+}
+.timeline {
+	width: 100%;
+	height: 23px;
+	border-bottom: 1px solid #d0d0d0;
+	box-sizing: content-box;
+}
+.frame {
+	display: inline-block;
+	height: 100%;
+	border-right: 1px solid #d0d0d0;
 }
 #propertyContainer {
 	flex-grow: 1;
