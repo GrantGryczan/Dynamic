@@ -279,6 +279,7 @@ const open = async location => {
 			}
 		}
 		storeObjs();
+		updatePanels();
 		loadProgress(1);
 	} else {
 		return false;

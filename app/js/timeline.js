@@ -78,40 +78,19 @@ const updateTimeRuler = () => {
 	timelines.style.width = `${storage.frameWidth * (endFrame - startFrame)}px`;
 	updateFrames();
 };
-let oldStartTimeline = 0;
-let oldEndTimeline = 0;
-let startTimeline = 0;
-let endTimeline = 0;
 const updateTimelines = () => {
-	oldStartTimeline = startTimeline;
-	oldEndTimeline = endTimeline;
 	const totalHeight = 24 * proj[sel].data.objs.length;
-	startTimeline = Math.floor(timelineBox.scrollTop / 24);
+	const startTimeline = Math.floor(timelineBox.scrollTop / 24);
 	timelines.style.marginTop = `${totalHeight}px`;
 	timelines.style.marginBottom = "";
-	endTimeline = Math.min(proj[sel].data.objs.length, startTimeline + Math.ceil(timelineBox.offsetHeight / 24));
-	const minStartTimeline = Math.min(oldStartTimeline, startTimeline);
-	const maxStartTimeline = Math.max(oldStartTimeline, startTimeline) - 1;
-	const minEndTimeline = Math.min(oldEndTimeline, endTimeline);
-	const maxEndTimeline = Math.max(oldEndTimeline, endTimeline);
-	if(startTimeline === minStartTimeline) {
-		for(let i = maxStartTimeline; i >= minStartTimeline; i--) {
-			timelines.insertBefore(proj[sel].data.objs[i].timeline, timelines.firstElementChild);
-			proj[sel].data.objs[i].updateFrames();
-		}
-	} else {
-		for(let i = maxStartTimeline; i >= minStartTimeline; i--) {
-			proj[sel].data.objs[i].timeline.remove();
-		}
+	const endTimeline = Math.min(proj[sel].data.objs.length, startTimeline + Math.ceil(timelineBox.offsetHeight / 24));
+	while(timelines.children.length) {
+		timelines.lastElementChild.remove();
 	}
-	if(endTimeline === maxEndTimeline) {
-		for(let i = minEndTimeline; i < maxEndTimeline; i++) {
+	for(let i = startTimeline; i < endTimeline; i++) {
+		if(proj[sel].data.objs[i].timelineItem.offsetWidth) {
 			timelines.appendChild(proj[sel].data.objs[i].timeline);
 			proj[sel].data.objs[i].updateFrames();
-		}
-	} else {
-		for(let i = minEndTimeline; i < maxEndTimeline; i++) {
-			proj[sel].data.objs[i].timeline.remove();
 		}
 	}
 	timelines.style.marginTop = `${24 * startTimeline}px`;

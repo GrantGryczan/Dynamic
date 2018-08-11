@@ -643,14 +643,34 @@ label:not(.mdc-floating-label) {
 	height: 100%;
 	border-right: 1px solid #d0d0d0;
 }
-.keyframe {
+.frame::before {
 	position: absolute;
+}
+.frame.keyframe::before {
 	left: 50%;
 	top: 50%;
-	width: 7px;
-	height: 7px;
-	background-color: #bf4040;
+	width: 10px;
+	height: 10px;
+	background-color: #000000;
 	transform: translate(calc(-50% - 0.5px), -50%) rotate(45deg);
+	content: "";
+}
+.frame.tween {
+	overflow: visible;
+}
+.frame.tween::before {
+	top: 50%;
+	width: calc(100% + 2px);
+	height: 2px;
+	background-color: #808080;
+	transform: translate(-1px, -50%);
+	content: "";
+}
+.frame.variable::before {
+	background-color: #bf80ff;
+}
+.timeline.typeGroup > .frame {
+	border-right-color: rgba(208, 208, 208, 0.4);
 }
 #propertyContainer {
 	flex-grow: 1;

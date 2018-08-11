@@ -284,13 +284,13 @@ const handleMouseUp = (evt, evtButton) => {
 				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
 					try {
 						timelineItemDrag.before(timelineItem);
-						updateTimelines();
 					} catch(err) {
 						console.warn(err);
 					}
 				}
 				timelineItemDrag.remove();
 				storeObjs();
+				updateTimelines();
 			} else {
 				if(mouseTarget === timelineItems) {
 					if(mouseX < timelineItems.getBoundingClientRect().left + timelineItems.scrollWidth) {
@@ -304,6 +304,7 @@ const handleMouseUp = (evt, evtButton) => {
 						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode);
 					} else if(mouseTarget0.classList.contains("icon")) {
 						mouseTarget0.parentNode.parentNode.classList.toggle("open");
+						updateTimelines();
 					}
 				}
 			}

@@ -334,13 +334,12 @@ class DynamicObject {
 		}
 		const frame = html`<div class="frame"></div>`;
 		frame.style.width = `${storage.frameWidth}px`;
-		const timeline = html`<div id="timeline_${this.id}" class="timeline"></div>`;
+		const timeline = html`<div id="timeline_${this.id}" class="timeline ${this.timelineItem.classList[1]}"></div>`;
 		this.frames = [];
 		for(let i = 0; i < proj[sel].data.duration; i++) {
 			this.frames.push(frame.cloneNode(true));
 		}
 		appendObj(this.timelineItem._obj = (this.timeline = timeline)._obj = this);
-		updateTimelines();
 		this.appendFrames();
 		this.updateName();
 	}
@@ -441,6 +440,7 @@ const addToCanvas = () => {
 	}
 	timelineItemDrag.remove();
 	storeObjs();
+	updateTimelines();
 	for(const assetElem of assetElems) {
 		for(const obj of assetElem._asset.objects) {
 			obj.updateName();
