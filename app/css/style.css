@@ -542,13 +542,10 @@ label:not(.mdc-floating-label) {
 #timeRuler {
 	height: 30px;
 	min-height: 30px;
-	padding: 0 1px;
+	padding: 0 13px 0 1px;
 	overflow-x: scroll;
 	white-space: nowrap;
 	color: #808080;
-}
-#timeRuler.scrollPadding {
-	padding-right: 13px;
 }
 #timeRuler::-webkit-scrollbar {
 	display: none;
@@ -611,13 +608,11 @@ label:not(.mdc-floating-label) {
 }
 #timelineBox {
 	margin-top: 0;
-	overflow-x: scroll;
-	overflow-y: auto;
+	overflow: scroll;
 }
 #timelines {
 	display: inline-block;
 	min-width: 100%;
-	margin-bottom: -4px;
 }
 .timeline {
 	width: 100%;

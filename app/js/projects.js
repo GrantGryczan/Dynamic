@@ -40,7 +40,6 @@ class DynamicProject {
 		this.selected = [];
 		this.open = [];
 		this.timeRulerChildren = [];
-		this.timelines = [];
 		const id = String(++projID);
 		select((proj[id] = this).id = id);
 		for(const assetElem of assets.querySelectorAll(".asset.typeGroup")) {
@@ -175,8 +174,12 @@ const select = id => {
 			}
 			elem.remove();
 		}
-		removeTimeRulerChildren();
-		removeTimelines();
+		while(timeRuler.children.length > 2) {
+			timeRuler.children[1].remove();
+		}
+		while(timelines.children.length) {
+			timelines.lastElementChild.remove();
+		}
 	}
 	prevSel.push(sel = id);
 	for(const tab of tabs.children) {
@@ -270,7 +273,7 @@ const open = async location => {
 			loadIndeterminate(false);
 			return false;
 		}
-		const project = new DynamicProject({
+		new DynamicProject({
 			saved: true,
 			location
 		});
@@ -280,7 +283,6 @@ const open = async location => {
 			loadProgress(i / data.assets.length);
 			try {
 				const asset = new DynamicAsset(data.assets[i]);
-				project.data.assets.push(asset);
 				if(asset.type === "file") {
 					await new Promise((resolve, reject) => {
 						const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
@@ -300,7 +302,6 @@ const open = async location => {
 		for(const dataObj of data.objs) {
 			try {
 				const obj = new DynamicObject(dataObj);
-				project.data.objs.push(obj);
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`
@@ -310,7 +311,6 @@ const open = async location => {
 		}
 		storeObjs();
 		loadProgress(1);
-		return project;
 	} else {
 		return false;
 	}

@@ -1,28 +1,16 @@
 "use strict";
 const appendObj = (obj, create) => {
 	if(obj.layer) {
-		let siblingElem = null;
+		let sibling = null;
 		for(const eachLayer of layers.querySelectorAll(".layer")) {
 			if(eachLayer._obj.z < obj.z) {
-				siblingElem = eachLayer;
+				sibling = eachLayer;
 				break;
 			}
 		}
-		layers.insertBefore(obj.layer, siblingElem);
+		layers.insertBefore(obj.layer, sibling);
 	}
 	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
-	if(create) {
-		const frame = html`<div class="frame"></div>`;
-		frame.style.width = `${storage.frameWidth}px`;
-		const timeline = html`<div id="timeline_${obj.id}" class="timeline"></div>`;
-		timeline._frames = [];
-		for(let i = 0; i < proj[sel].data.duration; i++) {
-			timeline._frames.push(frame.cloneNode(true));
-		}
-		proj[sel].timelines.push(timeline);
-		timeline._obj = obj;
-		updateTimelines();
-	}
 };
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byZIndex = (a, b) => b.z - a.z;
@@ -58,14 +46,14 @@ const removeObj = objElem => {
 		objElem._obj.layer.remove();
 	}
 	objElem._obj.timelineItem.remove();
-	proj[sel].timelines.splice(proj[sel].timelines.indexOf(objElem._obj.timelineElement), 1);
-	updateTimelines();
+	objElem._obj.timeline.remove();
 };
 const confirmRemoveObjElem = objElem => {
 	const actuallyRemoveObjElem = value => {
 		if(value === 0) {
 			removeObj(objElem);
 			storeObjs();
+			updateTimelines();
 			if(objElem._obj.asset) {
 				for(const obj of objElem._obj.asset.objects) {
 					obj.updateName();
@@ -97,6 +85,7 @@ const confirmRemoveObjElems = objElems => {
 			if(value === 0) {
 				objElems.forEach(removeObj);
 				storeObjs();
+				updateTimelines();
 				for(const objElem of objElems) {
 					if(objElem._obj.asset) {
 						for(const obj of objElem._obj.asset.objects) {
@@ -280,6 +269,7 @@ class DynamicObject {
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
+		proj[sel].data.objs.push(this);
 		if(this.type === "group") {
 			this.timelineItem = html`
 				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
@@ -342,8 +332,17 @@ class DynamicObject {
 				`;
 			}
 		}
-		appendObj(this.timelineItem._obj = this, true);
+		const frame = html`<div class="frame"></div>`;
+		frame.style.width = `${storage.frameWidth}px`;
+		const timeline = html`<div id="timeline_${this.id}" class="timeline"></div>`;
+		this.frames = [];
+		for(let i = 0; i < proj[sel].data.duration; i++) {
+			this.frames.push(frame.cloneNode(true));
+		}
+		appendObj(this.timelineItem._obj = (this.timeline = timeline)._obj = this);
+		updateTimelines();
 		this.updateName();
+		this.appendFrames();
 	}
 	toJSON() {
 		const obj = {
@@ -359,6 +358,8 @@ class DynamicObject {
 		}
 		delete obj.layer;
 		delete obj.timelineItem;
+		delete obj.timeline;
+		delete obj.frames;
 		return obj;
 	}
 	get name() {
@@ -372,9 +373,6 @@ class DynamicObject {
 			throw new MiroError("The name of an object may only be set for groups.");
 		}
 	}
-	get timelineElement() {
-		return timelines.querySelector(`#timeline_${this.id}`);
-	}
 	updateName() {
 		if(this.asset) {
 			this[_name] = this.asset.name;
@@ -387,6 +385,31 @@ class DynamicObject {
 		}
 		if(this.layer) {
 			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
+		}
+	}
+	appendFrames() {
+		for(let i = startFrame; i < endFrame; i++) {
+			this.timeline.appendChild(this.frames[i]);
+		}
+	}
+	updateFrames() {
+		if(appendStart) {
+			for(let i = maxStartFrame; i >= minStartFrame; i--) {
+				this.timeline.insertBefore(this.frames[i], this.timeline.firstElementChild);
+			}
+		} else {
+			for(let i = maxStartFrame; i >= minStartFrame; i--) {
+				this.frames[i].remove();
+			}
+		}
+		if(appendEnd) {
+			for(let i = minEndFrame; i < maxEndFrame; i++) {
+				this.timeline.appendChild(this.frames[i]);
+			}
+		} else {
+			for(let i = minEndFrame; i < maxEndFrame; i++) {
+				this.frames[i].remove();
+			}
 		}
 	}
 }

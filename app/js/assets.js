@@ -47,6 +47,7 @@ class DynamicAsset {
 		} else {
 			throw new MiroError("The `type` value is invalid.");
 		}
+		proj[sel].data.assets.push(this);
 		if(value.parent) {
 			this.parent = getAsset(value.parent);
 		}
@@ -118,6 +119,7 @@ const removeAsset = assetElem => {
 		for(const obj of assetElem._asset.objects) {
 			removeObj(obj.timelineItem);
 		}
+		updateTimelines();
 	}
 	assetElem.remove();
 };

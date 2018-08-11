@@ -24,11 +24,6 @@ const openAsset = (asset, selected, finish) => {
 		delete proj[sel].openAsset;
 	}
 };
-const removeTimeRulerChildren = () => {
-	for(const child of proj[sel].timeRulerChildren) {
-		child.remove();
-	}
-};
 const refreshTimeRulerChildren = () => {
 	const duration = proj[sel].data.duration;
 	proj[sel].data.duration = 0;
@@ -38,19 +33,50 @@ const refreshTimeRulerChildren = () => {
 	}
 	addTimeUnits(duration);
 };
+let oldStartFrame = 0;
+let oldEndFrame = 0;
+let startFrame = 0;
+let endFrame = 0;
+let minStartFrame = 0;
+let maxStartFrame = 0;
+let minEndFrame = 0;
+let maxEndFrame = 0;
+let appendStart = false;
+let appendEnd = false;
 const updateTimeRuler = () => {
+	oldStartFrame = startFrame;
+	oldEndFrame = endFrame;
 	const totalWidth = storage.frameWidth * proj[sel].timeRulerChildren.length;
-	const start = Math.floor(timeRuler.scrollLeft / storage.frameWidth);
+	startFrame = Math.floor(timeRuler.scrollLeft / storage.frameWidth);
 	timeRuler.firstElementChild.style.width = `${totalWidth}px`;
 	timeRuler.lastElementChild.style.width = "";
-	const end = Math.min(proj[sel].timeRulerChildren.length, start + Math.ceil(timeRuler.offsetWidth / storage.frameWidth));
-	removeTimeRulerChildren();
-	for(let i = start; i < end; i++) {
-		timeRuler.lastElementChild.before(proj[sel].timeRulerChildren[i]);
+	endFrame = Math.min(proj[sel].timeRulerChildren.length, startFrame + Math.ceil(timeRuler.offsetWidth / storage.frameWidth));
+	minStartFrame = Math.min(oldStartFrame, startFrame);
+	maxStartFrame = Math.max(oldStartFrame, startFrame) - 1;
+	minEndFrame = Math.min(oldEndFrame, endFrame);
+	maxEndFrame = Math.max(oldEndFrame, endFrame);
+	if(appendStart = startFrame === minStartFrame) {
+		for(let i = maxStartFrame; i >= minStartFrame; i--) {
+			timeRuler.firstElementChild.after(proj[sel].timeRulerChildren[i]);
+		}
+	} else {
+		for(let i = maxStartFrame; i >= minStartFrame; i--) {
+			proj[sel].timeRulerChildren[i].remove();
+		}
 	}
-	timeRuler.firstElementChild.style.width = `${storage.frameWidth * start}px`;
-	timeRuler.lastElementChild.style.width = `${storage.frameWidth * (proj[sel].timeRulerChildren.length - end)}px`;
-	timelines.style.width = `${totalWidth}px`;
+	if(appendEnd = endFrame === maxEndFrame) {
+		for(let i = minEndFrame; i < maxEndFrame; i++) {
+			timeRuler.lastElementChild.before(proj[sel].timeRulerChildren[i]);
+		}
+	} else {
+		for(let i = minEndFrame; i < maxEndFrame; i++) {
+			proj[sel].timeRulerChildren[i].remove();
+		}
+	}
+	timeRuler.firstElementChild.style.width = `${storage.frameWidth * startFrame}px`;
+	timeRuler.lastElementChild.style.width = `${storage.frameWidth * (proj[sel].timeRulerChildren.length - endFrame)}px`;
+	timelines.style.width = `${storage.frameWidth * (endFrame - startFrame)}px`;
+	updateFrames();
 };
 const removeTimelines = () => {
 	while(timelines.children.length) {
@@ -58,26 +84,31 @@ const removeTimelines = () => {
 	}
 };
 const updateTimelines = () => {
-	const totalHeight = 24 * proj[sel].timelines.length;
+	const totalHeight = 24 * proj[sel].data.objs.length;
 	const start = Math.floor(timelineBox.scrollTop / 24);
 	timelines.style.marginTop = `${totalHeight}px`;
 	timelines.style.marginBottom = "";
-	const end = Math.min(proj[sel].timelines.length, start + Math.ceil(timelineBox.offsetHeight / 24));
+	const end = Math.min(proj[sel].data.objs.length, start + Math.ceil(timelineBox.offsetHeight / 24));
 	removeTimelines();
 	for(let i = start; i < end; i++) {
-		timelines.appendChild(proj[sel].timelines[i]);
+		timelines.appendChild(proj[sel].data.objs[i].timeline);
+		proj[sel].data.objs[i].updateFrames();
 	}
 	timelines.style.marginTop = `${24 * start}px`;
-	timelines.style.marginBottom = `${24 * (proj[sel].timelines.length - end) - 4}px`;
-	timeRuler.classList[timelineBox.offsetHeight === timelineBox.scrollHeight ? "remove": "add"]("scrollPadding");
+	timelines.style.marginBottom = `${24 * (proj[sel].data.objs.length - end) - 4}px`;
+};
+const updateFrames = () => {
+	for(const obj of proj[sel].data.objs) {
+		obj.updateFrames();
+	}
+	timelines.style.marginLeft = `${storage.frameWidth * startFrame}px`;
+	timelines.style.marginRight = `${storage.frameWidth * (proj[sel].timeRulerChildren.length - endFrame)}px`;
 };
 const addTimeUnits = quantity => {
 	if(quantity === undefined) {
 		quantity = 1;
 	}
 	let value = proj[sel].data.duration;
-	const frame = html`<div class="frame"></div>`;
-	frame.style.width = `${storage.frameWidth}px`;
 	for(let i = 0; i < quantity; i++) {
 		const timeUnit = html`<div class="timeUnit"></div>`;
 		timeUnit.style.width = `${storage.frameWidth}px`;
@@ -101,10 +132,14 @@ const addTimeUnits = quantity => {
 		}
 		timeUnit._value = value++;
 		proj[sel].timeRulerChildren.push(timeUnit);
-		for(const timeline of timelines.children) {
-			timeline._frames.push(frame.cloneNode(true));
-		}
 	}
 	proj[sel].data.duration = value;
+	const frame = html`<div class="frame"></div>`;
+	frame.style.width = `${storage.frameWidth}px`;
+	for(const obj of proj[sel].data.objs) {
+		for(let i = 0; i < quantity; i++) {
+			obj.frames.push(frame.cloneNode(true));
+		}
+	}
 	updateTimeRuler();
 };

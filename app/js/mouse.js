@@ -284,12 +284,13 @@ const handleMouseUp = (evt, evtButton) => {
 				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
 					try {
 						timelineItemDrag.before(timelineItem);
+						updateTimelines();
 					} catch(err) {
 						console.warn(err);
 					}
 				}
-				storeObjs();
 				timelineItemDrag.remove();
+				storeObjs();
 			} else {
 				if(mouseTarget === timelineItems) {
 					if(mouseX < timelineItems.getBoundingClientRect().left + timelineItems.scrollWidth) {
@@ -524,6 +525,7 @@ document.addEventListener("scroll", evt => {
 		} else {
 			scrollTimelines = true;
 		}
+		updateTimeRuler();
 		updateTimelines();
 	}
 }, true);
