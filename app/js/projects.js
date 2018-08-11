@@ -280,7 +280,7 @@ const open = async location => {
 			loadProgress(i / data.assets.length);
 			try {
 				const asset = new DynamicAsset(data.assets[i]);
-				appendAsset(asset);
+				project.data.assets.push(asset);
 				if(asset.type === "file") {
 					await new Promise((resolve, reject) => {
 						const media = new (asset.mime.startsWith("image/") ? Image : Audio)();

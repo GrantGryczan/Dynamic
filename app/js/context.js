@@ -50,14 +50,13 @@ const assetMenuItems = [{
 			type: "obj",
 			name
 		});
-		const assetElem = appendAsset(asset);
-		assetParent.appendChild(assetElem);
+		assetParent.appendChild(asset.element);
 		if(!assetParent.parentNode.classList.contains("open")) {
 			assetParent.parentNode.classList.add("open");
 		}
 		storeAssets();
-		assetElem.classList.add("selected");
-		proj[sel].selectedAsset = assetElem.id;
+		asset.element.classList.add("selected");
+		proj[sel].selectedAsset = asset.element.id;
 		setActive(assetContainer);
 	}
 }, {
@@ -77,15 +76,14 @@ const assetMenuItems = [{
 			type: "group",
 			name
 		});
-		const assetGroup = appendAsset(asset);
 		if(ctxTarget.classList.contains("bar")) {
-			assetElems[0].before(assetGroup);
-			assetElems.forEach(assetGroup.lastElementChild.appendChild.bind(assetGroup.lastElementChild));
+			assetElems[0].before(asset.element);
+			assetElems.forEach(asset.element.lastElementChild.appendChild.bind(asset.element.lastElementChild));
 		}
-		assetGroup.classList.add("open");
+		asset.element.classList.add("open");
 		storeAssets();
-		assetGroup.classList.add("selected");
-		proj[sel].selectedAsset = assetGroup.id;
+		asset.element.classList.add("selected");
+		proj[sel].selectedAsset = asset.element.id;
 		updateProperties();
 	}
 }, {

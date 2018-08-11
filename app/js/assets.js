@@ -5,21 +5,52 @@ class DynamicAsset {
 		if(!(value instanceof Object)) {
 			throw new MiroError("The `value` parameter must be an object.");
 		}
+		this.id = value.id || uid(proj[sel].data.assets.map(byID));
 		this.type = value.type;
 		this[_name] = value.name;
-		if(this.type === "file") {
+		if(this.type === "group") {
+			this.element = html`
+				<div id="asset_${this.id}" class="asset typeGroup" title="$${this.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+					<div class="children"></div>
+				</div>
+			`;
+		} else if(this.type === "file") {
 			if(!value.mime.startsWith("image/") && !value.mime.startsWith("audio/")) {
 				throw new MiroError("The `mime` value is invalid.");
 			}
 			this.mime = value.mime;
 			this.data = value.data;
-		} else if(this.type !== "group" && this.type !== "obj") {
+			this.element = html`
+				<div id="asset_${this.id}" class="asset typeFile" title="$${this.name}" data-mime="$${this.mime}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+				</div>
+			`;
+		} else if(this.type === "obj") {
+			this.element = html`
+				<div id="asset_${this.id}" class="asset typeObj" title="$${this.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+				</div>
+			`;
+		} else {
 			throw new MiroError("The `type` value is invalid.");
 		}
 		if(value.parent) {
 			this.parent = getAsset(value.parent);
 		}
-		this.id = value.id || uid(proj[sel].data.assets.map(byID));
+		appendAsset(this.element._asset = this);
 	}
 	get name() {
 		return this[_name];
@@ -41,6 +72,7 @@ class DynamicAsset {
 		if(this.parent) {
 			obj.parent = this.parent.id;
 		}
+		delete obj.element;
 		return obj;
 	}
 	get url() {
@@ -48,50 +80,12 @@ class DynamicAsset {
 			return `data:${this.mime};base64,${this.data}`;
 		}
 	}
-	get element() {
-		return assets.querySelector(`#asset_${this.id}`);
-	}
 	get objects() {
 		return proj[sel].data.objs.filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {
-	let assetElem;
-	if(asset.type === "group") {
-		assetElem = html`
-			<div id="asset_${asset.id}" class="asset typeGroup" title="$${asset.name}">
-				<div class="bar">
-					<div class="icon material-icons"></div>
-					<div class="label">$${asset.name}</div>
-					<div class="close material-icons"></div>
-				</div>
-				<div class="children"></div>
-			</div>
-		`;
-	} else if(asset.type === "file") {
-		assetElem = html`
-			<div id="asset_${asset.id}" class="asset typeFile" title="$${asset.name}" data-mime="$${asset.mime}">
-				<div class="bar">
-					<div class="icon material-icons"></div>
-					<div class="label">$${asset.name}</div>
-					<div class="close material-icons"></div>
-				</div>
-			</div>
-		`;
-	} else if(asset.type === "obj") {
-		assetElem = html`
-			<div id="asset_${asset.id}" class="asset typeObj" title="$${asset.name}">
-				<div class="bar">
-					<div class="icon material-icons"></div>
-					<div class="label">$${asset.name}</div>
-					<div class="close material-icons"></div>
-				</div>
-			</div>
-		`;
-	}
-	assetElem._asset = asset;
-	(assetElem._asset.parent && assetElem._asset.parent.type === "group" ? assetElem._asset.parent.element.lastElementChild : assets).appendChild(assetElem);
-	return assetElem;
+	(asset.parent && asset.parent.type === "group" ? asset.parent.element.lastElementChild : assets).appendChild(asset.element);
 };
 const storeAssets = () => {
 	proj[sel].data.assets = [];
@@ -282,14 +276,13 @@ const addFiles = async files => {
 			`);
 			continue;
 		}
-		const assetFile = appendAsset(asset);
-		assetParent.appendChild(assetFile);
+		assetParent.appendChild(asset.element);
 		if(!assetParent.parentNode.classList.contains("open")) {
 			assetParent.parentNode.classList.add("open");
 		}
-		assetFile.classList.add("selected");
+		asset.element.classList.add("selected");
 		if(i === 0) {
-			proj[sel].selectedAsset = assetFile.id;
+			proj[sel].selectedAsset = asset.element.id;
 		}
 	}
 	storeAssets();
