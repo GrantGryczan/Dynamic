@@ -27,7 +27,7 @@ document.addEventListener("focus", evt => {
 			setTimeout(evt.target.blur.bind(evt.target));
 		}
 	}
-}, true);
+}, capturePassive);
 document.addEventListener("keydown", evt => {
 	shiftKey = evt.shiftKey;
 	superKey = evt.metaKey || evt.ctrlKey;
@@ -238,12 +238,12 @@ document.addEventListener("keydown", evt => {
 		const fullScreen = !win.isFullScreen();
 		win.setFullScreen(fullScreen);
 	}
-}, true);
+}, capturePassive);
 document.addEventListener("keyup", evt => {
 	shiftKey = evt.keyCode !== 16 && evt.shiftKey;
 	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
 	altKey = evt.keyCode !== 18 && evt.altKey;
-}, true);
+}, capturePassive);
 document.addEventListener("input", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
@@ -269,7 +269,7 @@ document.addEventListener("input", evt => {
 		}
 		proj[sel].saved = false;
 	}
-}, true);
+}, capturePassive);
 document.addEventListener("change", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
@@ -277,7 +277,7 @@ document.addEventListener("change", evt => {
 	if(evt.target === prop.name.elements[0] && evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
 		new Miro.Dialog("Error", "That name is already in use.");
 	}
-}, true);
+}, capturePassive);
 document.addEventListener("paste", async evt => {
 	if(proj[sel] && focused() && notTyping()) {
 		if(evt.clipboardData.items.length) {
@@ -300,4 +300,4 @@ document.addEventListener("paste", async evt => {
 			}
 		}
 	}
-}, true);
+}, capturePassive);

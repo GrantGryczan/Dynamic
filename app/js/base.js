@@ -75,6 +75,10 @@ const byInsensitiveName = obj => obj.name.trim().toLowerCase();
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
 win.setProgressBar(-1);
+const capturePassive = {
+	capture: true,
+	passive: true
+};
 const flashFrame = () => {
 	if(!win.isFocused()) {
 		win.flashFrame(true);

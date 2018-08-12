@@ -77,7 +77,7 @@ const onMouseDown = evt => {
 		}
 	}
 };
-document.addEventListener("mousedown", onMouseDown, true);
+document.addEventListener("mousedown", onMouseDown, capturePassive);
 document.addEventListener("mousemove", evt => {
 	if(evt.clientX === mouseX && evt.clientY === mouseY) {
 		return;
@@ -198,7 +198,7 @@ document.addEventListener("mousemove", evt => {
 		}
 	}
 	mouseMoved = true;
-}, true);
+}, capturePassive);
 const makeTabRough = () => {
 	originalMouseTarget.classList.remove("smooth");
 };
@@ -408,13 +408,13 @@ const onMouseUp = evt => {
 	mouseUp = evt.timeStamp;
 	indicateTarget();
 };
-document.addEventListener("mouseup", onMouseUp, true);
+document.addEventListener("mouseup", onMouseUp, capturePassive);
 document.addEventListener("click", evt => {
 	if(evt.timeStamp !== mouseUp) {
 		onMouseDown(evt);
 		onMouseUp(evt);
 	}
-}, true);
+}, capturePassive);
 let allowDrag = true;
 document.addEventListener("dragstart", evt => {
 	if(mouseDown !== -1) {
@@ -422,10 +422,10 @@ document.addEventListener("dragstart", evt => {
 		mouseDown = -1;
 	}
 	allowDrag = false;
-}, true);
+}, capturePassive);
 document.addEventListener("dragend", evt => {
 	allowDrag = true;
-}, true);
+}, capturePassive);
 document.addEventListener("dragover", evt => {
 	evt.preventDefault();
 	if(allowDrag && focused()) {
@@ -438,7 +438,7 @@ document.addEventListener("dragleave", evt => {
 	if(evt.target === targetIndicator) {
 		indicateTarget();
 	}
-}, true);
+}, capturePassive);
 document.addEventListener("drop", evt => {
 	evt.preventDefault();
 	if(allowDrag && focused()) {
@@ -488,7 +488,7 @@ document.addEventListener("dblclick", evt => {
 			}
 		}
 	}
-}, true);
+}, capturePassive);
 let scrollTimelineItems = true;
 let scrollTimeRuler = true;
 let scrollTimelines = true;
@@ -529,4 +529,4 @@ document.addEventListener("scroll", evt => {
 		updateTimeRuler();
 		updateTimelines();
 	}
-}, true);
+}, capturePassive);
