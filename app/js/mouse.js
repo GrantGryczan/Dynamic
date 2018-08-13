@@ -496,12 +496,15 @@ document.addEventListener("dblclick", evt => {
 let scrollTimelineItems = true;
 let scrollTimeRuler = true;
 let scrollTimelines = true;
+let timelineBoxScrollX = 0;
+let timelineBoxScrollY = 0;
 document.addEventListener("scroll", evt => {
 	if(evt.target === timelineItems) {
 		if(scrollTimelineItems) {
 			if(timelineItems.scrollTop !== timelineBox.scrollTop) {
 				scrollTimelines = false;
 				timelineBox.scrollTop = timelineItems.scrollTop;
+				updateTimelines();
 			}
 		} else {
 			scrollTimelineItems = true;
@@ -512,15 +515,22 @@ document.addEventListener("scroll", evt => {
 				scrollTimelines = false;
 				timelineBox.scrollLeft = timeRuler.scrollLeft;
 			}
+			updateTimeRuler();
 		} else {
 			scrollTimeRuler = true;
 		}
-		updateTimeRuler();
 	} else if(evt.target === timelineBox) {
 		if(scrollTimelines) {
 			if(timelineBox.scrollLeft !== timeRuler.scrollLeft) {
 				scrollTimeRuler = false;
 				timeRuler.scrollLeft = timelineBox.scrollLeft;
+				updateTimeRuler();
+			} else if(timelineBox.scrollLeft !== timelineBoxScrollX) {
+				timelineBoxScrollX = timelineBox.scrollLeft;
+				updateTimeRuler();
+			} else if(timelineBox.scrollTop !== timelineBoxScrollY) {
+				timelineBoxScrollY = timelineBox.scrollTop;
+				updateTimelines();
 			}
 			if(timelineBox.scrollTop !== timelineItems.scrollTop) {
 				scrollTimelineItems = false;
@@ -529,6 +539,5 @@ document.addEventListener("scroll", evt => {
 		} else {
 			scrollTimelines = true;
 		}
-		updateTimelines();
 	}
 }, capturePassive);

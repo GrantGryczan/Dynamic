@@ -37,20 +37,7 @@ class DynamicProject {
 				objs: [],
 				fps: storage.fps,
 				duration: storage.fps * 2
-			},
-			oldStartFrame: 0,
-			oldEndFrame: 0,
-			startFrame: 0,
-			endFrame: 0,
-			minStartFrame: 0,
-			maxStartFrame: 0,
-			minEndFrame: 0,
-			maxEndFrame: 0,
-			frameRangeJumped: false,
-			appendStartFrame: false,
-			appendEndFrame: false,
-			timelinesTranslateXSet: false,
-			timelinesTranslateYSet: false
+			}
 		});
 		tabs.appendChild((this.tab._proj = this).tab);
 		select((proj[this.id] = this).id);
@@ -172,7 +159,7 @@ const select = id => {
 		homePage.classList.add("hidden");
 	}
 	if(proj[sel]) {
-		for(const elem of projectPage.querySelectorAll(".asset, .layer, .timeUnit, .timelineItem, .timeline")) {
+		for(const elem of projectPage.querySelectorAll(".asset, .layer, .timelineItem")) {
 			elem.remove();
 		}
 	}
@@ -290,7 +277,6 @@ const open = async location => {
 			}
 		}
 		storeObjs();
-		updatePanels();
 		loadProgress(1);
 	} else {
 		return false;

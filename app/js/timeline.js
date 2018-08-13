@@ -24,6 +24,19 @@ const openAsset = (asset, selected, finish) => {
 		delete proj[sel].openAsset;
 	}
 };
+let oldStartFrame = 0;
+let oldEndFrame = 0;
+let startFrame = 0;
+let endFrame = 0;
+let minStartFrame = 0;
+let maxStartFrame = 0;
+let minEndFrame = 0;
+let maxEndFrame = 0;
+let frameRangeJumped = false;
+let appendStartFrame = false;
+let appendEndFrame = false;
+let timelinesTranslateXSet = false;
+let timelinesTranslateYSet = false;
 const resetTimeRuler = () => {
 	while(timeUnits.children.length) {
 		timeUnits.lastElementChild.remove();
@@ -40,79 +53,118 @@ const updateTimeRuler = () => {
 	if(timeRulerFiller.offsetWidth !== totalWidth) {
 		timeRulerFiller.style.width = timelineFiller.style.width = `${totalWidth}px`;
 	}
-	proj[sel].oldStartFrame = proj[sel].startFrame;
-	proj[sel].oldEndFrame = proj[sel].endFrame;
-	proj[sel].startFrame = Math.floor(timeRuler.scrollLeft / storage.frameWidth);
-	proj[sel].endFrame = Math.min(proj[sel].data.duration, proj[sel].startFrame + Math.ceil(timeRuler.offsetWidth / storage.frameWidth));
-	if(proj[sel].frameRangeJumped = proj[sel].oldEndFrame < proj[sel].startFrame || proj[sel].oldStartFrame > proj[sel].endFrame) {
-		for(let i = proj[sel].oldStartFrame; i < proj[sel].oldEndFrame; i++) { // remove all if jumping range
-			resetTimeRuler();
-		}
-		for(let i = proj[sel].startFrame; i < proj[sel].endFrame; i++) { // add all if jumping range
-			timeUnits.appendChild(createTimeUnit(i));
-		}
-	} else {
-		proj[sel].minStartFrame = Math.min(proj[sel].oldStartFrame, proj[sel].startFrame);
-		proj[sel].maxStartFrame = Math.max(proj[sel].oldStartFrame, proj[sel].startFrame) - 1;
-		proj[sel].minEndFrame = Math.min(proj[sel].oldEndFrame, proj[sel].endFrame);
-		proj[sel].maxEndFrame = Math.max(proj[sel].oldEndFrame, proj[sel].endFrame);
-		if(proj[sel].appendStartFrame = proj[sel].startFrame === proj[sel].minStartFrame) { // add to left if extending left
-			for(let i = proj[sel].maxStartFrame; i >= proj[sel].minStartFrame; i--) {
-				timeUnits.firstElementChild.before(createTimeUnit(i));
-			}
-		} else {
-			for(let i = timeUnits.children.length - 1; i >= 0; i--) { // remove from left if extending right
-				if(timeUnits.children[i]._value >= proj[sel].minStartFrame && timeUnits.children[i]._value <= proj[sel].maxStartFrame) {
-					timeUnits.children[i].remove();
-				}
-			}
-		}
-		if(proj[sel].appendEndFrame = proj[sel].endFrame === proj[sel].maxEndFrame) {
-			for(let i = proj[sel].minEndFrame; i < proj[sel].maxEndFrame; i++) { // add to right if extending right
-				timeUnits.appendChild(createTimeUnit(i));
-			}
-		} else {
-			for(let i = timeUnits.children.length - 1; i >= 0; i--) { // remove from right if extending left
-				if(timeUnits.children[i]._value >= proj[sel].minEndFrame && timeUnits.children[i]._value < proj[sel].maxEndFrame) {
-					timeUnits.children[i].remove();
-				}
-			}
-		}
-	}
-	const transform = timeUnits.style.transform = `translateX(${storage.frameWidth * proj[sel].startFrame}px)`;
-	if(proj[sel].timelinesTranslateXSet || translateX.test(timelines.style.transform)) {
+	oldStartFrame = startFrame;
+	oldEndFrame = endFrame;
+	startFrame = Math.floor(timeRuler.scrollLeft / storage.frameWidth);
+	endFrame = Math.min(proj[sel].data.duration, startFrame + Math.ceil(timeRuler.offsetWidth / storage.frameWidth));
+	const transform = timeUnits.style.transform = `translateX(${storage.frameWidth * startFrame}px)`;
+	if(timelinesTranslateXSet || translateX.test(timelines.style.transform)) {
 		timelines.style.transform = timelines.style.transform.replace(translateX, transform);
 	} else {
 		timelines.style.transform += ` ${transform}`;
-		proj[sel].timelinesTranslateXSet = true;
+		timelinesTranslateXSet = true;
 	}
-	updateFrames();
+	let sum = 0;
+	if(proj[sel].frameRangeJumped = oldEndFrame < startFrame || oldStartFrame > endFrame) {
+		for(let i = oldStartFrame; i < oldEndFrame; i++) { // remove all if jumping range
+			resetTimeRuler();
+			sum--;
+		}
+		for(let i = startFrame; i < endFrame; i++) { // add all if jumping range
+			timeUnits.appendChild(createTimeUnit(i));
+			sum++;
+		}
+	} else {
+		minStartFrame = Math.min(oldStartFrame, startFrame);
+		maxStartFrame = Math.max(oldStartFrame, startFrame) - 1;
+		minEndFrame = Math.min(oldEndFrame, endFrame);
+		maxEndFrame = Math.max(oldEndFrame, endFrame);
+		if(appendStartFrame = startFrame === minStartFrame) { // add to left if extending left
+			for(let i = maxStartFrame; i >= minStartFrame; i--) {
+				timeUnits.firstElementChild.before(createTimeUnit(i));
+				sum++;
+			}
+		} else {
+			for(let i = timeUnits.children.length - 1; i >= 0; i--) { // remove from left if extending right
+				if(timeUnits.children[i]._value >= minStartFrame && timeUnits.children[i]._value <= maxStartFrame) {
+					timeUnits.children[i].remove();
+					sum--;
+				}
+			}
+		}
+		if(appendEndFrame = endFrame === maxEndFrame) {
+			for(let i = minEndFrame; i < maxEndFrame; i++) { // add to right if extending right
+				timeUnits.appendChild(createTimeUnit(i));
+				sum++;
+			}
+		} else {
+			for(let i = timeUnits.children.length - 1; i >= 0; i--) { // remove from right if extending left
+				if(timeUnits.children[i]._value >= minEndFrame && timeUnits.children[i]._value < maxEndFrame) {
+					timeUnits.children[i].remove();
+					sum--;
+				}
+			}
+		}
+	}
+	if(sum < 0) {
+		for(const timeline of timelines.children) {
+			for(let i = sum; i < 0; i++) {
+				timeline.lastElementChild.remove();
+			}
+		}
+	} else if(sum > 0) {
+		for(const timeline of timelines.children) {
+			for(let i = 0; i < sum; i++) {
+				timeline.appendChild(baseFrame.cloneNode(true));
+			}
+		}
+	}
+	updateTimelines();
 };
+let timelinesLength = 0;
+const byVisible = obj => obj.timelineItem.offsetWidth;
+const baseTimeline = html`<div class="timeline"></div>`;
+const baseFrame = html`<div class="frame"></div>`;
+baseFrame.style.width = `${storage.frameWidth}px`;
 const updateTimelines = () => {
-	const totalHeight = 24 * proj[sel].data.objs.length - 4;
+	const objCount = proj[sel].data.objs.filter(byVisible).length;
+	const totalHeight = Math.min(24 * objCount - 4, timelineItems.scrollHeight);
 	if(timelineFiller.offsetHeight !== totalHeight) {
 		timelineFiller.style.height = `${totalHeight}px`;
 	}
-	const startTimeline = Math.floor(timelineBox.scrollTop / 24);
-	const endTimeline = Math.min(proj[sel].data.objs.length, startTimeline + Math.ceil(timelineBox.offsetHeight / 24));
-	while(timelines.children.length) {
-		timelines.lastElementChild.remove();
-	}
-	for(let i = startTimeline; i < endTimeline; i++) {
-		if(proj[sel].data.objs[i].timelineItem.offsetWidth) {
-			timelines.appendChild(proj[sel].data.objs[i].timeline);
+	const length = Math.min(objCount, Math.ceil(timelineBox.offsetHeight / 24));
+	if(length !== timelinesLength) {
+		if(timelinesLength < length) {
+			const count = length - timelinesLength;
+			for(let i = 0; i < count; i++) {
+				const timeline = baseTimeline.cloneNode(true);
+				appendFrames(timeline);
+				timelines.appendChild(timeline);
+			}
+		} else {
+			const count = timelinesLength - length;
+			for(let i = 0; i < count; i++) {
+				timelines.lastElementChild.remove();
+			}
 		}
+		timelinesLength = length;
 	}
-	const transform = `translateY(${24 * startTimeline}px)`;
-	if(proj[sel].timelinesTranslateYSet || translateY.test(timelines.style.transform)) {
+	const transform = `translateY(${24 * Math.floor(timelineBox.scrollTop / 24)}px)`;
+	if(timelinesTranslateYSet || translateY.test(timelines.style.transform)) {
 		timelines.style.transform = timelines.style.transform.replace(translateY, transform);
 	} else {
 		timelines.style.transform += ` ${transform}`;
-		proj[sel].timelinesTranslateYSet = true;
+		timelinesTranslateYSet = true;
 	}
+	// TODO: update contents of frames
 };
-const updateFrames = () => {
-	
+const appendFrames = timeline => {
+	while(timeline.children.length) {
+		timeline.lastElementChild.remove();
+	}
+	for(let i = 0; i < timeUnits.children.length; i++) {
+		timeline.appendChild(baseFrame.cloneNode(true));
+	}
 };
 const createTimeUnit = value => {
 	const timeUnit = html`<div class="timeUnit"></div>`;
@@ -144,12 +196,4 @@ const addTimeUnits = quantity => {
 	}
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();
-	updateFrames();
-	const frame = html`<div class="frame"></div>`;
-	frame.style.width = `${storage.frameWidth}px`;
-	for(const obj of proj[sel].data.objs) {
-		for(let i = 0; i < quantity; i++) {
-			obj.frames.push(frame.cloneNode(true));
-		}
-	}
 };

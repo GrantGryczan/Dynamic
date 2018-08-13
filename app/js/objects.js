@@ -1,4 +1,153 @@
 "use strict";
+const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+const byDate = (a, b) => a.date - b.date;
+const byZ = obj => obj.z;
+class DynamicObject {
+	constructor(value) {
+		if(!value.id) {
+			this.id = uid(proj[sel].data.objs.map(byID));
+		}
+		if(typeof value === "string") {
+			this.date = Date.now();
+			const asset = getAsset(value);
+			if(asset.type === "group") {
+				this.type = "group";
+				const names = proj[sel].data.objs.map(byInsensitiveName);
+				this[_name] = asset.name;
+				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
+					this[_name] = `${asset.name} ${i}`;
+				}
+			} else {
+				if(asset.type === "obj") {
+					this.type = "obj";
+				} else {
+					this.type = asset.mime.slice(0, asset.mime.indexOf("/"));
+				}
+				this.asset = asset;
+			}
+			if(onlyGraphics(this)) {
+				const maxZ = Math.max(...proj[sel].data.objs.filter(onlyGraphics).map(byZ));
+				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
+			}
+		} else if(value instanceof Object) {
+			Object.assign(this, value);
+			if(value.parent) {
+				this.parent = getObj(value.parent);
+			}
+			if(value.type !== "group") {
+				this.asset = getAsset(value.asset);
+			}
+		} else {
+			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
+		}
+		proj[sel].data.objs.push(this);
+		if(this.type === "group") {
+			this.timelineItem = html`
+				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+					<div class="children"></div>
+				</div>
+			`;
+		} else if(this.type === "audio") {
+			this.timelineItem = html`
+				<div id="timelineItem_${this.id}" class="timelineItem typeAudio" title="$${this.name}">
+					<div class="bar">
+						<div class="icon material-icons"></div>
+						<div class="label">$${this.name}</div>
+						<div class="close material-icons"></div>
+					</div>
+				</div>
+			`;
+		} else {
+			this.layer = html`
+				<table>
+					<tbody>
+						<tr id="layer_${this.id}" class="layer" title="$${this.name}">
+							<td class="z">${this.z}</td>
+							<td class="barCell">
+								<div class="bar">
+									<div class="label">$${this.name}</div>
+									<div class="close material-icons"></div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			`.firstElementChild.firstElementChild;
+			this.layer._obj = this;
+			if(this.type === "obj") {
+				this.timelineItem = html`
+					<div id="timelineItem_${this.id}" class="timelineItem typeObj" title="$${this.name}">
+						<div class="bar">
+							<div class="icon material-icons"></div>
+							<div class="label">$${this.name}</div>
+							<div class="close material-icons"></div>
+						</div>
+						<div class="children"></div>
+					</div>
+				`;
+			} else if(this.type === "image") {
+				this.timelineItem = html`
+					<div id="timelineItem_${this.id}" class="timelineItem typeImage" title="$${this.name}">
+						<div class="bar">
+							<div class="icon material-icons"></div>
+							<div class="label">$${this.name}</div>
+							<div class="close material-icons"></div>
+						</div>
+						<div class="children"></div>
+					</div>
+				`;
+			}
+		}
+		appendObj(this.timelineItem._obj = this);
+		this.updateName();
+	}
+	toJSON() {
+		const obj = {
+			...this
+		};
+		if(this.parent) {
+			obj.parent = this.parent.id;
+		}
+		if(this.type === "group") {
+			obj.name = this.name;
+		} else {
+			obj.asset = this.asset.id;
+		}
+		delete obj.layer;
+		delete obj.timelineItem;
+		return obj;
+	}
+	get name() {
+		return this[_name];
+	}
+	set name(value) {
+		if(this.type === "group") {
+			this[_name] = value;
+			this.updateName();
+		} else {
+			throw new MiroError("The name of an object may only be set for groups.");
+		}
+	}
+	updateName() {
+		if(this.asset) {
+			this[_name] = this.asset.name;
+			if(this.asset.objects.length > 1) {
+				this[_name] += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
+			}
+		}
+		if(this.timelineItem) {
+			this.timelineItem.querySelector(".label").textContent = this.timelineItem.title = this[_name];
+		}
+		if(this.layer) {
+			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
+		}
+	}
+}
 const appendObj = (obj, create) => {
 	if(obj.layer) {
 		let sibling = null;
@@ -11,6 +160,7 @@ const appendObj = (obj, create) => {
 		layers.insertBefore(obj.layer, sibling);
 	}
 	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
+	updateTimelines();
 };
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byZIndex = (a, b) => b.z - a.z;
@@ -46,7 +196,6 @@ const removeObj = objElem => {
 		objElem._obj.layer.remove();
 	}
 	objElem._obj.timelineItem.remove();
-	objElem._obj.timeline.remove();
 };
 const confirmRemoveObjElem = objElem => {
 	const actuallyRemoveObjElem = value => {
@@ -228,156 +377,6 @@ const selectTimelineItem = (target, evtButton) => {
 	}
 	setActive(timelineContainer);
 };
-const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
-const byDate = (a, b) => a.date - b.date;
-const byZ = obj => obj.z;
-class DynamicObject {
-	constructor(value) {
-		if(!value.id) {
-			this.id = uid(proj[sel].data.objs.map(byID));
-		}
-		if(typeof value === "string") {
-			this.date = Date.now();
-			const asset = getAsset(value);
-			if(asset.type === "group") {
-				this.type = "group";
-				const names = proj[sel].data.objs.map(byInsensitiveName);
-				this[_name] = asset.name;
-				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
-					this[_name] = `${asset.name} ${i}`;
-				}
-			} else {
-				if(asset.type === "obj") {
-					this.type = "obj";
-				} else {
-					this.type = asset.mime.slice(0, asset.mime.indexOf("/"));
-				}
-				this.asset = asset;
-			}
-			if(onlyGraphics(this)) {
-				const maxZ = Math.max(...proj[sel].data.objs.filter(onlyGraphics).map(byZ));
-				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
-			}
-		} else if(value instanceof Object) {
-			Object.assign(this, value);
-			if(value.parent) {
-				this.parent = getObj(value.parent);
-			}
-			if(value.type !== "group") {
-				this.asset = getAsset(value.asset);
-			}
-		} else {
-			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
-		}
-		proj[sel].data.objs.push(this);
-		if(this.type === "group") {
-			this.timelineItem = html`
-				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${this.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-					<div class="children"></div>
-				</div>
-			`;
-		} else if(this.type === "audio") {
-			this.timelineItem = html`
-				<div id="timelineItem_${this.id}" class="timelineItem typeAudio" title="$${this.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${this.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-				</div>
-			`;
-		} else {
-			this.layer = html`
-				<table>
-					<tbody>
-						<tr id="layer_${this.id}" class="layer" title="$${this.name}">
-							<td class="z">${this.z}</td>
-							<td class="barCell">
-								<div class="bar">
-									<div class="label">$${this.name}</div>
-									<div class="close material-icons"></div>
-								</div>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			`.firstElementChild.firstElementChild;
-			this.layer._obj = this;
-			if(this.type === "obj") {
-				this.timelineItem = html`
-					<div id="timelineItem_${this.id}" class="timelineItem typeObj" title="$${this.name}">
-						<div class="bar">
-							<div class="icon material-icons"></div>
-							<div class="label">$${this.name}</div>
-							<div class="close material-icons"></div>
-						</div>
-						<div class="children"></div>
-					</div>
-				`;
-			} else if(this.type === "image") {
-				this.timelineItem = html`
-					<div id="timelineItem_${this.id}" class="timelineItem typeImage" title="$${this.name}">
-						<div class="bar">
-							<div class="icon material-icons"></div>
-							<div class="label">$${this.name}</div>
-							<div class="close material-icons"></div>
-						</div>
-						<div class="children"></div>
-					</div>
-				`;
-			}
-		}
-		const timeline = html`<div id="timeline_${this.id}" class="timeline ${this.timelineItem.classList[1]}"></div>`;
-		appendObj(this.timelineItem._obj = (this.timeline = timeline)._obj = this);
-		this.updateName();
-	}
-	toJSON() {
-		const obj = {
-			...this
-		};
-		if(this.parent) {
-			obj.parent = this.parent.id;
-		}
-		if(this.type === "group") {
-			obj.name = this.name;
-		} else {
-			obj.asset = this.asset.id;
-		}
-		delete obj.layer;
-		delete obj.timelineItem;
-		return obj;
-	}
-	get name() {
-		return this[_name];
-	}
-	set name(value) {
-		if(this.type === "group") {
-			this[_name] = value;
-			this.updateName();
-		} else {
-			throw new MiroError("The name of an object may only be set for groups.");
-		}
-	}
-	updateName() {
-		if(this.asset) {
-			this[_name] = this.asset.name;
-			if(this.asset.objects.length > 1) {
-				this[_name] += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
-			}
-		}
-		if(this.timelineItem) {
-			this.timelineItem.querySelector(".label").textContent = this.timelineItem.title = this[_name];
-		}
-		if(this.layer) {
-			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
-		}
-	}
-}
 const addToCanvas = () => {
 	const _parent = Symbol("parent");
 	if(timelineItems.firstElementChild) {
@@ -406,7 +405,6 @@ const addToCanvas = () => {
 	}
 	timelineItemDrag.remove();
 	storeObjs();
-	updateTimelines();
 	for(const assetElem of assetElems) {
 		for(const obj of assetElem._asset.objects) {
 			obj.updateName();

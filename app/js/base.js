@@ -254,7 +254,6 @@ const updatePanels = () => {
 		child.classList.remove("hidden");
 	}
 	updateTimeRuler();
-	updateTimelines();
 };
 window.addEventListener("resize", () => {
 	if(sel !== "home") {
