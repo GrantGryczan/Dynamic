@@ -521,6 +521,7 @@ document.addEventListener("scroll", evt => {
 		}
 	} else if(evt.target === timelineBox) {
 		if(scrollTimelines) {
+			const scrolledY = timelineBox.scrollTop !== timelineBoxScrollY;
 			if(timelineBox.scrollLeft !== timeRuler.scrollLeft) {
 				scrollTimeRuler = false;
 				timeRuler.scrollLeft = timelineBox.scrollLeft;
@@ -528,13 +529,15 @@ document.addEventListener("scroll", evt => {
 			} else if(timelineBox.scrollLeft !== timelineBoxScrollX) {
 				timelineBoxScrollX = timelineBox.scrollLeft;
 				updateTimeRuler();
-			} else if(timelineBox.scrollTop !== timelineBoxScrollY) {
-				timelineBoxScrollY = timelineBox.scrollTop;
+			} else if(scrolledY) {
 				updateTimelines();
 			}
 			if(timelineBox.scrollTop !== timelineItems.scrollTop) {
 				scrollTimelineItems = false;
 				timelineItems.scrollTop = timelineBox.scrollTop;
+			}
+			if(scrolledY) {
+				timelineBoxScrollY = timelineBox.scrollTop;
 			}
 		} else {
 			scrollTimelines = true;
