@@ -22,27 +22,38 @@ class DynamicProject {
 				this[_name] = `Project ${++i}`;
 			} while(projects.some(project => project.name === this[_name]));
 		}
-		tabs.appendChild(this.tab = html`
-			<div class="tab${(this[_saved] = !!value.saved) ? " saved" : ""}">
-				<div class="label">$${this[_name]}</div>
-				<div class="close material-icons"></div>
-			</div>
-		`);
-		this.tab._proj = this;
-		this.location = validLocation ? value.location : null;
-		this.data = value.data || {
-			...baseData,
-			assets: [],
-			objs: [],
-			fps: storage.fps,
-			duration: storage.fps * 2
-		};
-		this.timeRulerChildren = [];
-		const id = String(++projID);
-		select((proj[id] = this).id = id);
-		for(const assetElem of assets.querySelectorAll(".asset.typeGroup")) {
-			assetElem.classList.add("open");
-		}
+		Object.assign(this, {
+			id: String(++projID),
+			tab: html`
+				<div class="tab${(this[_saved] = !!value.saved) ? " saved" : ""}">
+					<div class="label">$${this[_name]}</div>
+					<div class="close material-icons"></div>
+				</div>
+			`,
+			location: validLocation ? value.location : null,
+			data: value.data || {
+				...baseData,
+				assets: [],
+				objs: [],
+				fps: storage.fps,
+				duration: storage.fps * 2
+			},
+			oldStartFrame: 0,
+			oldEndFrame: 0,
+			startFrame: 0,
+			endFrame: 0,
+			minStartFrame: 0,
+			maxStartFrame: 0,
+			minEndFrame: 0,
+			maxEndFrame: 0,
+			frameRangeJumped: false,
+			appendStartFrame: false,
+			appendEndFrame: false,
+			timelinesTranslateXSet: false,
+			timelinesTranslateYSet: false
+		});
+		tabs.appendChild((this.tab._proj = this).tab);
+		select((proj[this.id] = this).id);
 		const duration = this.data.duration;
 		this.data.duration = 0;
 		addTimeUnits(duration);

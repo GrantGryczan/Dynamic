@@ -82,9 +82,13 @@ document.addEventListener("mousemove", evt => {
 	if(evt.clientX === mouseX && evt.clientY === mouseY) {
 		return;
 	}
-	const contentRect = content.getBoundingClientRect();
-	status.mouseX.textContent = contentX = Math.floor((mouseX = evt.clientX) - contentRect.left);
-	status.mouseY.textContent = contentY = Math.floor((mouseY = evt.clientY) - contentRect.top);
+	mouseX = evt.clientX;
+	mouseY = evt.clientY;
+	if(contentContainer.contains(evt.target)) {
+		const contentRect = content.getBoundingClientRect();
+		status.mouseX.textContent = contentX = Math.floor(mouseX - contentRect.left);
+		status.mouseY.textContent = contentY = Math.floor(mouseY - contentRect.top);
+	}
 	if(mouseDown === -1) {
 		return;
 	}
@@ -502,7 +506,6 @@ document.addEventListener("scroll", evt => {
 		} else {
 			scrollTimelineItems = true;
 		}
-		//updateTimelineItems();
 	} else if(evt.target === timeRuler) {
 		if(scrollTimeRuler) {
 			if(timeRuler.scrollLeft !== timelineBox.scrollLeft) {
@@ -526,7 +529,6 @@ document.addEventListener("scroll", evt => {
 		} else {
 			scrollTimelines = true;
 		}
-		updateTimeRuler();
 		updateTimelines();
 	}
 }, capturePassive);

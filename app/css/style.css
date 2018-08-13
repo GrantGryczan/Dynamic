@@ -412,9 +412,16 @@ label:not(.mdc-floating-label) {
 .panel > .contents {
 	height: 100%;
 }
+.box {
+	flex-grow: 1;
+	position: relative;
+	margin-top: 6px;
+	border: 1px solid #d0d0d0;
+	overflow-y: auto;
+	background-color: #e8e8e8;
+}
 .filler {
 	display: inline-block;
-	height: 100%;
 }
 #assetContainer {
 	width: 300px;
@@ -430,14 +437,6 @@ label:not(.mdc-floating-label) {
 #assetContainer > .contents, #layerContainer > .contents {
 	display: flex;
 	flex-direction: column;
-}
-.box {
-	flex-grow: 1;
-	position: relative;
-	margin-top: 6px;
-	border: 1px solid #d0d0d0;
-	overflow-y: auto;
-	background-color: #e8e8e8;
 }
 .asset, .timelineItem {
 	overflow: visible;
@@ -540,15 +539,22 @@ label:not(.mdc-floating-label) {
 	margin-right: -1px;
 }
 #timeRuler {
+	position: relative;
 	height: 30px;
 	min-height: 30px;
-	padding: 0 13px 0 1px;
+	padding-right: 14px;
 	overflow-x: scroll;
 	white-space: nowrap;
-	color: #808080;
 }
 #timeRuler::-webkit-scrollbar {
 	display: none;
+}
+#timeUnits {
+	display: inline-block;
+	position: absolute;
+	left: 1px;
+	height: 100%;
+	color: #808080;
 }
 .timeUnit {
 	display: inline-block;
@@ -620,7 +626,12 @@ label:not(.mdc-floating-label) {
 }
 #timelines {
 	display: inline-block;
+	position: absolute;
+	top: 0;
+	left: 0;
 	min-width: 100%;
+	margin-bottom: -4px;
+	white-space: nowrap;
 }
 .timeline {
 	width: 100%;
@@ -668,9 +679,6 @@ label:not(.mdc-floating-label) {
 }
 .frame.variable::before {
 	background-color: #bf80ff;
-}
-.timeline.typeGroup > .frame {
-	border-right-color: rgba(208, 208, 208, 0.4);
 }
 #propertyContainer {
 	flex-grow: 1;

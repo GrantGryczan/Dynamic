@@ -332,15 +332,8 @@ class DynamicObject {
 				`;
 			}
 		}
-		const frame = html`<div class="frame"></div>`;
-		frame.style.width = `${storage.frameWidth}px`;
 		const timeline = html`<div id="timeline_${this.id}" class="timeline ${this.timelineItem.classList[1]}"></div>`;
-		this.frames = [];
-		for(let i = 0; i < proj[sel].data.duration; i++) {
-			this.frames.push(frame.cloneNode(true));
-		}
 		appendObj(this.timelineItem._obj = (this.timeline = timeline)._obj = this);
-		this.appendFrames();
 		this.updateName();
 	}
 	toJSON() {
@@ -357,8 +350,6 @@ class DynamicObject {
 		}
 		delete obj.layer;
 		delete obj.timelineItem;
-		delete obj.timeline;
-		delete obj.frames;
 		return obj;
 	}
 	get name() {
@@ -384,31 +375,6 @@ class DynamicObject {
 		}
 		if(this.layer) {
 			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
-		}
-	}
-	appendFrames() {
-		for(let i = startFrame; i < endFrame; i++) {
-			this.timeline.appendChild(this.frames[i]);
-		}
-	}
-	updateFrames() {
-		if(appendStartFrame) {
-			for(let i = maxStartFrame; i >= minStartFrame; i--) {
-				this.timeline.insertBefore(this.frames[i], this.timeline.firstElementChild);
-			}
-		} else {
-			for(let i = maxStartFrame; i >= minStartFrame; i--) {
-				this.frames[i].remove();
-			}
-		}
-		if(appendEndFrame) {
-			for(let i = minEndFrame; i < maxEndFrame; i++) {
-				this.timeline.appendChild(this.frames[i]);
-			}
-		} else {
-			for(let i = minEndFrame; i < maxEndFrame; i++) {
-				this.frames[i].remove();
-			}
 		}
 	}
 }
