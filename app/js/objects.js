@@ -1,5 +1,6 @@
 "use strict";
 const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZ = obj => obj.z;
 class DynamicObject {
@@ -160,9 +161,7 @@ const appendObj = (obj, create) => {
 		layers.insertBefore(obj.layer, sibling);
 	}
 	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
-	updateTimelines();
 };
-const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
 	for(const obj of proj[sel].data.objs.filter(onlyGraphics).sort(byZIndex)) {
@@ -201,13 +200,13 @@ const confirmRemoveObjElem = objElem => {
 	const actuallyRemoveObjElem = value => {
 		if(value === 0) {
 			removeObj(objElem);
-			storeObjs();
-			updateTimelines();
 			if(objElem._obj.asset) {
 				for(const obj of objElem._obj.asset.objects) {
 					obj.updateName();
 				}
 			}
+			storeObjs();
+			updateTimelines();
 			updateProperties();
 		}
 	};
@@ -233,8 +232,6 @@ const confirmRemoveObjElems = objElems => {
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {
 				objElems.forEach(removeObj);
-				storeObjs();
-				updateTimelines();
 				for(const objElem of objElems) {
 					if(objElem._obj.asset) {
 						for(const obj of objElem._obj.asset.objects) {
@@ -242,6 +239,8 @@ const confirmRemoveObjElems = objElems => {
 						}
 					}
 				}
+				storeObjs();
+				updateTimelines();
 				updateProperties();
 			}
 		});
@@ -404,12 +403,13 @@ const addToCanvas = () => {
 		proj[sel].data.objs.unshift(obj);
 	}
 	timelineItemDrag.remove();
-	storeObjs();
 	for(const assetElem of assetElems) {
 		for(const obj of assetElem._asset.objects) {
 			obj.updateName();
 		}
 	}
+	storeObjs();
+	updateTimelines();
 	proj[sel].saved = false;
 	setActive(contentContainer);
 };

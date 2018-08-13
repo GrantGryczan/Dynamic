@@ -277,6 +277,7 @@ const open = async location => {
 			}
 		}
 		storeObjs();
+		updateTimelines();
 		loadProgress(1);
 	} else {
 		return false;

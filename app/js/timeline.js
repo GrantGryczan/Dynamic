@@ -127,12 +127,12 @@ const baseTimeline = html`<div class="timeline"></div>`;
 const baseFrame = html`<div class="frame"></div>`;
 baseFrame.style.width = `${storage.frameWidth}px`;
 const updateTimelines = () => {
-	const objCount = proj[sel].data.objs.filter(byVisible).length;
-	const totalHeight = Math.min(24 * objCount - 4, timelineItems.scrollHeight);
+	const objs = proj[sel].data.objs.filter(byVisible);
+	const totalHeight = Math.min(24 * objs.length - 4, timelineItems.scrollHeight);
 	if(timelineFiller.offsetHeight !== totalHeight) {
 		timelineFiller.style.height = `${totalHeight}px`;
 	}
-	const length = Math.min(objCount, Math.ceil(timelineBox.offsetHeight / 24));
+	const length = Math.min(objs.length, Math.ceil(timelineBox.offsetHeight / 24));
 	if(length !== timelinesLength) {
 		if(timelinesLength < length) {
 			const count = length - timelinesLength;
@@ -155,6 +155,13 @@ const updateTimelines = () => {
 	} else {
 		timelines.style.transform += ` ${transform}`;
 		timelinesTranslateYSet = true;
+	}
+	const startIndex = Math.floor(timelineBox.scrollTop / 24);
+	for(let i = 0; i < timelines.children.length; i++) {
+		timelines.children[i]._obj = objs[startIndex + i];
+		timelines.children[i].id = `timeline_${timelines.children[i]._obj.id}`;
+		timelines.children[i].classList.remove(timelines.children[i].classList[1]);
+		timelines.children[i].classList.add(timelines.children[i]._obj.timelineItem.classList[1]);
 	}
 	// TODO: update contents of frames
 };

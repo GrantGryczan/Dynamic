@@ -639,13 +639,16 @@ label:not(.mdc-floating-label) {
 	border-bottom: 1px solid #d0d0d0;
 	box-sizing: content-box;
 }
-.timeline.highlight, .frame.highlight {
+.timeline.typeGroup {
+	background-color: #e0e0e0;
+}
+.frame.highlight {
 	background-color: rgba(128, 0, 255, 0.035);
 }
-.timeline.selected, .frame.selected {
+.frame.selected {
 	background-color: rgba(128, 0, 255, 0.11);
 }
-.timeline.focus, .frame.focus {
+.frame.focus {
 	background-color: rgba(128, 0, 255, 0.25);
 }
 .frame {

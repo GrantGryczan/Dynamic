@@ -280,6 +280,7 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 		obj.timelineItem.classList.add("selected");
 		proj[sel].selectedTimelineItem = obj.timelineItem.id;
 		storeObjs();
+		updateTimelines();
 		updateProperties();
 	}
 }]);
