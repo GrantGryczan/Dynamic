@@ -1,3 +1,4 @@
+"use strict";
 const electron = require("electron");
 let win;
 const filesToOpen = [];
@@ -19,52 +20,23 @@ if(electron.app.makeSingleInstance(([, fileToOpen]) => {
 	electron.app.quit();
 	return;
 }
-const rootURL = `file://${__dirname}`;
-let noClosedIntent = true;
-electron.app.once("window-all-closed", () => {
-	if(noClosedIntent) {
-		electron.app.quit();
-	}
-});
 electron.app.once("ready", () => {
 	win = new electron.BrowserWindow({
 		title: "Miroware Dynamic",
 		show: false,
-		center: true,
-		width: 512,
-		height: 512,
-		resizable: false,
-		frame: false,
-		transparent: true,
-		webPreferences: {
-			devTools: false
-		}
+		minWidth: 480,
+		minHeight: 480
+	});
+	electron.app.once("window-all-closed", () => {
+		electron.app.quit();
 	});
 	win.webContents.once("did-finish-load", () => {
 		win.show();
-		setTimeout(() => {
-			win.once("closed", () => {
-				win = new electron.BrowserWindow({
-					title: "Miroware Dynamic",
-					show: false,
-					minWidth: 480,
-					minHeight: 480
-				});
-				noClosedIntent = true;
-				win.webContents.once("did-finish-load", () => {
-					win.show();
-					while(filesToOpen.length) {
-						win.webContents.send("argv", filesToOpen.pop());
-					}
-					addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
-				});
-				win.maximize();
-				win.loadURL(`${rootURL}/index.html`);
-			});
-			noClosedIntent = false;
-			win.destroy();
-		}, 2560);
+		while(filesToOpen.length) {
+			win.webContents.send("argv", filesToOpen.pop());
+		}
+		addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
 	});
-	win.setMenu(null);
-	win.loadURL(`${rootURL}/splash/index.html`);
+	win.maximize();
+	win.loadURL(`file://${__dirname}/index.html`);
 });
