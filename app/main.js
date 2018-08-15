@@ -20,15 +20,15 @@ if(electron.app.makeSingleInstance(([, fileToOpen]) => {
 	electron.app.quit();
 	return;
 }
+electron.app.once("window-all-closed", () => {
+	electron.app.quit();
+});
 electron.app.once("ready", () => {
 	win = new electron.BrowserWindow({
 		title: "Miroware Dynamic",
 		show: false,
 		minWidth: 480,
 		minHeight: 480
-	});
-	electron.app.once("window-all-closed", () => {
-		electron.app.quit();
 	});
 	win.webContents.once("did-finish-load", () => {
 		win.show();
