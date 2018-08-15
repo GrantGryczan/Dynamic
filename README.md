@@ -14,6 +14,11 @@ Once this repository has been installed, from within its directory, you can star
 ```sh
 npm start
 ```
+Of course, after any commits to this repository have been pushed, you can update your local copy of the repo using this command.
+```sh
+git pull
+```
+
 Note that Dynamic is currently under lots of development. It hasn't even reached version 1.0.0 yet! If you're expecting to be able to animate with it at this stage then you're far from right.
 
 ## Build Dynamic executables
