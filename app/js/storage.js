@@ -23,7 +23,7 @@ if(typeof storage.canvasHeight !== "number") {
 	storage.canvasHeight = 450;
 }
 if(typeof storage.fps !== "number") {
-	storage.fps = 60;
+	storage.fps = 30;
 }
 if(typeof storage.frameWidth !== "number") {
 	storage.frameWidth = 10;
