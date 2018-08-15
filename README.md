@@ -16,5 +16,5 @@ npm start
 ```
 Note that Dynamic is currently under lots of development. It hasn't even reached version 1.0.0 yet! If you're expecting to be able to animate with it at this stage then you're far from right.
 
-##Build Dynamic executables
+## Build Dynamic executables
 Ha, even I don't know how to do that yet!
