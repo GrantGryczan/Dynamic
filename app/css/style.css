@@ -645,8 +645,11 @@ label:not(.mdc-floating-label) {
 .frame.highlight {
 	background-color: rgba(128, 0, 255, 0.035);
 }
+.frame.focusHighlight {
+	background-color: rgba(128, 0, 255, 0.065);
+}
 .frame.selected {
-	background-color: rgba(128, 0, 255, 0.11);
+	background-color: rgba(128, 0, 255, 0.16);
 }
 .frame.focus {
 	background-color: rgba(128, 0, 255, 0.25);

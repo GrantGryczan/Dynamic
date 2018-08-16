@@ -176,9 +176,7 @@ const selectAsset = (target, evtButton) => {
 	if(evtButton === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
 			for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-				if(assetElem !== target) {
-					assetElem.classList.remove("selected");
-				}
+				assetElem.classList.remove("selected");
 			}
 			target.classList.add("selected");
 			proj[sel].selectedAsset = target.id;

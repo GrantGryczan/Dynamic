@@ -37,17 +37,6 @@ let appendStartFrame = false;
 let appendEndFrame = false;
 let timelinesTranslateXSet = false;
 let timelinesTranslateYSet = false;
-const resetTimeRuler = () => {
-	while(timeUnits.children.length) {
-		timeUnits.lastElementChild.remove();
-	}
-};
-const refreshTimeRulerChildren = () => {
-	const duration = proj[sel].data.duration;
-	proj[sel].data.duration = 0;
-	resetTimeRuler();
-	addTimeUnits(duration);
-};
 const updateTimeRuler = () => {
 	const totalWidth = storage.frameWidth * proj[sel].data.duration;
 	if(timeRulerFiller.offsetWidth !== totalWidth) {
@@ -66,8 +55,8 @@ const updateTimeRuler = () => {
 	}
 	let sum = 0;
 	if(proj[sel].frameRangeJumped = oldEndFrame < startFrame || oldStartFrame > endFrame) {
-		for(let i = oldStartFrame; i < oldEndFrame; i++) { // remove all if jumping range
-			resetTimeRuler();
+		while(timeUnits.children.length) { // remove all if jumping range
+			timeUnits.lastElementChild.remove();
 			sum--;
 		}
 		for(let i = startFrame; i < endFrame; i++) { // add all if jumping range
@@ -121,8 +110,10 @@ const updateTimeRuler = () => {
 	}
 	updateTimelines();
 };
-let timelinesLength = 0;
+let timelineCount = 0;
 const byVisible = obj => obj.timelineItem.offsetWidth;
+const byFrameID = frameData => `#frame_${frameData[0]}_${frameData[1]}`;
+const byHighlightFrameID = frameData => `#timeline_${frameData[0]} .frame, .frame[data-value="${frameData[1]}"]`;
 const baseTimeline = html`<div class="timeline"></div>`;
 const baseFrame = html`<div class="frame"></div>`;
 baseFrame.style.width = `${storage.frameWidth}px`;
@@ -132,22 +123,22 @@ const updateTimelines = () => {
 	if(timelineFiller.offsetHeight !== totalHeight) {
 		timelineFiller.style.height = `${totalHeight}px`;
 	}
-	const length = Math.min(objs.length, Math.ceil(timelineBox.offsetHeight / 24));
-	if(length !== timelinesLength) {
-		if(timelinesLength < length) {
-			const count = length - timelinesLength;
-			for(let i = 0; i < count; i++) {
+	const count = Math.min(objs.length, Math.ceil(timelineBox.offsetHeight / 24));
+	if(count !== timelineCount) {
+		if(timelineCount < count) {
+			const length = count - timelineCount;
+			for(let i = 0; i < length; i++) {
 				const timeline = baseTimeline.cloneNode(true);
 				appendFrames(timeline);
 				timelines.appendChild(timeline);
 			}
 		} else {
-			const count = timelinesLength - length;
-			for(let i = 0; i < count; i++) {
+			const length = timelineCount - count;
+			for(let i = 0; i < length; i++) {
 				timelines.lastElementChild.remove();
 			}
 		}
-		timelinesLength = length;
+		timelineCount = count;
 	}
 	const transform = `translateY(${24 * Math.floor(timelineBox.scrollTop / 24)}px)`;
 	if(timelinesTranslateYSet || translateY.test(timelines.style.transform)) {
@@ -156,14 +147,134 @@ const updateTimelines = () => {
 		timelines.style.transform += ` ${transform}`;
 		timelinesTranslateYSet = true;
 	}
-	const startIndex = Math.floor(timelineBox.scrollTop / 24);
-	for(let i = 0; i < timelines.children.length; i++) {
-		timelines.children[i]._obj = objs[startIndex + i];
-		timelines.children[i].id = `timeline_${timelines.children[i]._obj.id}`;
-		timelines.children[i].classList.remove(timelines.children[i].classList[1]);
-		timelines.children[i].classList.add(timelines.children[i]._obj.timelineItem.classList[1]);
+	const focusedFrame = timelines.querySelector(".frame.focus");
+	if(focusedFrame) {
+		focusedFrame.classList.remove("focus");
 	}
-	// TODO: update contents of frames
+	for(const frame of timelines.querySelectorAll(".frame.focusHighlight")) {
+		frame.classList.remove("focusHighlight");
+	}
+	for(const frame of timelines.querySelectorAll(".frame.selected")) {
+		frame.classList.remove("selected");
+	}
+	for(const frame of timelines.querySelectorAll(".frame.highlight")) {
+		frame.classList.remove("highlight");
+	}
+	const start = Math.floor(timelineBox.scrollTop / 24);
+	for(let i = 0; i < timelines.children.length; i++) {
+		const timeline = timelines.children[i];
+		timeline._obj = objs[start + i];
+		timeline.id = `timeline_${timeline._obj.id}`;
+		timeline.classList.remove(timeline.classList[1]);
+		timeline.classList.add(timeline._obj.timelineItem.classList[1]);
+		const highlight = !!proj[sel].selectedFrames.find(frameData => frameData[0] === timeline._obj.id);
+		for(let j = 0; j < timeline.children.length; j++) {
+			const frame = timeline.children[j];
+			frame.id = `frame_${timeline._obj.id}_${frame._value = timeUnits.children[j]._value}`;
+			frame.setAttribute("data-value", frame._value);
+			if(highlight || proj[sel].selectedFrames.find(frameData => frameData[1] === frame._value)) {
+				frame.classList.add("highlight");
+			}
+		}
+	}
+	if(proj[sel].focusedFrame[0]) {
+		const frameToFocus = timelines.querySelector(`#frame_${proj[sel].focusedFrame[0]}_${proj[sel].focusedFrame[1]}`);
+		if(frameToFocus) {
+			frameToFocus.classList.add("focus");
+		}
+	}
+	if(proj[sel].selectedFrames.length) {
+		for(const frame of timelines.querySelectorAll(byHighlightFrameID(proj[sel].focusedFrame))) {
+			frame.classList.add("focusHighlight");
+		}
+		for(const frame of timelines.querySelectorAll(proj[sel].selectedFrames.map(byFrameID).join(", "))) {
+			frame.classList.add("selected");
+		}
+	}
+};
+const frameIndex = frameData => {
+	for(let i = 0; i < proj[sel].selectedFrames.length; i++) {
+		const item = proj[sel].selectedFrames[i];
+		if(item[0] === frameData[0] && item[1] === frameData[1]) {
+			return i;
+		}
+	}
+	return -1;
+};
+const pushFrame = frameData => {
+	proj[sel].focusedFrame = frameData;
+	if(frameIndex(frameData) === -1) {
+		proj[sel].selectedFrames.push(frameData);
+	}
+};
+const setFrame = frameData => {
+	proj[sel].selectedFrames = [proj[sel].focusedFrame = frameData];
+};
+const spliceFrame = frameData => {
+	const index = frameIndex(frameData);
+	if(index !== -1) {
+		proj[sel].selectedFrames.splice(index, 1);
+		if(proj[sel].focusedFrame[0] === frameData[0] && proj[sel].focusedFrame[1] === frameData[1]) {
+			proj[sel].focusedFrame = [];
+		}
+	}
+};
+const toggleFrame = frameData => {
+	const index = frameIndex(frameData);
+	if(index === -1) {
+		proj[sel].focusedFrame = frameData;
+		proj[sel].selectedFrames.push(frameData);
+		return true;
+	} else {
+		proj[sel].focusedFrame = [];
+		proj[sel].selectedFrames.splice(index, 1);
+		return false;
+	}
+};
+const selectFrame = (frameData, evtButton) => {
+	if(typeof evtButton !== "number") {
+		evtButton = 0;
+	}
+	if(evtButton === 2 && !(superKey || shiftKey)) {
+		if(frameIndex(frameData) === -1) {
+			setFrame(frameData);
+		} else {
+			proj[sel].focusedFrame = frameData;
+		}
+	} else if(shiftKey) {
+		let selecting = !proj[sel].selectedAsset;
+		const classListMethod = superKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+		for(const assetElem of assets.querySelectorAll(".asset")) {
+			if(assetElem.id === proj[sel].selectedAsset || assetElem.id === target.id) {
+				if(selecting) {
+					assetElem.classList[classListMethod]("selected");
+					selecting = false;
+					continue;
+				} else {
+					assetElem.classList[classListMethod]("selected");
+					if(proj[sel].selectedAsset !== target.id) {
+						selecting = true;
+					}
+				}
+			} else if(selecting) {
+				assetElem.classList[classListMethod]("selected");
+			} else if(!superKey) {
+				assetElem.classList.remove("selected");
+			}
+		}
+	} else if(superKey) {
+		toggleFrame(frameData);
+	} else {
+		const index = frameIndex(frameData);
+		if(proj[sel].selectedFrames.length === 1 && index === 0) {
+			proj[sel].selectedFrames = [];
+			proj[sel].focusedFrame = [];
+		} else {
+			setFrame(frameData);
+		}
+	}
+	updateTimelines();
+	setActive(timelineContainer);
 };
 const appendFrames = timeline => {
 	while(timeline.children.length) {
@@ -174,7 +285,7 @@ const appendFrames = timeline => {
 	}
 };
 const createTimeUnit = value => {
-	const timeUnit = html`<div class="timeUnit"></div>`;
+	const timeUnit = html`<div class="timeUnit" data-value="${value}"></div>`;
 	timeUnit._value = value;
 	timeUnit.style.width = `${storage.frameWidth}px`;
 	if(value % 5 === 0) { // TODO: Make that 5 dynamic

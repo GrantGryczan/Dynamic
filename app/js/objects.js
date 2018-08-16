@@ -263,9 +263,7 @@ const selectLayer = (target, evtButton) => {
 	if(evtButton === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
 			for(const layer of layers.querySelectorAll(".layer.selected")) {
-				if(layer !== target) {
-					layer.classList.remove("selected");
-				}
+				layer.classList.remove("selected");
 			}
 			target.classList.add("selected");
 			proj[sel].selectedLayer = target.id;
@@ -328,9 +326,7 @@ const selectTimelineItem = (target, evtButton) => {
 	if(evtButton === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
 			for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
-				if(timelineItem !== target) {
-					timelineItem.classList.remove("selected");
-				}
+				timelineItem.classList.remove("selected");
 			}
 			target.classList.add("selected");
 			proj[sel].selectedTimelineItem = target.id;
@@ -338,22 +334,22 @@ const selectTimelineItem = (target, evtButton) => {
 	} else if(shiftKey) {
 		let selecting = !proj[sel].selectedTimelineItem;
 		const classListMethod = superKey && proj[sel].selectedTimelineItem && !timelineItems.querySelector(`#${proj[sel].selectedTimelineItem}`).classList.contains("selected") ? "remove" : "add";
-		for(const timelineItemElem of timelineItems.querySelectorAll(".timelineItem")) {
-			if(timelineItemElem.id === proj[sel].selectedTimelineItem || timelineItemElem.id === target.id) {
+		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
+			if(timelineItem.id === proj[sel].selectedTimelineItem || timelineItem.id === target.id) {
 				if(selecting) {
-					timelineItemElem.classList[classListMethod]("selected");
+					timelineItem.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
-					timelineItemElem.classList[classListMethod]("selected");
+					timelineItem.classList[classListMethod]("selected");
 					if(proj[sel].selectedTimelineItem !== target.id) {
 						selecting = true;
 					}
 				}
 			} else if(selecting) {
-				timelineItemElem.classList[classListMethod]("selected");
+				timelineItem.classList[classListMethod]("selected");
 			} else if(!superKey) {
-				timelineItemElem.classList.remove("selected");
+				timelineItem.classList.remove("selected");
 			}
 		}
 	} else {
@@ -362,10 +358,10 @@ const selectTimelineItem = (target, evtButton) => {
 			target.classList.toggle("selected");
 		} else {
 			let othersSelected = false;
-			for(const timelineItemElem of timelineItems.querySelectorAll(".timelineItem.selected")) {
-				if(timelineItemElem !== target) {
+			for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
+				if(timelineItem !== target) {
 					othersSelected = true;
-					timelineItemElem.classList.remove("selected");
+					timelineItem.classList.remove("selected");
 				}
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {

@@ -48,6 +48,10 @@ const onMouseDown = evt => {
 		}
 	} else if(mouseTarget.parentNode.classList.contains("layer")) {
 		proj[sel].focusedLayer = mouseTarget.parentNode.id;
+	} else if(mouseTarget.classList.contains("frame")) {
+		proj[sel].focusedFrame = [mouseTarget.parentNode._obj.id, mouseTarget._value];
+		proj[sel].focusedTimelineItem = mouseTarget.parentNode._obj.timelineItem.id;
+		updateTimelines();
 	} else if(evt.button === 0) {
 		if(mouseTarget0.classList.contains("tab")) {
 			if(mouseTarget0 === homeTab) {
@@ -312,6 +316,10 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				}
 			}
+		} else if(mouseTarget.classList.contains("timeUnit") && evtButton === mouseDown) {
+			// focus time unit and select all frames in column
+		} else if(mouseTarget.classList.contains("frame") && evtButton === mouseDown) {
+			selectFrame([mouseTarget.parentNode._obj.id, mouseTarget._value], downActive === timelineContainer ? 2 : evtButton);
 		} else if(evtButton0) {
 			if(mouseTarget0) {
 				if(mouseTarget0.classList.contains("tab")) {

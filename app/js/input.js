@@ -250,7 +250,9 @@ document.addEventListener("input", evt => {
 	}
 	if(evt.target === prop.fps.elements[0]) {
 		proj[sel].data.fps = prop.fps.elements[0].value;
-		refreshTimeRulerChildren();
+		for(let i = 0; i < timeUnits.children.length; i++) {
+			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
+		}
 	} else if(evt.target === prop.canvasSize.elements[0]) {
 		content.style.width = `${proj[sel].data.width = evt.target.value}px`;
 		absoluteCenter(content);
