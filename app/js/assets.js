@@ -169,11 +169,11 @@ const deselectAssets = () => {
 	}
 	proj[sel].selectedAsset = null;
 };
-const selectAsset = (target, evtButton) => {
-	if(typeof evtButton !== "number") {
-		evtButton = 0;
+const selectAsset = (target, button) => {
+	if(typeof button !== "number") {
+		button = 0;
 	}
-	if(evtButton === 2 && !(superKey || shiftKey)) {
+	if(button === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
 			for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 				assetElem.classList.remove("selected");

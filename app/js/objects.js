@@ -42,6 +42,7 @@ class DynamicObject {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
 		proj[sel].data.objs.push(this);
+		proj[sel].frames[this.id] = new Array(proj[sel].duration).fill(0);
 		if(this.type === "group") {
 			this.timelineItem = html`
 				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
@@ -256,11 +257,11 @@ const deselectLayers = () => {
 	}
 	proj[sel].selectedLayer = null;
 };
-const selectLayer = (target, evtButton) => {
-	if(typeof evtButton !== "number") {
-		evtButton = 0;
+const selectLayer = (target, button) => {
+	if(typeof button !== "number") {
+		button = 0;
 	}
-	if(evtButton === 2 && !(superKey || shiftKey)) {
+	if(button === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
 			for(const layer of layers.querySelectorAll(".layer.selected")) {
 				layer.classList.remove("selected");
@@ -319,11 +320,11 @@ const deselectTimelineItems = () => {
 	}
 	proj[sel].selectedTimelineItem = null;
 };
-const selectTimelineItem = (target, evtButton) => {
-	if(typeof evtButton !== "number") {
-		evtButton = 0;
+const selectTimelineItem = (target, button) => {
+	if(typeof button !== "number") {
+		button = 0;
 	}
-	if(evtButton === 2 && !(superKey || shiftKey)) {
+	if(button === 2 && !(superKey || shiftKey)) {
 		if(!target.classList.contains("selected")) {
 			for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
 				timelineItem.classList.remove("selected");

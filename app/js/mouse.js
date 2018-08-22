@@ -48,6 +48,10 @@ const onMouseDown = evt => {
 		}
 	} else if(mouseTarget.parentNode.classList.contains("layer")) {
 		proj[sel].focusedLayer = mouseTarget.parentNode.id;
+	} else if(mouseTarget.classList.contains("timeUnit")) {
+		// focus time unit and select all frames in column
+	} else if(mouseTarget.classList.contains("frame")) {
+		selectFrame(mouseTarget.parentNode._obj.id, mouseTarget._value, downActive === timelineContainer ? 2 : evt.button);
 	} else if(mouseTarget.classList.contains("frame")) {
 		proj[sel].focusedFrame = [mouseTarget.parentNode._obj.id, mouseTarget._value];
 		proj[sel].focusedTimelineItem = mouseTarget.parentNode._obj.timelineItem.id;
@@ -215,17 +219,17 @@ const resetTabPos = () => {
 	setTimeout(makeTabRough, 150);
 };
 let originalMouseTarget;
-const handleMouseUp = (evt, evtButton) => {
+const handleMouseUp = (evt, button) => {
 	mouseX = evt.clientX;
 	mouseY = evt.clientY;
 	if(mouseDown === -1) {
 		return;
 	}
 	backUpKeyStates(evt);
-	const evtButton0 = evtButton === 0;
-	const evtButton2 = evtButton === 2;
+	const evtButton0 = button === 0;
+	const evtButton2 = button === 2;
 	if(mouseTarget && (evtButton0 || evtButton2)) {
-		if(assets.contains(mouseTarget) && evtButton === mouseDown) {
+		if(assets.contains(mouseTarget) && button === mouseDown) {
 			if(mouseMoved && mouseTarget.classList.contains("bar")) {
 				if(!assetDrag.parentNode) {
 					addToCanvas();
@@ -247,7 +251,7 @@ const handleMouseUp = (evt, evtButton) => {
 						updateProperties();
 					}
 				} else if(mouseTarget.classList.contains("bar")) {
-					selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : evtButton);
+					selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : button);
 				} else if(evtButton0) {
 					if(mouseTarget0.classList.contains("close")) {
 						confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
@@ -256,7 +260,7 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				}
 			}
-		} else if(layerBox.contains(mouseTarget) && evtButton === mouseDown) {
+		} else if(layerBox.contains(mouseTarget) && button === mouseDown) {
 			if(layerBox.contains(mouseTarget)) {
 				if(mouseMoved && mouseTarget.parentNode.classList.contains("layer")) {
 					if(layerDrag.parentNode) {
@@ -276,7 +280,7 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				} else {
 					if(mouseTarget.parentNode.classList.contains("layer")) {
-						selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : evtButton);
+						selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : button);
 					} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
 						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode.parentNode);
 					} else {
@@ -287,7 +291,7 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				}
 			}
-		} else if(timelineItems.contains(mouseTarget) && evtButton === mouseDown) {
+		} else if(timelineItems.contains(mouseTarget) && button === mouseDown) {
 			if(mouseMoved && mouseTarget.classList.contains("bar")) {
 				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
 					try {
@@ -306,7 +310,7 @@ const handleMouseUp = (evt, evtButton) => {
 						updateProperties();
 					}
 				} else if(mouseTarget.classList.contains("bar")) {
-					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : evtButton);
+					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : button);
 				} else if(evtButton0) {
 					if(mouseTarget0.classList.contains("close")) {
 						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode);
@@ -316,10 +320,6 @@ const handleMouseUp = (evt, evtButton) => {
 					}
 				}
 			}
-		} else if(mouseTarget.classList.contains("timeUnit") && evtButton === mouseDown) {
-			// focus time unit and select all frames in column
-		} else if(mouseTarget.classList.contains("frame") && evtButton === mouseDown) {
-			selectFrame([mouseTarget.parentNode._obj.id, mouseTarget._value], downActive === timelineContainer ? 2 : evtButton);
 		} else if(evtButton0) {
 			if(mouseTarget0) {
 				if(mouseTarget0.classList.contains("tab")) {

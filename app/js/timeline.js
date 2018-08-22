@@ -24,6 +24,38 @@ const openAsset = (asset, selected, finish) => {
 		delete proj[sel].openAsset;
 	}
 };
+const appendFrames = timeline => {
+	while(timeline.children.length) {
+		timeline.lastElementChild.remove();
+	}
+	for(let i = 0; i < timeUnits.children.length; i++) {
+		timeline.appendChild(baseFrame.cloneNode(true));
+	}
+};
+const createTimeUnit = value => {
+	const timeUnit = html`<div class="timeUnit" data-value="${value}"></div>`;
+	timeUnit._value = value;
+	timeUnit.style.width = `${storage.frameWidth}px`;
+	if(value % 5 === 0) { // TODO: Make that 5 dynamic
+		timeUnit.appendChild(html`
+			<div class="timeUnitLabel">
+				<div class="label">${storage.secondTimeRuler ? value % proj[sel].data.fps : value}</div>
+			</div>
+		`);
+	}
+	if(value % proj[sel].data.fps === 0) {
+		const timeLabelValue = value / proj[sel].data.fps;
+		const seconds = String(timeLabelValue % 60);
+		const timeLabel = html`
+			<div class="timeLabel">
+				<div class="label">${Math.floor(timeLabelValue / 60)}:${(seconds.length === 1 ? "0" : "") + seconds}</div>
+			</div>
+		`;
+		timeLabel._value = timeLabelValue;
+		timeUnit.appendChild(timeLabel);
+	}
+	return timeUnit;
+};
 let oldStartFrame = 0;
 let oldEndFrame = 0;
 let startFrame = 0;
@@ -112,8 +144,6 @@ const updateTimeRuler = () => {
 };
 let timelineCount = 0;
 const byVisible = obj => obj.timelineItem.offsetWidth;
-const byFrameID = frameData => `#frame_${frameData[0]}_${frameData[1]}`;
-const byHighlightFrameID = frameData => `#timeline_${frameData[0]} .frame, .frame[data-value="${frameData[1]}"]`;
 const baseTimeline = html`<div class="timeline"></div>`;
 const baseFrame = html`<div class="frame"></div>`;
 baseFrame.style.width = `${storage.frameWidth}px`;
@@ -160,6 +190,7 @@ const updateTimelines = () => {
 	for(const frame of timelines.querySelectorAll(".frame.highlight")) {
 		frame.classList.remove("highlight");
 	}
+	const values = Object.values(proj[sel].frames);
 	const start = Math.floor(timelineBox.scrollTop / 24);
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
@@ -167,80 +198,40 @@ const updateTimelines = () => {
 		timeline.id = `timeline_${timeline._obj.id}`;
 		timeline.classList.remove(timeline.classList[1]);
 		timeline.classList.add(timeline._obj.timelineItem.classList[1]);
-		const highlight = !!proj[sel].selectedFrames.find(frameData => frameData[0] === timeline._obj.id);
+		const focusHighlight = proj[sel].frames[timeline._obj.id].includes(2);
+		const highlight = focusHighlight || proj[sel].frames[timeline._obj.id].includes(1);
 		for(let j = 0; j < timeline.children.length; j++) {
 			const frame = timeline.children[j];
 			frame.id = `frame_${timeline._obj.id}_${frame._value = timeUnits.children[j]._value}`;
-			frame.setAttribute("data-value", frame._value);
-			if(highlight || proj[sel].selectedFrames.find(frameData => frameData[1] === frame._value)) {
+			if(highlight || values.find(frames => frames[frame._value])) {
 				frame.classList.add("highlight");
+				if(highlight && proj[sel].frames[timeline._obj.id][frame._value]) {
+					frame.classList.add("selected");
+				}
+				if(focusHighlight || values.find(frames => frames[frame._value] === 2)) {
+					frame.classList.add("focusHighlight");
+					if(focusHighlight && proj[sel].frames[timeline._obj.id][frame._value] === 2) {
+						frame.classList.add("focus");
+					}
+				}
 			}
 		}
 	}
-	if(proj[sel].focusedFrame[0]) {
-		const frameToFocus = timelines.querySelector(`#frame_${proj[sel].focusedFrame[0]}_${proj[sel].focusedFrame[1]}`);
-		if(frameToFocus) {
-			frameToFocus.classList.add("focus");
-		}
-	}
-	if(proj[sel].selectedFrames.length) {
-		for(const frame of timelines.querySelectorAll(byHighlightFrameID(proj[sel].focusedFrame))) {
-			frame.classList.add("focusHighlight");
-		}
-		for(const frame of timelines.querySelectorAll(proj[sel].selectedFrames.map(byFrameID).join(", "))) {
-			frame.classList.add("selected");
-		}
+};
+const clearFrames = () => {
+	for(const obj of proj[sel].data.objs) {
+		proj[sel].frames[obj.id] = new Array(proj[sel].duration).fill(0);
 	}
 };
-const frameIndex = frameData => {
-	for(let i = 0; i < proj[sel].selectedFrames.length; i++) {
-		const item = proj[sel].selectedFrames[i];
-		if(item[0] === frameData[0] && item[1] === frameData[1]) {
-			return i;
+const selectFrame = (timeline, value, button) => {
+	if(typeof button !== "number") {
+		button = 0;
+	}
+	if(button === 2 && !(superKey || shiftKey)) {
+		if(!proj[sel].frames[timeline][value]) {
+			clearFrames();
 		}
-	}
-	return -1;
-};
-const pushFrame = frameData => {
-	proj[sel].focusedFrame = frameData;
-	if(frameIndex(frameData) === -1) {
-		proj[sel].selectedFrames.push(frameData);
-	}
-};
-const setFrame = frameData => {
-	proj[sel].selectedFrames = [proj[sel].focusedFrame = frameData];
-};
-const spliceFrame = frameData => {
-	const index = frameIndex(frameData);
-	if(index !== -1) {
-		proj[sel].selectedFrames.splice(index, 1);
-		if(proj[sel].focusedFrame[0] === frameData[0] && proj[sel].focusedFrame[1] === frameData[1]) {
-			proj[sel].focusedFrame = [];
-		}
-	}
-};
-const toggleFrame = frameData => {
-	const index = frameIndex(frameData);
-	if(index === -1) {
-		proj[sel].focusedFrame = frameData;
-		proj[sel].selectedFrames.push(frameData);
-		return true;
-	} else {
-		proj[sel].focusedFrame = [];
-		proj[sel].selectedFrames.splice(index, 1);
-		return false;
-	}
-};
-const selectFrame = (frameData, evtButton) => {
-	if(typeof evtButton !== "number") {
-		evtButton = 0;
-	}
-	if(evtButton === 2 && !(superKey || shiftKey)) {
-		if(frameIndex(frameData) === -1) {
-			setFrame(frameData);
-		} else {
-			proj[sel].focusedFrame = frameData;
-		}
+		proj[sel].frames[timeline][value] = 2;
 	} else if(shiftKey) {
 		let selecting = !proj[sel].selectedAsset;
 		const classListMethod = superKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
@@ -265,52 +256,34 @@ const selectFrame = (frameData, evtButton) => {
 	} else if(superKey) {
 		toggleFrame(frameData);
 	} else {
-		const index = frameIndex(frameData);
-		if(proj[sel].selectedFrames.length === 1 && index === 0) {
-			proj[sel].selectedFrames = [];
-			proj[sel].focusedFrame = [];
+		const prevState = proj[sel].frames[timeline][value];
+		if(prevState) {
+			let noOthers = true;
+			objs: for(const obj of proj[sel].data.objs) {
+				const frames = proj[sel].frames[obj.id];
+				for(let i = 0; i < frames.length; i++) {
+					if(frames[i]) {
+						noOthers = false;
+						break objs;
+					}
+				}
+			}
+			clearFrames();
+			if(noOthers) {
+				proj[sel].frames[timeline][value] = 2;
+			}
 		} else {
-			setFrame(frameData);
+			clearFrames();
+			proj[sel].frames[timeline][value] = 2;
 		}
 	}
 	updateTimelines();
 	setActive(timelineContainer);
 };
-const appendFrames = timeline => {
-	while(timeline.children.length) {
-		timeline.lastElementChild.remove();
-	}
-	for(let i = 0; i < timeUnits.children.length; i++) {
-		timeline.appendChild(baseFrame.cloneNode(true));
-	}
-};
-const createTimeUnit = value => {
-	const timeUnit = html`<div class="timeUnit" data-value="${value}"></div>`;
-	timeUnit._value = value;
-	timeUnit.style.width = `${storage.frameWidth}px`;
-	if(value % 5 === 0) { // TODO: Make that 5 dynamic
-		timeUnit.appendChild(html`
-			<div class="timeUnitLabel">
-				<div class="label">${storage.secondTimeRuler ? value % proj[sel].data.fps : value}</div>
-			</div>
-		`);
-	}
-	if(value % proj[sel].data.fps === 0) {
-		const timeLabelValue = value / proj[sel].data.fps;
-		const seconds = String(timeLabelValue % 60);
-		const timeLabel = html`
-			<div class="timeLabel">
-				<div class="label">${Math.floor(timeLabelValue / 60)}:${(seconds.length === 1 ? "0" : "") + seconds}</div>
-			</div>
-		`;
-		timeLabel._value = timeLabelValue;
-		timeUnit.appendChild(timeLabel);
-	}
-	return timeUnit;
-}
-const addTimeUnits = quantity => {
-	if(quantity === undefined) {
-		quantity = 1;
+const addDuration = quantity => {
+	const moreFrames = new Array(quantity).fill(0);
+	for(const frames of proj[sel].frames) {
+		frames.push(...moreFrames);
 	}
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();

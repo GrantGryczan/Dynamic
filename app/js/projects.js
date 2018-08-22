@@ -39,14 +39,11 @@ class DynamicProject {
 				duration: storage.fps * 2
 			},
 			time: 0,
-			selectedFrames: [],
-			focusedFrame: []
+			frames: {}
 		});
 		tabs.appendChild((this.tab._proj = this).tab);
 		select((proj[this.id] = this).id);
-		const duration = this.data.duration;
-		this.data.duration = 0;
-		addTimeUnits(duration);
+		updateTimeRuler();
 	}
 	get location() {
 		return this[_location];
