@@ -201,12 +201,12 @@ const confirmRemoveObjElem = objElem => {
 	const actuallyRemoveObjElem = value => {
 		if(value === 0) {
 			removeObj(objElem);
+			storeObjs();
 			if(objElem._obj.asset) {
 				for(const obj of objElem._obj.asset.objects) {
 					obj.updateName();
 				}
 			}
-			storeObjs();
 			updateTimelines();
 			updateProperties();
 		}
@@ -233,6 +233,7 @@ const confirmRemoveObjElems = objElems => {
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {
 				objElems.forEach(removeObj);
+				storeObjs();
 				for(const objElem of objElems) {
 					if(objElem._obj.asset) {
 						for(const obj of objElem._obj.asset.objects) {
@@ -240,7 +241,6 @@ const confirmRemoveObjElems = objElems => {
 						}
 					}
 				}
-				storeObjs();
 				updateTimelines();
 				updateProperties();
 			}
@@ -400,12 +400,12 @@ const addToCanvas = () => {
 		proj[sel].data.objs.unshift(obj);
 	}
 	timelineItemDrag.remove();
+	storeObjs();
 	for(const assetElem of assetElems) {
 		for(const obj of assetElem._asset.objects) {
 			obj.updateName();
 		}
 	}
-	storeObjs();
 	updateTimelines();
 	proj[sel].saved = false;
 	setActive(contentContainer);

@@ -281,25 +281,8 @@ const selectFrame = (timeline, value, button) => {
 			proj[sel].frames[timeline][value] = 2;
 		}
 	} else {
-		const prevState = proj[sel].frames[timeline][value];
-		if(prevState) {
-			let noOthers = true;
-			objs: for(const obj of proj[sel].data.objs) {
-				for(const frame of proj[sel].frames[obj.id]) {
-					if(frame) {
-						noOthers = false;
-						break objs;
-					}
-				}
-			}
-			clearFrames();
-			if(noOthers) {
-				proj[sel].frames[timeline][value] = 2;
-			}
-		} else {
-			clearFrames();
-			proj[sel].frames[timeline][value] = 2;
-		}
+		clearFrames();
+		proj[sel].frames[timeline][value] = 2;
 	}
 	updateTimelines();
 	setActive(timelineContainer);
