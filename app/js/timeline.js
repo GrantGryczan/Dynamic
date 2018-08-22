@@ -177,9 +177,8 @@ const updateTimelines = () => {
 		timelines.style.transform += ` ${transform}`;
 		timelinesTranslateYSet = true;
 	}
-	const focusedFrame = timelines.querySelector(".frame.focus");
-	if(focusedFrame) {
-		focusedFrame.classList.remove("focus");
+	for(const frame of timelines.querySelectorAll(".frame.focus")) {
+		frame.classList.remove("focus");
 	}
 	for(const frame of timelines.querySelectorAll(".frame.focusHighlight")) {
 		frame.classList.remove("focusHighlight");
@@ -220,49 +219,74 @@ const updateTimelines = () => {
 };
 const clearFrames = () => {
 	for(const obj of proj[sel].data.objs) {
-		proj[sel].frames[obj.id] = new Array(proj[sel].duration).fill(0);
+		proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
+	}
+};
+const blurFrames = () => {
+	for(const obj of proj[sel].data.objs) {
+		const frames = proj[sel].frames[obj.id];
+		for(let i = 0; i < frames.length; i++) {
+			frames[i] = +!!frames[i];
+		}
 	}
 };
 const selectFrame = (timeline, value, button) => {
 	if(typeof button !== "number") {
 		button = 0;
 	}
+	let index = -1;
+	for(const obj of proj[sel].data.objs) {
+		index = proj[sel].frames[obj.id].indexOf(2);
+		if(index !== -1) {
+			break;
+		}
+	}
 	if(button === 2 && !(superKey || shiftKey)) {
-		if(!proj[sel].frames[timeline][value]) {
+		if(proj[sel].frames[timeline][value]) {
+			blurFrames();
+		} else {
 			clearFrames();
 		}
 		proj[sel].frames[timeline][value] = 2;
-	} else if(shiftKey) {
-		let selecting = !proj[sel].selectedAsset;
-		const classListMethod = superKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
-		for(const assetElem of assets.querySelectorAll(".asset")) {
-			if(assetElem.id === proj[sel].selectedAsset || assetElem.id === target.id) {
-				if(selecting) {
-					assetElem.classList[classListMethod]("selected");
-					selecting = false;
-					continue;
-				} else {
-					assetElem.classList[classListMethod]("selected");
-					if(proj[sel].selectedAsset !== target.id) {
-						selecting = true;
+	} else if(shiftKey && index !== -1) {
+		const noSuperKey = !superKey;
+		let selecting = false;
+		for(const obj of proj[sel].data.objs) {
+			const frames = proj[sel].frames[obj.id];
+			let changeSelecting = obj.id === timeline || frames.includes(2);
+			if(!selecting && changeSelecting) {
+				selecting = true;
+				changeSelecting = obj.id === timeline && frames.includes(2);
+			}
+			const min = Math.min(value, index);
+			const max = Math.max(value, index);
+			for(let i = 0; i < frames.length; i++) {
+				if(frames[i] !== 2) {
+					if(selecting && i >= min && i <= max) {
+						frames[i] = 1;
+					} else if(noSuperKey) {
+						frames[i] = 0;
 					}
 				}
-			} else if(selecting) {
-				assetElem.classList[classListMethod]("selected");
-			} else if(!superKey) {
-				assetElem.classList.remove("selected");
+			}
+			if(selecting && changeSelecting) {
+				selecting = false;
 			}
 		}
 	} else if(superKey) {
-		toggleFrame(frameData);
+		if(proj[sel].frames[timeline][value]) {
+			proj[sel].frames[timeline][value] = 0;
+		} else {
+			blurFrames();
+			proj[sel].frames[timeline][value] = 2;
+		}
 	} else {
 		const prevState = proj[sel].frames[timeline][value];
 		if(prevState) {
 			let noOthers = true;
 			objs: for(const obj of proj[sel].data.objs) {
-				const frames = proj[sel].frames[obj.id];
-				for(let i = 0; i < frames.length; i++) {
-					if(frames[i]) {
+				for(const frame of proj[sel].frames[obj.id]) {
+					if(frame) {
 						noOthers = false;
 						break objs;
 					}
