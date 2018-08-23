@@ -252,7 +252,7 @@ const blurFrames = () => {
 		}
 	}
 };
-const getMaxFrames = () => {
+const getTopFrames = () => {
 	const topFrames = new Array(proj[sel].data.duration).fill(0);
 	for(const obj of proj[sel].data.objs) {
 		const frames = proj[sel].frames[obj.id];
@@ -260,6 +260,7 @@ const getMaxFrames = () => {
 			topFrames[i] = Math.max(topFrames[i], frames[i]);
 		}
 	}
+	topFrames[proj[sel].time] = 2;
 	return topFrames;
 };
 const focusFrame = (timeline, value) => {
@@ -344,15 +345,14 @@ const addDuration = quantity => {
 	updateTimeRuler();
 };
 const updateTimeUnitClasses = () => {
-	const topFrames = getMaxFrames();
+	const topFrames = getTopFrames();
 	for(const timeUnit of timeUnits.children) {
-		const currentTime = proj[sel].time === timeUnit._value;
-		const selectedClassMethod = (topFrames[timeUnit._value] || currentTime) ? "add" : "remove";
+		const selectedClassMethod = topFrames[timeUnit._value] ? "add" : "remove";
 		timeUnit.classList[selectedClassMethod]("selected");
 		if(timeUnit.previousElementSibling && !(topFrames[timeUnit.previousElementSibling._value] || proj[sel].time === timeUnit.previousElementSibling._value)) {
 			timeUnit.previousElementSibling.classList[selectedClassMethod]("tall");
 		}
 		timeUnit.classList[selectedClassMethod]("tall");
-		timeUnit.classList[currentTime ? "add" : "remove"]("focus");
+		timeUnit.classList[topFrames[timeUnit._value] === 2 ? "add" : "remove"]("focus");
 	}
 };

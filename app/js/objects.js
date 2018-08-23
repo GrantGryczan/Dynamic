@@ -380,7 +380,7 @@ const selectTimelineItem = (target, button) => {
 			}
 		}
 	}
-	const topFrames = getMaxFrames();
+	const topFrames = getTopFrames();
 	for(const obj of proj[sel].data.objs) {
 		const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
 		if(obj.timelineItem.classList.contains("selected")) {
