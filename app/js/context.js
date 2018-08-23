@@ -277,8 +277,6 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
 		obj.timelineItem.classList.add("open");
-		obj.timelineItem.classList.add("selected");
-		proj[sel].selectedTimelineItem = obj.timelineItem.id;
 		storeObjs();
 		updateTimelines();
 		updateProperties();

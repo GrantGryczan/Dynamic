@@ -329,6 +329,21 @@ const deselectTimelineItems = () => {
 	}
 	proj[sel].selectedTimelineItem = null;
 };
+const updateSelectedTimelineItems = () => {
+	const topFrames = getTopFrames();
+	for(const obj of proj[sel].data.objs) {
+		const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
+		if(obj.timelineItem.classList.contains("selected")) {
+			const focus = obj.timelineItem.classList.contains("focus");
+			for(let i = 0; i < topFrames.length; i++) {
+				if(topFrames[i] !== 0) {
+					frames[i] = (focus && topFrames[i] === 2) ? 2 : 1;
+				}
+			}
+		}
+	}
+	updateTimelines();	
+};
 const selectTimelineItem = (target, button) => {
 	if(typeof button !== "number") {
 		button = 0;
@@ -380,19 +395,7 @@ const selectTimelineItem = (target, button) => {
 			}
 		}
 	}
-	const topFrames = getTopFrames();
-	for(const obj of proj[sel].data.objs) {
-		const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
-		if(obj.timelineItem.classList.contains("selected")) {
-			const focus = obj.timelineItem.classList.contains("focus");
-			for(let i = 0; i < topFrames.length; i++) {
-				if(topFrames[i] !== 0) {
-					frames[i] = (focus && topFrames[i] === 2) ? 2 : 1;
-				}
-			}
-		}
-	}
-	updateTimelines();
+	updateSelectedTimelineItems();
 	setActive(timelineContainer);
 };
 const addToCanvas = () => {

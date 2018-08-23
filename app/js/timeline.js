@@ -213,7 +213,6 @@ const updateTimelines = () => {
 		const focusHighlight = proj[sel].frames[obj.id].includes(2);
 		const highlight = focusHighlight || proj[sel].frames[obj.id].includes(1);
 		obj.timelineItem.classList[highlight ? "add" : "remove"]("selected");
-		obj.timelineItem.classList[focusHighlight ? "add" : "remove"]("focus");
 		const timeline = obj.timeline;
 		if(timeline) {
 			timeline.classList.remove(timeline.classList[1]);
