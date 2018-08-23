@@ -49,7 +49,7 @@ const onMouseDown = evt => {
 	} else if(mouseTarget.parentNode.classList.contains("layer")) {
 		proj[sel].focusedLayer = mouseTarget.parentNode.id;
 	} else if(mouseTarget.classList.contains("timeUnit")) {
-		// focus time unit and select all frames in column
+		selectTimeUnit(mouseTarget._value);
 	} else if(mouseTarget.classList.contains("frame")) {
 		selectFrame(mouseTarget.parentNode._obj.id, mouseTarget._value, downActive === timelineContainer ? 2 : evt.button);
 	} else if(mouseTarget.classList.contains("frame")) {

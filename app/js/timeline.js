@@ -191,31 +191,53 @@ const updateTimelines = () => {
 	}
 	const values = Object.values(proj[sel].frames);
 	const start = Math.floor(timelineBox.scrollTop / 24);
+	const visibleTimelineItems = [];
+	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
+		let visible = true;
+		let parent = timelineItem;
+		while((parent = parent.parentNode.parentNode) !== timelineItemContainer) {
+			if(!parent.classList.contains("open")) {
+				visible = false;
+				break;
+			}
+		}
+		if(visible) {
+			visibleTimelineItems.push(timelineItem);
+		}
+	}
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
-		timeline._obj = objs[start + i];
-		timeline.id = `timeline_${timeline._obj.id}`;
-		timeline.classList.remove(timeline.classList[1]);
-		timeline.classList.add(timeline._obj.timelineItem.classList[1]);
-		const focusHighlight = proj[sel].frames[timeline._obj.id].includes(2);
-		const highlight = focusHighlight || proj[sel].frames[timeline._obj.id].includes(1);
-		for(let j = 0; j < timeline.children.length; j++) {
-			const frame = timeline.children[j];
-			frame.id = `frame_${timeline._obj.id}_${frame._value = timeUnits.children[j]._value}`;
-			if(highlight || values.find(frames => frames[frame._value])) {
-				frame.classList.add("highlight");
-				if(highlight && proj[sel].frames[timeline._obj.id][frame._value]) {
-					frame.classList.add("selected");
-				}
-				if(focusHighlight || values.find(frames => frames[frame._value] === 2)) {
-					frame.classList.add("focusHighlight");
-					if(focusHighlight && proj[sel].frames[timeline._obj.id][frame._value] === 2) {
-						frame.classList.add("focus");
+		timeline.id = `timeline_${(timeline._obj = visibleTimelineItems[start + i]._obj).id}`;
+	}
+	for(const obj of proj[sel].data.objs) {
+		const focusHighlight = proj[sel].frames[obj.id].includes(2);
+		const highlight = focusHighlight || proj[sel].frames[obj.id].includes(1);
+		obj.timelineItem.classList[highlight ? "add" : "remove"]("selected");
+		obj.timelineItem.classList[focusHighlight ? "add" : "remove"]("focus");
+		const timeline = obj.timeline;
+		if(timeline) {
+			timeline.classList.remove(timeline.classList[1]);
+			timeline.classList.add(obj.timelineItem.classList[1]);
+			for(let i = 0; i < timeline.children.length; i++) {
+				const frame = timeline.children[i];
+				frame.id = `frame_${obj.id}_${frame._value = timeUnits.children[i]._value}`;
+				const currentTime = proj[sel].time === frame._value;
+				if(highlight || currentTime || values.find(frames => frames[frame._value])) {
+					frame.classList.add("highlight");
+					if(highlight && proj[sel].frames[obj.id][frame._value]) {
+						frame.classList.add("selected");
+					}
+					if(focusHighlight || currentTime || values.find(frames => frames[frame._value] === 2)) {
+						frame.classList.add("focusHighlight");
+						if(focusHighlight && proj[sel].frames[obj.id][frame._value] === 2) {
+							frame.classList.add("focus");
+						}
 					}
 				}
 			}
 		}
 	}
+	updateTimeUnitClasses();
 };
 const clearFrames = () => {
 	for(const obj of proj[sel].data.objs) {
@@ -229,6 +251,20 @@ const blurFrames = () => {
 			frames[i] = +!!frames[i];
 		}
 	}
+};
+const getMaxFrames = () => {
+	const topFrames = new Array(proj[sel].data.duration).fill(0);
+	for(const obj of proj[sel].data.objs) {
+		const frames = proj[sel].frames[obj.id];
+		for(let i = 0; i < frames.length; i++) {
+			topFrames[i] = Math.max(topFrames[i], frames[i]);
+		}
+	}
+	return topFrames;
+};
+const focusFrame = (timeline, value) => {
+	proj[sel].frames[timeline][value] = 2;
+	proj[sel].time = value;
 };
 const selectFrame = (timeline, value, button) => {
 	if(typeof button !== "number") {
@@ -247,7 +283,7 @@ const selectFrame = (timeline, value, button) => {
 		} else {
 			clearFrames();
 		}
-		proj[sel].frames[timeline][value] = 2;
+		focusFrame(timeline, value);
 	} else if(shiftKey && index !== -1) {
 		const noSuperKey = !superKey;
 		let selecting = false;
@@ -278,20 +314,45 @@ const selectFrame = (timeline, value, button) => {
 			proj[sel].frames[timeline][value] = 0;
 		} else {
 			blurFrames();
-			proj[sel].frames[timeline][value] = 2;
+			focusFrame(timeline, value);
 		}
 	} else {
 		clearFrames();
-		proj[sel].frames[timeline][value] = 2;
+		focusFrame(timeline, value);
 	}
 	updateTimelines();
 	setActive(timelineContainer);
 };
+const moveFrameStates = change => {
+	change = ((-change % proj[sel].data.duration) + proj[sel].data.duration) % proj[sel].data.duration;
+	for(const obj of proj[sel].data.objs) {
+		const frames = proj[sel].frames[obj.id];
+		frames.push(...frames.splice(0, change));
+	}
+};
+const selectTimeUnit = value => {
+	moveFrameStates(value - proj[sel].time);
+	proj[sel].time = value;
+	updateTimelines();
+};
 const addDuration = quantity => {
 	const moreFrames = new Array(quantity).fill(0);
-	for(const frames of proj[sel].frames) {
-		frames.push(...moreFrames);
+	for(const obj of proj[sel].data.objs) {
+		proj[sel].frames[obj.id].push(...moreFrames);
 	}
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();
+};
+const updateTimeUnitClasses = () => {
+	const topFrames = getMaxFrames();
+	for(const timeUnit of timeUnits.children) {
+		const currentTime = proj[sel].time === timeUnit._value;
+		const selectedClassMethod = (topFrames[timeUnit._value] || currentTime) ? "add" : "remove";
+		timeUnit.classList[selectedClassMethod]("selected");
+		if(timeUnit.previousElementSibling && !(topFrames[timeUnit.previousElementSibling._value] || proj[sel].time === timeUnit.previousElementSibling._value)) {
+			timeUnit.previousElementSibling.classList[selectedClassMethod]("tall");
+		}
+		timeUnit.classList[selectedClassMethod]("tall");
+		timeUnit.classList[currentTime ? "add" : "remove"]("focus");
+	}
 };

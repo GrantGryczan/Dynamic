@@ -135,6 +135,9 @@ class DynamicObject {
 			throw new MiroError("The name of an object may only be set for groups.");
 		}
 	}
+	get timeline() {
+		return timelines.querySelector(`#timeline_${this.id}`);
+	}
 	updateName() {
 		if(this.asset) {
 			this[_name] = this.asset.name;
@@ -171,7 +174,11 @@ const updateLayers = () => {
 	}
 };
 const storeObjs = () => {
+	for(const obj of proj[sel].data.objs) {
+		obj._frames = proj[sel].frames[obj.id];
+	}
 	proj[sel].data.objs = [];
+	proj[sel].frames = {};
 	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
 		if(timelineItem.parentNode === timelineItems) {
 			delete timelineItem._obj.parent;
@@ -179,6 +186,8 @@ const storeObjs = () => {
 			timelineItem._obj.parent = timelineItem.parentNode.parentNode._obj;
 		}
 		proj[sel].data.objs.push(timelineItem._obj);
+		proj[sel].frames[timelineItem._obj.id] = timelineItem._obj._frames;
+		delete timelineItem._obj._frames;
 	}
 	proj[sel].saved = false;
 };
@@ -371,6 +380,19 @@ const selectTimelineItem = (target, button) => {
 			}
 		}
 	}
+	const topFrames = getMaxFrames();
+	for(const obj of proj[sel].data.objs) {
+		const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
+		if(obj.timelineItem.classList.contains("selected")) {
+			const focus = obj.timelineItem.classList.contains("focus");
+			for(let i = 0; i < topFrames.length; i++) {
+				if(topFrames[i] !== 0) {
+					frames[i] = (focus && topFrames[i] === 2) ? 2 : 1;
+				}
+			}
+		}
+	}
+	updateTimelines();
 	setActive(timelineContainer);
 };
 const addToCanvas = () => {

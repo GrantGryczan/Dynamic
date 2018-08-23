@@ -531,17 +531,16 @@ label:not(.mdc-floating-label) {
 	flex-grow: 1;
 	flex-shrink: 1000;
 	flex-direction: column;
+	position: relative;
 	min-width: 150px;
 	margin-left: -4px;
 	border-right: 1px solid #d0d0d0;
-}
-#timelineArea > * {
-	margin-right: -1px;
 }
 #timeRuler {
 	position: relative;
 	height: 30px;
 	min-height: 30px;
+	margin-right: -1px;
 	padding-right: 14px;
 	overflow-x: scroll;
 	white-space: nowrap;
@@ -562,12 +561,16 @@ label:not(.mdc-floating-label) {
 	height: 100%;
 	padding-right: 1px;
 	overflow: visible;
+	background-clip: content-box;
 }
 .timeUnit.selected {
-	background-image: linear-gradient(to top, rgba(128, 0, 255, 0.25) 75%, transparent);
+	background-color: rgba(128, 0, 255, 0.075);
 }
 .timeUnit.focus {
-	background-image: linear-gradient(to top, rgba(128, 0, 255, 0.05) 75%, transparent);
+	background-color: rgba(128, 0, 255, 0.25);
+}
+.timeUnit.tall::before {
+	height: 30px;
 }
 .timeLabel, .timeUnitLabel {
 	position: absolute;
@@ -621,7 +624,7 @@ label:not(.mdc-floating-label) {
 	height: 30px;
 }
 #timelineBox {
-	margin-top: 0;
+	margin: 0 -1px 0 0;
 	overflow: scroll;
 }
 #timelines {
