@@ -574,9 +574,6 @@ label:not(.mdc-floating-label) {
 .timeUnit.selected {
 	background-color: rgba(128, 0, 255, 0.075);
 }
-.timeUnit.focus {
-	background-color: rgba(128, 0, 255, 0.25);
-}
 .timeUnit.tall::before {
 	height: 30px;
 }

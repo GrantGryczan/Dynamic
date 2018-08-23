@@ -372,7 +372,7 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === saveProjAs) {
 							save(true);
 						} else if(mouseTarget0 === exportProj) {
-							// TODO
+							// TODO: export
 						}
 					} else if(mouseTarget0.parentNode === assetHead) {
 						if(mouseTarget0 === addAsset) {
@@ -382,6 +382,8 @@ const handleMouseUp = (evt, button) => {
 						}
 					} else if(mouseTarget0 === addObj) {
 						openCtx(timelineItems);
+					} else if(mouseTarget0 === sortTimeline) {
+						openCtx(sortTimeline);
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
 						fullPreview.classList.remove("hidden");

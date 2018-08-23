@@ -102,7 +102,7 @@ const assetMenuItems = [{
 const assetMenu = electron.remote.Menu.buildFromTemplate(assetMenuItems);
 const byAssets = assetElem => assetElem._asset;
 const numericAssetType = asset => asset.type === "group" ? 0 : (asset.type === "obj" ? 1 : (asset.mime.startsWith("image/") ? 2 : 3));
-const assetElemsAlphabetically = assetElem => `${"abcd"[numericAssetType(assetElem._asset)]} ${assetElem._asset.name.toLowerCase()}`;
+const assetElemsAlphabetically = assetElem => `${numericAssetType(assetElem._asset)} ${assetElem._asset.name.toLowerCase()}`;
 const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Sort by asset type",
 	click: () => {
@@ -121,10 +121,8 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 						if(!afterObj) {
 							afterObj = assetElem;
 						}
-					} else {
-						if(!afterImage) {
-							afterImage = assetElem;
-						}
+					} else if(!afterImage) {
+						afterImage = assetElem;
 					}
 				}
 			}
@@ -257,11 +255,10 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Create group",
 	click: () => {
 		setActive(timelineContainer);
-		const timelineItemArray = timelineItems.querySelectorAll(".asset.selected");
+		const timelineItemArray = timelineItems.querySelectorAll(".timelineItem.selected");
 		for(const timelineItem of timelineItemArray) {
 			timelineItem.classList.remove("selected");
 		}
-		deselectTimelineItems();
 		const names = proj[sel].data.objs.map(byInsensitiveName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
@@ -276,10 +273,80 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			timelineItemArray[0].before(obj.timelineItem);
 			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
+		obj.timelineItem.classList.add("selected");
+		proj[sel].selectedTimelineItem = obj.timelineItem.id;
 		obj.timelineItem.classList.add("open");
 		storeObjs();
+		updateSelectedTimelineItems();
 		updateTimelines();
 		updateProperties();
+	}
+}]);
+const byObjs = timelineItem => timelineItem._obj;
+const numericObjType = obj => obj.type === "group" ? 0 : (obj.type === "obj" ? 1 : (obj.type === "image" ? 2 : 3));
+const timelineItemsAlphabetically = timelineItem => `${numericObjType(timelineItem._obj)} ${timelineItem._obj.name.toLowerCase()}`;
+const sortTimelineMenu = electron.remote.Menu.buildFromTemplate([{
+	label: "Sort by object type",
+	click: () => {
+		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+			const timelineItemArray = Array.prototype.filter.call(children.children, byObjs);
+			let afterGroup = null;
+			let afterObj = null;
+			let afterImage = null;
+			for(const timelineItem of timelineItemArray) {
+				if(timelineItem._obj.type === "obj") {
+					if(!afterGroup) {
+						afterGroup = timelineItem;
+					}
+				} else if(timelineItem._obj.type === "image") {
+					if(!afterObj) {
+						afterObj = timelineItem;
+					}
+				} else if(!afterImage) {
+					afterImage = timelineItem;
+				}
+			}
+			if(!afterObj) {
+				afterObj = afterImage;
+			}
+			if(!afterGroup) {
+				afterGroup = afterObj;
+			}
+			for(const timelineItem of timelineItemArray) {
+				if(timelineItem._obj.type === "group") {
+					children.insertBefore(timelineItem, afterGroup);
+				} else if(timelineItem._obj.type === "obj") {
+					children.insertBefore(timelineItem, afterObj);
+				} else if(timelineItem._obj.type === "file") {
+					if(timelineItem._obj.mime.startsWith("image/")) {
+						children.insertBefore(timelineItem, afterImage);
+					} else {
+						children.appendChild(timelineItem);
+					}
+				}
+			}
+		}
+		storeAssets();
+	}
+}, {
+	label: "Sort alphabetically",
+	click: () => {
+		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+			const items = Array.prototype.filter.call(children.children, byObjs);
+			for(const name of items.map(timelineItemsAlphabetically).sort()) {
+				children.lastChild.after(items.find(timelineItem => timelineItem._obj.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+			}
+		}
+		storeAssets();
+	}
+}, {
+	label: "Reverse",
+	click: () => {
+		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
+			timelineItem.parentNode.firstChild.before(timelineItem);
+		}
+		storeObjs();
+		updateTimelines();
 	}
 }]);
 let ctxTarget;
@@ -299,7 +366,7 @@ const openCtx = target => {
 	} else if(ctxTarget === timelineItems) {
 		timelineItemsMenu.popup(win);
 	} else if(ctxTarget === sortTimeline) {
-		sortTimelineMenu.popup(win); // TODO
+		sortTimelineMenu.popup(win);
 	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		textMenu.popup(win);
 	}

@@ -328,6 +328,7 @@ const deselectTimelineItems = () => {
 		timelineItem.classList.remove("focus");
 	}
 	proj[sel].selectedTimelineItem = null;
+	updateSelectedTimelineItems();
 };
 const updateSelectedTimelineItems = () => {
 	const topFrames = getTopFrames();
@@ -405,12 +406,12 @@ const addToCanvas = () => {
 	} else {
 		timelineItems.appendChild(timelineItemDrag);
 	}
+	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
+		timelineItem.classList.remove("selected");
+	}
 	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
 	for(const assetElem of assetElems) {
 		const obj = new DynamicObject(assetElem._asset.id);
-		if(obj.type === "group") {
-			obj.timelineItem.classList.add("open");
-		}
 		if(assetElem[_parent]) {
 			assetElem[_parent].appendChild(obj.timelineItem);
 			delete assetElem[_parent];
@@ -423,6 +424,11 @@ const addToCanvas = () => {
 			}
 		}
 		proj[sel].data.objs.unshift(obj);
+		obj.timelineItem.classList.add("selected");
+		proj[sel].selectedTimelineItem = obj.timelineItem.id;
+		if(obj.type === "group") {
+			obj.timelineItem.classList.add("open");
+		}
 	}
 	timelineItemDrag.remove();
 	storeObjs();
@@ -431,6 +437,7 @@ const addToCanvas = () => {
 			obj.updateName();
 		}
 	}
+	updateSelectedTimelineItems();
 	updateTimelines();
 	proj[sel].saved = false;
 	setActive(contentContainer);
