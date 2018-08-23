@@ -343,6 +343,13 @@ const addDuration = quantity => {
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();
 };
+const scrollScrubberIntoView = () => {
+	if(scrubber.offsetLeft < 1) {
+		timeRuler.scrollLeft += scrubber.offsetLeft - 1;
+	} else if(scrubber.offsetLeft > timeRuler.offsetWidth - 2) {
+		timeRuler.scrollLeft += scrubber.offsetLeft - timeRuler.offsetWidth + 2;
+	}
+};
 const updateTimeUnits = () => {
 	const topFrames = getTopFrames();
 	let currentTime = false;

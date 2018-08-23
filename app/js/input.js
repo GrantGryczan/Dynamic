@@ -53,6 +53,7 @@ document.addEventListener("keydown", evt => {
 			moveFrameStates(-1);
 			proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
 			updateTimelines();
+			scrollScrubberIntoView();
 		}
 	} else if(evt.keyCode === 38) { // `up`
 		if(focused() && notTyping()) {
@@ -92,6 +93,7 @@ document.addEventListener("keydown", evt => {
 			moveFrameStates(1);
 			proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
 			updateTimelines();
+			scrollScrubberIntoView();
 		}
 	} else if(evt.keyCode === 40) { // `down`
 		if(focused() && notTyping()) {

@@ -141,6 +141,11 @@ const scrollIntoView = (elem, parent) => {
 	} else if(elem.offsetTop + elem.offsetHeight > parent.scrollTop + parent.offsetHeight) {
 		parent.scrollTop = elem.offsetTop + elem.offsetHeight - parent.offsetHeight;
 	}
+	if(elem.offsetLeft < parent.scrollLeft) {
+		parent.scrollLeft = elem.offsetLeft;
+	} else if(elem.offsetLeft + elem.offsetWidth > parent.scrollLeft + parent.offsetWidth) {
+		parent.scrollLeft = elem.offsetLeft + elem.offsetWidth - parent.offsetWidth;
+	}
 };
 const absoluteCenter = elem => {
 	elem.style.left = `${Math.max(0, (elem.parentNode.offsetWidth === elem.parentNode.scrollWidth ? elem.parentNode.offsetWidth : elem.parentNode.offsetWidth - 12) / 2 - elem.offsetWidth / 2)}px`;
