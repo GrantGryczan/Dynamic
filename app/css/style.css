@@ -569,13 +569,10 @@ label:not(.mdc-floating-label) {
 	height: 100%;
 	padding-right: 1px;
 	overflow: visible;
-	background-clip: content-box;
+	background-clip: border-box;
 }
 .timeUnit.selected {
 	background-color: rgba(128, 0, 255, 0.075);
-}
-.timeUnit.tall::before {
-	height: 30px;
 }
 .timeLabel, .timeUnitLabel {
 	position: absolute;

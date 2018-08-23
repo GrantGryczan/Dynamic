@@ -266,9 +266,12 @@ const focusFrame = (timeline, value) => {
 	proj[sel].frames[timeline][value] = 2;
 	proj[sel].time = value;
 };
-const selectFrame = (timeline, value, button) => {
+const selectFrame = (timeline, value, button, shift) => {
 	if(typeof button !== "number") {
 		button = 0;
+	}
+	if(shift === undefined) {
+		shift = shiftKey;
 	}
 	let index = -1;
 	for(const obj of proj[sel].data.objs) {
@@ -277,14 +280,14 @@ const selectFrame = (timeline, value, button) => {
 			break;
 		}
 	}
-	if(button === 2 && !(superKey || shiftKey)) {
+	if(button === 2 && !(superKey || shift)) {
 		if(proj[sel].frames[timeline][value]) {
 			blurFrames();
 		} else {
 			clearFrames();
 		}
 		focusFrame(timeline, value);
-	} else if(shiftKey && index !== -1) {
+	} else if(shift && index !== -1) {
 		const noSuperKey = !superKey;
 		let selecting = false;
 		for(const obj of proj[sel].data.objs) {
@@ -317,7 +320,11 @@ const selectFrame = (timeline, value, button) => {
 			focusFrame(timeline, value);
 		}
 	} else {
-		clearFrames();
+		if(!proj[sel].frames[timeline][value]) {
+			clearFrames();
+		} else {
+			blurFrames();
+		}
 		focusFrame(timeline, value);
 	}
 	updateTimelines();
@@ -354,12 +361,7 @@ const updateTimeUnits = () => {
 	const topFrames = getTopFrames();
 	let currentTime = false;
 	for(const timeUnit of timeUnits.children) {
-		const selectedClassMethod = topFrames[timeUnit._value] ? "add" : "remove";
-		timeUnit.classList[selectedClassMethod]("selected");
-		if(timeUnit.previousElementSibling && !(topFrames[timeUnit.previousElementSibling._value] || proj[sel].time === timeUnit.previousElementSibling._value)) {
-			timeUnit.previousElementSibling.classList[selectedClassMethod]("tall");
-		}
-		timeUnit.classList[selectedClassMethod]("tall");
+		timeUnit.classList[topFrames[timeUnit._value] ? "add" : "remove"]("selected");
 		timeUnit.classList[proj[sel].time === timeUnit._value ? "add" : "remove"]("focus");
 	}
 	scrubber.style.left = `${storage.frameWidth * proj[sel].time + storage.frameWidth / 2 - timeRuler.scrollLeft}px`;

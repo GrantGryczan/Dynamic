@@ -53,6 +53,7 @@ const onMouseDown = evt => {
 	} else if(mouseTarget.classList.contains("timeUnit")) {
 		selectTimeUnit(mouseTarget._value);
 	} else if(mouseTarget.classList.contains("frame")) {
+		initialTargetPos = proj[sel].frames[mouseTarget.parentNode._obj.id][mouseTarget._value];
 		selectFrame(mouseTarget.parentNode._obj.id, mouseTarget._value, downActive === timelineContainer ? 2 : evt.button);
 	} else if(mouseTarget === timelineBox) {
 		deselectTimelineItems();
@@ -173,6 +174,14 @@ document.addEventListener("mousemove", evt => {
 				minLayer.querySelector(".bar")[side](layerDrag);
 			} else {
 				layerDrag.remove();
+			}
+		} if(mouseTarget.classList.contains("frame")) {
+			if(evt.target.classList.contains("frame")) {
+				if(initialTargetPos) {
+					// TODO: move frames
+				} else {
+					selectFrame(evt.target.parentNode._obj.id, evt.target._value, 0, true);
+				}
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("timeUnit")) {
