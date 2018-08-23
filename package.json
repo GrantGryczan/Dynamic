@@ -1,11 +1,15 @@
 {
 	"name": "Dynamic",
-	"version": "0.17.18",
+	"version": "0.17.19",
 	"description": "Create HTML5 animations with ease!",
 	"main": "app/main.js",
 	"scripts": {
 		"start": "electron . dev",
 		"build": "node ./build/build.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/GrantGryczan/web.git"
 	},
 	"author": {
 		"name": "Grant Gryczan",

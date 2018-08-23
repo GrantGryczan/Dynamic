@@ -154,7 +154,7 @@ document.addEventListener("mousemove", evt => {
 				}
 				indicateTarget();
 			}
-		} else if(mouseTarget.parentNode.classList.contains("layer")) {
+		} else if(mouseTarget.parentNode && mouseTarget.parentNode.classList.contains("layer")) {
 			if(!mouseMoved) {
 				selectLayer(mouseTarget.parentNode, 2);
 			}
@@ -178,6 +178,7 @@ document.addEventListener("mousemove", evt => {
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("timeUnit")) {
 				selectTimeUnit(Math.max(0, Math.min(proj[sel].data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth))));
+				scrollScrubberIntoView();
 			} else if(mouseTarget0.classList.contains("handle")) {
 				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
 				updatePanels();
@@ -434,14 +435,14 @@ document.addEventListener("click", evt => {
 	}
 }, capturePassive);
 let allowDrag = true;
-document.addEventListener("dragstart", evt => {
+document.addEventListener("dragstart", () => {
 	if(mouseDown !== -1) {
 		mouseTarget = mouseTarget0 = mouseTarget2 = null;
 		mouseDown = -1;
 	}
 	allowDrag = false;
 }, capturePassive);
-document.addEventListener("dragend", evt => {
+document.addEventListener("dragend", () => {
 	allowDrag = true;
 }, capturePassive);
 document.addEventListener("dragover", evt => {
