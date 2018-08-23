@@ -174,7 +174,12 @@ document.addEventListener("mousemove", evt => {
 				layerDrag.remove();
 			}
 		} else if(mouseTarget0) {
-			if(mouseTarget0.classList.contains("tab")) {
+			if(mouseTarget0.classList.contains("timeUnit")) {
+				selectTimeUnit(Math.max(0, Math.min(proj[sel].data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left) / storage.frameWidth))));
+			} else if(mouseTarget0.classList.contains("handle")) {
+				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
+				updatePanels();
+			} else if(mouseTarget0.classList.contains("tab")) {
 				if(mouseTarget0 !== homeTab) {
 					mouseTarget0.style.left = `${evt.clientX - initialTargetPos - targetOffset}px`;
 					const tabWidth = mouseTarget0.offsetWidth + 1;
@@ -203,9 +208,6 @@ document.addEventListener("mousemove", evt => {
 						}
 					}
 				}
-			} else if(mouseTarget0.classList.contains("handle")) {
-				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
-				updatePanels();
 			}
 		}
 	}

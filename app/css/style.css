@@ -536,6 +536,14 @@ label:not(.mdc-floating-label) {
 	margin-left: -4px;
 	border-right: 1px solid #d0d0d0;
 }
+#scrubber {
+	position: absolute;
+	width: 1px;
+	height: 100%;
+	z-index: 1;
+	background-color: #8000ff;
+	pointer-events: none;
+}
 #timeRuler {
 	position: relative;
 	height: 30px;
@@ -638,12 +646,17 @@ label:not(.mdc-floating-label) {
 }
 .timeline {
 	width: 100%;
-	height: 23px;
-	border-bottom: 1px solid #d0d0d0;
-	box-sizing: content-box;
+	height: 24px;
 }
 .timeline.typeGroup {
 	background-color: #e0e0e0;
+}
+.frame {
+	display: inline-block;
+	position: relative;
+	height: 100%;
+	border-right: 1px solid #d0d0d0;
+	border-bottom: 1px solid #d0d0d0;
 }
 .frame.highlight {
 	background-color: rgba(128, 0, 255, 0.035);
@@ -656,12 +669,6 @@ label:not(.mdc-floating-label) {
 }
 .frame.focus {
 	background-color: rgba(128, 0, 255, 0.25);
-}
-.frame {
-	display: inline-block;
-	position: relative;
-	height: 100%;
-	border-right: 1px solid #d0d0d0;
 }
 .frame::before {
 	position: absolute;

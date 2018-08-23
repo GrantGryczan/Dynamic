@@ -226,7 +226,7 @@ const updateTimelines = () => {
 					if(highlight && proj[sel].frames[obj.id][frame._value]) {
 						frame.classList.add("selected");
 					}
-					if(focusHighlight || currentTime || values.find(frames => frames[frame._value] === 2)) {
+					if(focusHighlight || currentTime) {
 						frame.classList.add("focusHighlight");
 						if(focusHighlight && proj[sel].frames[obj.id][frame._value] === 2) {
 							frame.classList.add("focus");
@@ -352,6 +352,10 @@ const updateTimeUnitClasses = () => {
 			timeUnit.previousElementSibling.classList[selectedClassMethod]("tall");
 		}
 		timeUnit.classList[selectedClassMethod]("tall");
-		timeUnit.classList[topFrames[timeUnit._value] === 2 ? "add" : "remove"]("focus");
+		const currentTime = proj[sel].time === timeUnit._value;
+		timeUnit.classList[currentTime ? "add" : "remove"]("focus");
+		if(currentTime) {
+			scrubber.style.left = `${storage.frameWidth * proj[sel].time + storage.frameWidth / 2}px`;
+		}
 	}
 };

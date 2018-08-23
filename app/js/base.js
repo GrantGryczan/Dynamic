@@ -47,6 +47,7 @@ const timelineContainerContents = timelineContainer.querySelector(".contents");
 const timelineItems = timelineContainer.querySelector("#timelineItems");
 const timelineItemDrag = timelineItems.querySelector(".drag");
 timelineItemDrag.remove();
+const scrubber = timelineContainer.querySelector("#scrubber");
 const timeRuler = timelineContainer.querySelector("#timeRuler");
 const timeRulerFiller = timeRuler.querySelector(".filler");
 const timeUnits = timeRuler.querySelector("#timeUnits");

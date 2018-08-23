@@ -34,64 +34,87 @@ document.addEventListener("keydown", evt => {
 	altKey = evt.altKey;
 	if(evt.keyCode === 35) { // `end`
 		if(focused() && notTyping()) {
-			proj[sel].time = proj[sel].data.duration - 1;
+			const value = proj[sel].data.duration - 1;
+			moveFrameStates(value - proj[sel].time);
+			proj[sel].time = value;
 			updateTimelines();
 		}
 	} else if(evt.keyCode === 36) { // `home`
 		if(focused() && notTyping()) {
+			moveFrameStates(-proj[sel].time);
 			proj[sel].time = 0;
 			updateTimelines();
 		}
+	} else if(evt.keyCode === 37) { // `left`
+		moveFrameStates(-1);
+		proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
+		updateTimelines();
 	} else if(evt.keyCode === 38) { // `up`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const assetElems = assets.querySelectorAll(".asset");
 				const assetElem = assetElems[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${proj[sel].focusedAsset}`)) || assetElems.length) - 1) : 0];
-				if(!superKey) {
-					selectAsset(assetElem);
+				if(assetElem) {
+					if(!superKey) {
+						selectAsset(assetElem);
+					}
+					proj[sel].focusedAsset = assetElem.id;
 				}
-				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
-				if(!superKey) {
-					selectLayer(layer);
+				if(layer) {
+					if(!superKey) {
+						selectLayer(layer);
+					}
+					proj[sel].focusedLayer = layer.id;
 				}
-				proj[sel].focusedLayer = layer.id;
 			} else if(timelineContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const timelineItem = proj[sel].focusedTimelineItem ? timelineItems.querySelector(`#${proj[sel].focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
-				if(!superKey) {
-					selectTimelineItem(timelineItem);
+				if(timelineItem) {
+					if(!superKey) {
+						selectTimelineItem(timelineItem);
+					}
+					proj[sel].focusedTimelineItem = timelineItem.id;
 				}
-				proj[sel].focusedTimelineItem = timelineItem.id;
 			}
 		}
+	} else if(evt.keyCode === 39) { // `right`
+		moveFrameStates(1);
+		proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
+		updateTimelines();
 	} else if(evt.keyCode === 40) { // `down`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const assetElems = assets.querySelectorAll(".asset");
 				const assetElem = assetElems[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % assetElems.length];
-				if(!superKey) {
-					selectAsset(assetElem);
+				if(assetElem) {
+					if(!superKey) {
+						selectAsset(assetElem);
+					}
+					proj[sel].focusedAsset = assetElem.id;
 				}
-				proj[sel].focusedAsset = assetElem.id;
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
-				if(!superKey) {
-					selectLayer(layer);
+				if(layer) {
+					if(!superKey) {
+						selectLayer(layer);
+					}
+					proj[sel].focusedLayer = layer.id;
 				}
-				proj[sel].focusedLayer = layer.id;
 			} else if(timelineContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const timelineItem = proj[sel].focusedTimelineItem ? timelineItems.querySelector(`#${proj[sel].focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
-				if(!superKey) {
-					selectTimelineItem(timelineItem);
+				if(timelineItem) {
+					if(!superKey) {
+						selectTimelineItem(timelineItem);
+					}
+					proj[sel].focusedTimelineItem = timelineItem.id;
 				}
-				proj[sel].focusedTimelineItem = timelineItem.id;
 			}
 		}
 	} else if(evt.keyCode === 93) { // `context menu`
