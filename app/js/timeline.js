@@ -236,7 +236,7 @@ const updateTimelines = () => {
 			}
 		}
 	}
-	updateTimeUnitClasses();
+	updateTimeUnits();
 };
 const clearFrames = () => {
 	for(const obj of proj[sel].data.objs) {
@@ -343,8 +343,9 @@ const addDuration = quantity => {
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();
 };
-const updateTimeUnitClasses = () => {
+const updateTimeUnits = () => {
 	const topFrames = getTopFrames();
+	let currentTime = false;
 	for(const timeUnit of timeUnits.children) {
 		const selectedClassMethod = topFrames[timeUnit._value] ? "add" : "remove";
 		timeUnit.classList[selectedClassMethod]("selected");
@@ -352,10 +353,7 @@ const updateTimeUnitClasses = () => {
 			timeUnit.previousElementSibling.classList[selectedClassMethod]("tall");
 		}
 		timeUnit.classList[selectedClassMethod]("tall");
-		const currentTime = proj[sel].time === timeUnit._value;
-		timeUnit.classList[currentTime ? "add" : "remove"]("focus");
-		if(currentTime) {
-			scrubber.style.left = `${storage.frameWidth * proj[sel].time + storage.frameWidth / 2}px`;
-		}
+		timeUnit.classList[proj[sel].time === timeUnit._value ? "add" : "remove"]("focus");
 	}
+	scrubber.style.left = `${storage.frameWidth * proj[sel].time + storage.frameWidth / 2 - timeRuler.scrollLeft}px`;
 };

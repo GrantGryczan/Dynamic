@@ -16,16 +16,18 @@ const onMouseDown = evt => {
 	if(mouseDown !== -1) {
 		onMouseUp(evt);
 	}
-	mouseDown = evt.button;
 	mouseMoved = false;
 	mouseX = evt.clientX;
 	mouseY = evt.clientY;
-	mouseTarget = evt.target;
 	if(evt.button === 0) {
 		mouseTarget0 = evt.target;
 	} else if(evt.button === 2) {
 		mouseTarget2 = evt.target;
+	} else {
+		return;
 	}
+	mouseTarget = evt.target;
+	mouseDown = evt.button;
 	for(const dialog of container.querySelectorAll(".mdc-dialog")) {
 		if(dialog.contains(mouseTarget)) {
 			return;
@@ -175,7 +177,7 @@ document.addEventListener("mousemove", evt => {
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("timeUnit")) {
-				selectTimeUnit(Math.max(0, Math.min(proj[sel].data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left) / storage.frameWidth))));
+				selectTimeUnit(Math.max(0, Math.min(proj[sel].data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth))));
 			} else if(mouseTarget0.classList.contains("handle")) {
 				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
 				updatePanels();
