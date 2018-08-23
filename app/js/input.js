@@ -34,6 +34,7 @@ document.addEventListener("keydown", evt => {
 	altKey = evt.altKey;
 	if(evt.keyCode === 35) { // `end`
 		if(focused() && notTyping()) {
+			evt.preventDefault();
 			const value = proj[sel].data.duration - 1;
 			moveFrameStates(value - proj[sel].time);
 			proj[sel].time = value;
@@ -41,14 +42,18 @@ document.addEventListener("keydown", evt => {
 		}
 	} else if(evt.keyCode === 36) { // `home`
 		if(focused() && notTyping()) {
+			evt.preventDefault();
 			moveFrameStates(-proj[sel].time);
 			proj[sel].time = 0;
 			updateTimelines();
 		}
 	} else if(evt.keyCode === 37) { // `left`
-		moveFrameStates(-1);
-		proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
-		updateTimelines();
+		if(focused() && notTyping()) {
+			evt.preventDefault();
+			moveFrameStates(-1);
+			proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
+			updateTimelines();
+		}
 	} else if(evt.keyCode === 38) { // `up`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
@@ -82,9 +87,12 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 39) { // `right`
-		moveFrameStates(1);
-		proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
-		updateTimelines();
+		if(focused() && notTyping()) {
+			evt.preventDefault();
+			moveFrameStates(1);
+			proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
+			updateTimelines();
+		}
 	} else if(evt.keyCode === 40) { // `down`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
