@@ -54,10 +54,9 @@ const onMouseDown = evt => {
 		selectTimeUnit(mouseTarget._value);
 	} else if(mouseTarget.classList.contains("frame")) {
 		selectFrame(mouseTarget.parentNode._obj.id, mouseTarget._value, downActive === timelineContainer ? 2 : evt.button);
-	} else if(mouseTarget.classList.contains("frame")) {
-		proj[sel].focusedFrame = [mouseTarget.parentNode._obj.id, mouseTarget._value];
-		proj[sel].focusedTimelineItem = mouseTarget.parentNode._obj.timelineItem.id;
-		updateTimelines();
+	} else if(mouseTarget === timelineBox) {
+		deselectTimelineItems();
+		updateProperties();
 	} else if(evt.button === 0) {
 		if(mouseTarget0.classList.contains("tab")) {
 			if(mouseTarget0 === homeTab) {
