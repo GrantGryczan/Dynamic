@@ -327,6 +327,7 @@ const sortTimelineMenu = electron.remote.Menu.buildFromTemplate([{
 			}
 		}
 		storeAssets();
+		updateSelectedTimelineItems();
 	}
 }, {
 	label: "Sort alphabetically",
