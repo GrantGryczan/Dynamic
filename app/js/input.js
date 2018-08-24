@@ -221,7 +221,11 @@ document.addEventListener("keydown", evt => {
 			} else if(layerContainer.classList.contains("active")) {
 				removeSelectedLayers();
 			} else if(timelineContainer.classList.contains("active")) {
-				// TODO: Delete frames
+				if(timelineArea.contains(mouseTarget)) {
+					// TODO: Remove frames
+				} else {
+					removeSelectedTimelineItems();
+				}
 			}
 		}
 	} else if(evt.keyCode === 9) { // `tab`

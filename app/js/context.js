@@ -329,7 +329,7 @@ const sortObjsMenuItems = [{
 			}
 		}
 		storeObjs();
-		updateSelectedTimelineItems();
+		updateTimelines();
 	}
 }, {
 	label: "Sort alphabetically",
@@ -341,19 +341,18 @@ const sortObjsMenuItems = [{
 			}
 		}
 		storeObjs();
-		updateSelectedTimelineItems();
+		updateTimelines();
 	}
 }, {
 	label: "Sort by layer",
 	click: () => {
 		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
-			const items = Array.prototype.filter.call(children.children, byObjs);
-			for(const name of items.map(timelineItemsAlphabetically).sort()) {
-				children.lastChild.after(items.find(timelineItem => timelineItem._obj.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+			for(const obj of Array.prototype.map.call(children.children, byObjs).filter(onlyGraphics).sort(byZIndex)) {
+				children.lastChild.after(obj.timelineItem);
 			}
 		}
 		storeObjs();
-		updateSelectedTimelineItems();
+		updateTimelines();
 	}
 }, {
 	label: "Reverse",
@@ -362,7 +361,7 @@ const sortObjsMenuItems = [{
 			timelineItem.parentNode.firstChild.before(timelineItem);
 		}
 		storeObjs();
-		updateSelectedTimelineItems();
+		updateTimelines();
 	}
 }];
 const removeTimelinesMenuItem = {
