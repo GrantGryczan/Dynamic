@@ -263,6 +263,7 @@ const getTopFrames = () => {
 	return topFrames;
 };
 const focusFrame = (timeline, value) => {
+	proj[sel].focusedTimelineItem = `timelineItem_${timeline}`;
 	proj[sel].frames[timeline][value] = 2;
 	proj[sel].time = value;
 };
