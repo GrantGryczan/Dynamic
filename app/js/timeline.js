@@ -191,23 +191,9 @@ const updateTimelines = () => {
 	}
 	const values = Object.values(proj[sel].frames);
 	const start = Math.floor(timelineBox.scrollTop / 24);
-	const visibleTimelineItems = [];
-	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
-		let visible = true;
-		let parent = timelineItem;
-		while((parent = parent.parentNode.parentNode) !== timelineItemContainer) {
-			if(!parent.classList.contains("open")) {
-				visible = false;
-				break;
-			}
-		}
-		if(visible) {
-			visibleTimelineItems.push(timelineItem);
-		}
-	}
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
-		timeline.id = `timeline_${(timeline._obj = visibleTimelineItems[start + i]._obj).id}`;
+		timeline.id = `timeline_${(timeline._obj = objs[start + i]).id}`;
 	}
 	for(const obj of proj[sel].data.objs) {
 		const focusHighlight = proj[sel].frames[obj.id].includes(2);
@@ -329,6 +315,7 @@ const selectFrame = (timeline, value, button, shift) => {
 		focusFrame(timeline, value);
 	}
 	updateTimelines();
+	scrollFrameIntoView(value);
 	setActive(timelineContainer);
 };
 const moveFrameStates = change => {
@@ -342,6 +329,7 @@ const selectTimeUnit = value => {
 	moveFrameStates(value - proj[sel].time);
 	proj[sel].time = value;
 	updateTimelines();
+	scrollFrameIntoView();
 };
 const addDuration = quantity => {
 	const moreFrames = new Array(quantity).fill(0);
@@ -351,11 +339,16 @@ const addDuration = quantity => {
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();
 };
-const scrollScrubberIntoView = () => {
-	if(scrubber.offsetLeft < 1) {
-		timeRuler.scrollLeft += scrubber.offsetLeft - 1;
-	} else if(scrubber.offsetLeft > timeRuler.offsetWidth - 2) {
-		timeRuler.scrollLeft += scrubber.offsetLeft - timeRuler.offsetWidth + 2;
+const scrollFrameIntoView = (timeline, value) => {
+	if(value === undefined) {
+		value = proj[sel].time;
+	}
+	const left = storage.frameWidth * value - timeRuler.scrollLeft;
+	let offset;
+	if(left < 1) {
+		timeRuler.scrollLeft += left;
+	} else if(left > (offset = timeRuler.offsetWidth - 2 - storage.frameWidth - SCROLLBAR_SIZE) - 1) {
+		timeRuler.scrollLeft += left - offset;
 	}
 };
 const updateTimeUnits = () => {

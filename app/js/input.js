@@ -39,6 +39,7 @@ document.addEventListener("keydown", evt => {
 			moveFrameStates(value - proj[sel].time);
 			proj[sel].time = value;
 			updateTimelines();
+			scrollFrameIntoView();
 		}
 	} else if(evt.keyCode === 36) { // `home`
 		if(focused() && notTyping()) {
@@ -46,6 +47,7 @@ document.addEventListener("keydown", evt => {
 			moveFrameStates(-proj[sel].time);
 			proj[sel].time = 0;
 			updateTimelines();
+			scrollFrameIntoView();
 		}
 	} else if(evt.keyCode === 37) { // `left`
 		if(focused() && notTyping()) {
@@ -53,7 +55,7 @@ document.addEventListener("keydown", evt => {
 			moveFrameStates(-1);
 			proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
 			updateTimelines();
-			scrollScrubberIntoView();
+			scrollFrameIntoView();
 		}
 	} else if(evt.keyCode === 38) { // `up`
 		if(focused() && notTyping()) {
@@ -93,7 +95,7 @@ document.addEventListener("keydown", evt => {
 			moveFrameStates(1);
 			proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
 			updateTimelines();
-			scrollScrubberIntoView();
+			scrollFrameIntoView();
 		}
 	} else if(evt.keyCode === 40) { // `down`
 		if(focused() && notTyping()) {

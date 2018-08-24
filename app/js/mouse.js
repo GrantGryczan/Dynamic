@@ -179,32 +179,28 @@ document.addEventListener("mousemove", evt => {
 				layerDrag.remove();
 			}
 		} if(mouseTarget.classList.contains("frame")) {
-			let target = evt.target;
-			if(!target.classList.contains("frame")) {
-				target = null;
-				let minDist = Infinity;
-				for(const frame of timelines.querySelectorAll(".frame")) {
-					const rect = frame.getBoundingClientRect();
-					const xDist = mouseX - rect.left - (rect.width - 1) / 2;
-					const yDist = mouseY - rect.top - rect.height / 2;
-					const dist = Math.sqrt(xDist * xDist + yDist * yDist);
-					if(dist < minDist) {
-						target = frame;
-						minDist = dist;
-					}
-				}
+			let timeline;
+			let value;
+			if(evt.target.classList.contains("frame")) {
+				timeline = evt.target.parentNode._obj.id;
+				value = evt.target._value;
+			} else {
+				const objs = proj[sel].data.objs.filter(byVisible);
+				const obj = objs[Math.max(0, Math.min(objs.length - 1, Math.floor((mouseY - timelineItems.getBoundingClientRect().top + timelineItems.scrollTop) / 24)))];
+				scrollIntoView(obj.timelineItem.querySelector(".bar"), timelineItems);
+				timeline = obj.id;
+				value = Math.max(0, Math.min(proj[sel].data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
 			}
-			if(target) {
+			if(timeline && typeof value === "number") {
 				if(initialTargetPos) {
 					// TODO: Move frames
 				} else {
-					selectFrame(target.parentNode._obj.id, target._value, 0, true);
+					selectFrame(timeline, value, 0, true);
 				}
 			}
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("timeUnit")) {
 				selectTimeUnit(Math.max(0, Math.min(proj[sel].data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth))));
-				scrollScrubberIntoView();
 			} else if(mouseTarget0.classList.contains("handle")) {
 				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
 				updatePanels();
