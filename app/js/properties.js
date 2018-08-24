@@ -1,5 +1,8 @@
 "use strict";
-const makeFullPreviewHidden = fullPreview.classList.add.bind(fullPreview.classList, "hidden");
+const makeFullPreviewHidden = () => {
+	fullPreview.classList.add("hidden");
+	fullPreviewImage.src = "";
+};
 const hideFullPreview = () => {
 	if(fullPreview.classList.contains("opaque")) {
 		fullPreview.classList.remove("opaque");
