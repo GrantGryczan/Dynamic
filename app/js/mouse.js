@@ -56,8 +56,11 @@ const onMouseDown = evt => {
 		initialTargetPos = proj[sel].frames[mouseTarget.parentNode._obj.id][mouseTarget._value];
 		selectFrame(mouseTarget.parentNode._obj.id, mouseTarget._value, downActive === timelineContainer ? 2 : evt.button);
 	} else if(mouseTarget === timelineBox) {
-		deselectTimelineItems();
-		updateProperties();
+		const rect = timelineBox.getBoundingClientRect();
+		if(mouseX < rect.left + rect.width - SCROLLBAR_SIZE - 1 && mouseY < rect.top + rect.height - SCROLLBAR_SIZE - 1) {
+			deselectTimelineItems();
+			updateProperties();
+		}
 	} else if(evt.button === 0) {
 		if(mouseTarget0.classList.contains("tab")) {
 			if(mouseTarget0 === homeTab) {
@@ -318,10 +321,8 @@ const handleMouseUp = (evt, button) => {
 				updateTimelines();
 			} else {
 				if(mouseTarget === timelineItems) {
-					if(mouseX < timelineItems.getBoundingClientRect().left + timelineItems.scrollWidth) {
-						deselectTimelineItems();
-						updateProperties();
-					}
+					deselectTimelineItems();
+					updateProperties();
 				} else if(mouseTarget.classList.contains("bar")) {
 					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : button);
 				} else if(evtButton0) {

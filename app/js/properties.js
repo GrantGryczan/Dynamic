@@ -13,11 +13,11 @@ fullPreview.addEventListener("mousemove", evt => {
 	fullPreview.classList.remove("hoverScrollbar");
 	let targetRect;
 	let setHoverScrollbar = false;
-	if(fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - 12) {
+	if(fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - SCROLLBAR_SIZE) {
 		setHoverScrollbar = true;
 		fullPreview.classList.add("hoverScrollbar");
 	}
-	if(!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - 12) {
+	if(!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - SCROLLBAR_SIZE) {
 		fullPreview.classList.add("hoverScrollbar");
 	}
 });

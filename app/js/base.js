@@ -107,6 +107,7 @@ if(win.isFocused()) {
 } else {
 	onBlur();
 }
+const SCROLLBAR_SIZE = 12;
 const uid = keys => {
 	let key;
 	do {
@@ -148,8 +149,8 @@ const scrollIntoView = (elem, parent) => {
 	}
 };
 const absoluteCenter = elem => {
-	elem.style.left = `${Math.max(0, (elem.parentNode.offsetWidth === elem.parentNode.scrollWidth ? elem.parentNode.offsetWidth : elem.parentNode.offsetWidth - 12) / 2 - elem.offsetWidth / 2)}px`;
-	elem.style.top = `${Math.max(0, (elem.parentNode.offsetHeight === elem.parentNode.scrollHeight ? elem.parentNode.offsetHeight : elem.parentNode.offsetHeight - 12) / 2 - elem.offsetHeight / 2)}px`;
+	elem.style.left = `${Math.max(0, (elem.parentNode.offsetWidth === elem.parentNode.scrollWidth ? elem.parentNode.offsetWidth : elem.parentNode.offsetWidth - SCROLLBAR_SIZE) / 2 - elem.offsetWidth / 2)}px`;
+	elem.style.top = `${Math.max(0, (elem.parentNode.offsetHeight === elem.parentNode.scrollHeight ? elem.parentNode.offsetHeight : elem.parentNode.offsetHeight - SCROLLBAR_SIZE) / 2 - elem.offsetHeight / 2)}px`;
 };
 const block = state => {
 	const classListMethod = state ? "add": "remove";
