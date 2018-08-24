@@ -234,6 +234,10 @@ document.addEventListener("keydown", evt => {
 				// TODO: delete frames
 			}
 		}
+	} else if(evt.keyCode === 9) { // `tab`
+		if(fullPreview.classList.contains("active")) {
+			evt.preventDefault();
+		}
 	} else if(evt.keyCode === 13) { // `enter`
 		if(focused() && notTyping()) {
 			if(assetContainer.classList.contains("active")) {
