@@ -196,7 +196,7 @@ document.addEventListener("mousemove", evt => {
 			}
 			if(target) {
 				if(initialTargetPos) {
-					// TODO: move frames
+					// TODO: Move frames
 				} else {
 					selectFrame(target.parentNode._obj.id, target._value, 0, true);
 				}
@@ -263,7 +263,7 @@ const handleMouseUp = (evt, button) => {
 		if(assets.contains(mouseTarget) && button === mouseDown) {
 			if(mouseMoved && mouseTarget.classList.contains("bar")) {
 				if(!assetDrag.parentNode) {
-					addToCanvas();
+					addToTimeline();
 				} else {
 					for(const assetElem of assets.querySelectorAll(".asset.selected")) {
 						try {
@@ -399,18 +399,10 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === saveProjAs) {
 							save(true);
 						} else if(mouseTarget0 === exportProj) {
-							// TODO: export
+							// TODO: Export
 						}
-					} else if(mouseTarget0.parentNode === assetHead) {
-						if(mouseTarget0 === addAsset) {
-							openCtx(assets);
-						} else if(mouseTarget0 === sortAssets) {
-							openCtx(sortAssets);
-						}
-					} else if(mouseTarget0 === addObj) {
-						openCtx(timelineItems);
-					} else if(mouseTarget0 === sortTimeline) {
-						openCtx(sortTimeline);
+					} else if(mouseTarget0.parentNode === assetHead || mouseTarget0.parentNode === timelineHead) {
+						openCtx(mouseTarget0);
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
 						fullPreview.classList.remove("hidden");

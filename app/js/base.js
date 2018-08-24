@@ -1,4 +1,7 @@
 "use strict";
+const todo = () => { // TODO: Resolve all calls of this function and remove function
+	new Miro.Dialog("Error", "Miroware Dynamic is still under development and does not yet support that feature.");
+};
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const zlib = require("zlib");
@@ -41,8 +44,9 @@ const assetDrag = assets.querySelector(".drag");
 assetDrag.remove();
 const content = projectPage.querySelector("#content");
 const timelineContainer = projectPage.querySelector("#timelineContainer");
-const addObj = timelineContainer.querySelector("#addObj");
-const sortTimeline = timelineContainer.querySelector("#sortTimeline");
+const timelineHead = timelineContainer.querySelector(".head");
+const addObj = timelineHead.querySelector("#addObj");
+const sortObjs = timelineHead.querySelector("#sortObjs");
 const timelineContainerContents = timelineContainer.querySelector(".contents");
 const timelineItems = timelineContainer.querySelector("#timelineItems");
 const timelineItemDrag = timelineItems.querySelector(".drag");

@@ -266,6 +266,12 @@ const deselectLayers = () => {
 	}
 	proj[sel].selectedLayer = null;
 };
+const selectAllLayers = () => {
+	for(const layer of layers.querySelectorAll(".layer:not(.selected)")) {
+		layer.classList.add("selected");
+	}
+	updateProperties();
+};
 const selectLayer = (target, button) => {
 	if(typeof button !== "number") {
 		button = 0;
@@ -329,6 +335,13 @@ const deselectTimelineItems = () => {
 	}
 	proj[sel].selectedTimelineItem = null;
 	updateSelectedTimelineItems();
+};
+const selectAllTimelineItems = () => {
+	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem:not(.selected)")) {
+		timelineItem.classList.add("selected");
+	}
+	updateSelectedTimelineItems();
+	updateProperties();
 };
 const updateSelectedTimelineItems = () => {
 	const topFrames = getTopFrames();
@@ -399,7 +412,7 @@ const selectTimelineItem = (target, button) => {
 	updateSelectedTimelineItems();
 	setActive(timelineContainer);
 };
-const addToCanvas = () => {
+const addToTimeline = () => {
 	const _parent = Symbol("parent");
 	if(timelineItems.firstElementChild) {
 		timelineItems.firstElementChild.before(timelineItemDrag);

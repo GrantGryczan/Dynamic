@@ -169,6 +169,12 @@ const deselectAssets = () => {
 	}
 	proj[sel].selectedAsset = null;
 };
+const selectAllAssets = () => {
+	for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
+		assetElem.classList.add("selected");
+	}
+	updateProperties();
+};
 const selectAsset = (target, button) => {
 	if(typeof button !== "number") {
 		button = 0;

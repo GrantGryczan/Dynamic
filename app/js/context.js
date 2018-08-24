@@ -2,17 +2,16 @@
 const menuSeparator = {
 	type: "separator"
 };
-const textMenu = electron.remote.Menu.buildFromTemplate([{
+const editHistoryMenuItems = [{
 	label: "Undo",
 	accelerator: "CmdOrCtrl+Z",
-	role: "undo"
+	click: todo
 }, {
 	label: "Redo",
 	accelerator: "CmdOrCtrl+Shift+Z",
-	role: "redo"
-}, {
-	type: "separator"
-}, {
+	click: todo
+}];
+const textMenuItems = [{
 	label: "Cut",
 	accelerator: "CmdOrCtrl+X",
 	role: "cut"
@@ -28,8 +27,16 @@ const textMenu = electron.remote.Menu.buildFromTemplate([{
 	label: "Select all",
 	accelerator: "CmdOrCtrl+A",
 	role: "selectall"
-}]);
-const assetMenuItems = [{
+}, menuSeparator, {
+	label: "Undo",
+	accelerator: "CmdOrCtrl+Z",
+	role: "undo"
+}, {
+	label: "Redo",
+	accelerator: "CmdOrCtrl+Shift+Z",
+	role: "redo"
+}];
+const assetCreationMenuItems = [{
 	label: "Create object",
 	click: () => {
 		let assetParent = assets;
@@ -99,11 +106,10 @@ const assetMenuItems = [{
 		win.webContents.executeJavaScript("assetInput.click()", true);
 	}
 }];
-const assetMenu = electron.remote.Menu.buildFromTemplate(assetMenuItems);
 const byAssets = assetElem => assetElem._asset;
 const numericAssetType = asset => asset.type === "group" ? 0 : (asset.type === "obj" ? 1 : (asset.mime.startsWith("image/") ? 2 : 3));
 const assetElemsAlphabetically = assetElem => `${numericAssetType(assetElem._asset)} ${assetElem._asset.name.toLowerCase()}`;
-const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
+const sortAssetsMenuItems = [{
 	label: "Sort by asset type",
 	click: () => {
 		for(const children of [assets, ...assets.querySelectorAll(".children")]) {
@@ -167,8 +173,27 @@ const sortAssetsMenu = electron.remote.Menu.buildFromTemplate([{
 		}
 		storeAssets();
 	}
-}]);
-const deselectAssetMenuItem = {
+}];
+const removeAssetsMenuItem = {
+	label: "Remove",
+	accelerator: "delete",
+	click: removeSelectedAssets
+};
+const renameSingleMenuItem = {
+	label: "Rename",
+	accelerator: "F2",
+	click: prop.name.elements[0].select.bind(prop.name.elements[0])
+};
+const renameMultipleMenuItem = {
+	label: "Rename",
+	accelerator: "F2",
+	enabled: false
+};
+const addToTimelineMenuItem = {
+	label: "Add to timeline",
+	click: addToTimeline
+};
+const deselectAssetsMenuItem = {
 	label: "Deselect",
 	accelerator: "esc",
 	click: () => {
@@ -176,28 +201,13 @@ const deselectAssetMenuItem = {
 		updateProperties();
 	}
 };
-const assetBarMenuSingleItems = [{
-	label: "Remove",
-	click: removeSelectedAssets
-}, {
-	label: "Rename",
-	accelerator: "F2",
-	click: prop.name.elements[0].select.bind(prop.name.elements[0])
-}];
-const assetBarMenuMultipleItems = [{
-	label: "Remove",
-	click: removeSelectedAssets
-}, {
-	label: "Rename",
-	accelerator: "F2",
-	enabled: false
-}];
-const assetBarMenuGroupItems = [{
+const assetMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
 		for(const assetElem of assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset")) {
 			assetElem.classList.add("selected");
 		}
+		updateProperties();
 	}
 }, {
 	label: "Deselect && select children",
@@ -214,34 +224,14 @@ const assetBarMenuGroupItems = [{
 		updateProperties();
 	}
 }];
-const assetBarMenuNoGroupItems = [{
-	label: "Add to canvas",
-	click: addToCanvas
-}];
-const assetBarMenu = [];
-for(const assetBarMenuQuantityItems of [assetBarMenuMultipleItems, assetBarMenuSingleItems]) {
-	const x = [];
-	for(let i = 0; i < 3; i++) {
-		const y = [...assetBarMenuQuantityItems];
-		if(i === 1 || i === 2) {
-			y.push(menuSeparator, ...assetBarMenuNoGroupItems);
-		}
-		y.push(menuSeparator, deselectAssetMenuItem);
-		if(i === 0 || i === 1) {
-			y.push(...assetBarMenuGroupItems);
-		}
-		y.push(menuSeparator, ...assetMenuItems);
-		x.push(electron.remote.Menu.buildFromTemplate(y));
-	}
-	assetBarMenu.push(x);
-}
-/*	assetBarMenu
-				Group		Both		No group
-	Multiple	[0][0]		[0][1]		[0][2]
-	Single		[1][0]		[1][1]		[1][2]
-*/
-const layerMenu = electron.remote.Menu.buildFromTemplate([{
+const selectAllAssetsMenuItem = {
+	label: "Select all",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllAssets
+};
+const layerMenuItems = [{
 	label: "Remove",
+	accelerator: "delete",
 	click: removeSelectedLayers
 }, menuSeparator, {
 	label: "Deselect",
@@ -250,8 +240,13 @@ const layerMenu = electron.remote.Menu.buildFromTemplate([{
 		deselectLayers();
 		updateProperties();
 	}
-}]);
-const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
+}];
+const selectAllLayersMenuItem = {
+	label: "Select all",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllLayers
+};
+const timelineCreationMenuItems = [{
 	label: "Create group",
 	click: () => {
 		setActive(timelineContainer);
@@ -273,19 +268,26 @@ const timelineItemsMenu = electron.remote.Menu.buildFromTemplate([{
 			timelineItemArray[0].before(obj.timelineItem);
 			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
+		const deselectAssetsMenuItem = {
+			label: "Deselect",
+			accelerator: "esc",
+			click: () => {
+				deselectAssets();
+				updateProperties();
+			}
+		};
 		obj.timelineItem.classList.add("selected");
 		proj[sel].selectedTimelineItem = obj.timelineItem.id;
 		obj.timelineItem.classList.add("open");
 		storeObjs();
 		updateSelectedTimelineItems();
-		updateTimelines();
 		updateProperties();
 	}
-}]);
+}];
 const byObjs = timelineItem => timelineItem._obj;
 const numericObjType = obj => obj.type === "group" ? 0 : (obj.type === "obj" ? 1 : (obj.type === "image" ? 2 : 3));
 const timelineItemsAlphabetically = timelineItem => `${numericObjType(timelineItem._obj)} ${timelineItem._obj.name.toLowerCase()}`;
-const sortTimelineMenu = electron.remote.Menu.buildFromTemplate([{
+const sortObjsMenuItems = [{
 	label: "Sort by object type",
 	click: () => {
 		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
@@ -326,7 +328,7 @@ const sortTimelineMenu = electron.remote.Menu.buildFromTemplate([{
 				}
 			}
 		}
-		storeAssets();
+		storeObjs();
 		updateSelectedTimelineItems();
 	}
 }, {
@@ -338,7 +340,20 @@ const sortTimelineMenu = electron.remote.Menu.buildFromTemplate([{
 				children.lastChild.after(items.find(timelineItem => timelineItem._obj.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
 			}
 		}
-		storeAssets();
+		storeObjs();
+		updateSelectedTimelineItems();
+	}
+}, {
+	label: "Sort by layer",
+	click: () => {
+		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+			const items = Array.prototype.filter.call(children.children, byObjs);
+			for(const name of items.map(timelineItemsAlphabetically).sort()) {
+				children.lastChild.after(items.find(timelineItem => timelineItem._obj.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
+			}
+		}
+		storeObjs();
+		updateSelectedTimelineItems();
 	}
 }, {
 	label: "Reverse",
@@ -347,28 +362,95 @@ const sortTimelineMenu = electron.remote.Menu.buildFromTemplate([{
 			timelineItem.parentNode.firstChild.before(timelineItem);
 		}
 		storeObjs();
-		updateTimelines();
+		updateSelectedTimelineItems();
 	}
-}]);
+}];
+const removeTimelinesMenuItem = {
+	label: "Remove",
+	accelerator: "delete",
+	click: removeSelectedTimelineItems
+};
+const timelineMenuItems = [{
+	label: "Deselect",
+	accelerator: "esc",
+	click: () => {
+		deselectTimelineItems();
+		updateProperties();
+	}
+}, {
+	label: "Select children",
+	click: () => {
+		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem")) {
+			timelineItem.classList.add("selected");
+		}
+		updateSelectedTimelineItems();
+		updateProperties();
+	}
+}, {
+	label: "Deselect && select children",
+	click: () => {
+		const childrenToSelect = timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem");
+		deselectTimelineItems();
+		for(let i = 0; i < childrenToSelect.length; i++) {
+			childrenToSelect[i].classList.add("selected");
+			if(i === 0) {
+				childrenToSelect[i].classList.add("focus");
+				proj[sel].focusedTimelineItem = childrenToSelect[i].id;
+			}
+		}
+		updateSelectedTimelineItems();
+		updateProperties();
+	}
+}];
+const selectAllTimelinesMenuItem = {
+	label: "Select all",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllTimelineItems
+};
 let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
-	const items = [];
-	if(ctxTarget === assets) {
-		assetMenu.popup(win);
-	} else if(ctxTarget === sortAssets) {
-		sortAssetsMenu.popup(win);
-	} else if(ctxTarget.classList.contains("bar")) {
-		if(ctxTarget.parentNode.classList.contains("asset")) {
-			assetBarMenu[+(assets.querySelectorAll(".asset.selected").length === 1)][assets.querySelector(".asset.typeGroup.selected") ? +!!assets.querySelector(".asset.selected:not(.typeGroup)") : 2].popup(win);
+	const template = [];
+	if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
+		template.push(...textMenuItems);
+	} else if(sel !== "home") {
+		if(ctxTarget === addAsset) {
+			template.push(...assetCreationMenuItems);
+		} else if(ctxTarget === sortAssets) {
+			template.push(...sortAssetsMenuItems)
+		} else if(ctxTarget === addObj) {
+			template.push(...timelineCreationMenuItems);
+		} else if(ctxTarget === sortObjs) {
+			template.push(...sortObjsMenuItems);
+		} else {
+			if(assets.contains(ctxTarget)) {
+				const selected = assets.querySelectorAll(".asset.selected");
+				if(selected.length) {
+					template.push(removeAssetsMenuItem, selected.length === 1 ? renameSingleMenuItem : renameMultipleMenuItem, menuSeparator, addToTimelineMenuItem, menuSeparator, deselectAssetsMenuItem);
+					if(assets.querySelector(".asset.typeGroup.selected")) {
+						template.push(...assetMenuGroupItems);
+					}
+				}
+				template.push(selectAllAssetsMenuItem, menuSeparator, ...assetCreationMenuItems);
+			} else if(layerBox.contains(ctxTarget)) {
+				if(ctxTarget.parentNode.classList.contains("layer")) {
+					template.push(...layerMenuItems);
+				}
+				template.push(selectAllLayersMenuItem);
+			} else if(timelineItems.contains(ctxTarget)) {
+				const selected = timelineItems.querySelectorAll(".timelineItem.selected");
+				if(selected.length) {
+					template.push(removeTimelinesMenuItem, selected.length === 1 ? renameSingleMenuItem : renameMultipleMenuItem, menuSeparator, ...timelineMenuItems);
+				}
+				template.push(selectAllTimelinesMenuItem, menuSeparator, ...timelineCreationMenuItems);
+			}
+			if(template.length) {
+				template.push(menuSeparator);
+			}
+			template.push(...editHistoryMenuItems);
 		}
-	} else if(ctxTarget.parentNode.classList.contains("layer")) {
-		layerMenu.popup(win);
-	} else if(ctxTarget === timelineItems) {
-		timelineItemsMenu.popup(win);
-	} else if(ctxTarget === sortTimeline) {
-		sortTimelineMenu.popup(win);
-	} else if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
-		textMenu.popup(win);
+	} else {
+		return;
 	}
+	electron.remote.Menu.buildFromTemplate(template).popup(win);
 };

@@ -174,21 +174,11 @@ document.addEventListener("keydown", evt => {
 		} else if(evt.keyCode === 65) { // ^`A`
 			if(focused() && notTyping()) {
 				if(assetContainer.classList.contains("active")) {
-					for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
-						assetElem.classList.add("selected");
-					}
-					updateProperties();
+					selectAllAssets();
 				} else if(layerContainer.classList.contains("active")) {
-					for(const layer of layers.querySelectorAll(".layer:not(.selected)")) {
-						layer.classList.add("selected");
-					}
-					updateProperties();
+					selectAllLayers();
 				} else if(timelineContainer.classList.contains("active")) {
-					for(const timelineItem of timelineItems.querySelectorAll(".timelineItem:not(.selected)")) {
-						timelineItem.classList.add("selected");
-					}
-					updateSelectedTimelineItems();
-					updateProperties();
+					selectAllTimelineItems();
 				}
 			}
 		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
@@ -231,7 +221,7 @@ document.addEventListener("keydown", evt => {
 			} else if(layerContainer.classList.contains("active")) {
 				removeSelectedLayers();
 			} else if(timelineContainer.classList.contains("active")) {
-				// TODO: delete frames
+				// TODO: Delete frames
 			}
 		}
 	} else if(evt.keyCode === 9) { // `tab`
