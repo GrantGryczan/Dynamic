@@ -143,10 +143,11 @@ const scrollIntoView = (elem, parent) => {
 	if(!parent) {
 		parent = elem.parentNode;
 	}
+	const yOffset = parent === timelineItems ? SCROLLBAR_SIZE + 2 : 0;
 	if(elem.offsetTop < parent.scrollTop) {
 		parent.scrollTop = elem.offsetTop;
-	} else if(elem.offsetTop + elem.offsetHeight > parent.scrollTop + parent.offsetHeight) {
-		parent.scrollTop = elem.offsetTop + elem.offsetHeight - parent.offsetHeight;
+	} else if(elem.offsetTop + elem.offsetHeight > parent.scrollTop + parent.offsetHeight - yOffset) {
+		parent.scrollTop = elem.offsetTop + elem.offsetHeight - parent.offsetHeight + yOffset;
 	}
 	if(elem.offsetLeft < parent.scrollLeft) {
 		parent.scrollLeft = elem.offsetLeft;
