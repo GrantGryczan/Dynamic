@@ -263,7 +263,6 @@ document.addEventListener("keydown", evt => {
 				updateProperties();
 			} else if(timelineContainer.classList.contains("active")) {
 				deselectTimelineItems();
-				updateSelectedTimelineItems();
 				updateProperties();
 			} else if(fullPreview.classList.contains("active")) {
 				hideFullPreview();
