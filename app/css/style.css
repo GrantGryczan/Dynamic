@@ -569,7 +569,6 @@ label:not(.mdc-floating-label) {
 	height: 100%;
 	padding-right: 1px;
 	overflow: visible;
-	background-clip: border-box;
 }
 .timeUnit.selected {
 	background-color: rgba(128, 0, 255, 0.075);

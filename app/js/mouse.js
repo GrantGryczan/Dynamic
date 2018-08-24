@@ -179,11 +179,26 @@ document.addEventListener("mousemove", evt => {
 				layerDrag.remove();
 			}
 		} if(mouseTarget.classList.contains("frame")) {
-			if(evt.target.classList.contains("frame")) {
+			let target = evt.target;
+			if(!target.classList.contains("frame")) {
+				target = null;
+				let minDist = Infinity;
+				for(const frame of timelines.querySelectorAll(".frame")) {
+					const rect = frame.getBoundingClientRect();
+					const xDist = mouseX - rect.left - (rect.width - 1) / 2;
+					const yDist = mouseY - rect.top - rect.height / 2;
+					const dist = Math.sqrt(xDist * xDist + yDist * yDist);
+					if(dist < minDist) {
+						target = frame;
+						minDist = dist;
+					}
+				}
+			}
+			if(target) {
 				if(initialTargetPos) {
 					// TODO: move frames
 				} else {
-					selectFrame(evt.target.parentNode._obj.id, evt.target._value, 0, true);
+					selectFrame(target.parentNode._obj.id, target._value, 0, true);
 				}
 			}
 		} else if(mouseTarget0) {
