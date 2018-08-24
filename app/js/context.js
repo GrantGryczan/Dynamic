@@ -288,6 +288,17 @@ const byObjs = timelineItem => timelineItem._obj;
 const numericObjType = obj => obj.type === "group" ? 0 : (obj.type === "obj" ? 1 : (obj.type === "image" ? 2 : 3));
 const timelineItemsAlphabetically = timelineItem => `${numericObjType(timelineItem._obj)} ${timelineItem._obj.name.toLowerCase()}`;
 const sortObjsMenuItems = [{
+	label: "Sort by layer",
+	click: () => {
+		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+			for(const obj of Array.prototype.map.call(children.children, byObjs).filter(onlyGraphics).sort(byZIndex)) {
+				children.lastChild.after(obj.timelineItem);
+			}
+		}
+		storeObjs();
+		updateTimelines();
+	}
+}, {
 	label: "Sort by object type",
 	click: () => {
 		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
@@ -338,17 +349,6 @@ const sortObjsMenuItems = [{
 			const items = Array.prototype.filter.call(children.children, byObjs);
 			for(const name of items.map(timelineItemsAlphabetically).sort()) {
 				children.lastChild.after(items.find(timelineItem => timelineItem._obj.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
-			}
-		}
-		storeObjs();
-		updateTimelines();
-	}
-}, {
-	label: "Sort by layer",
-	click: () => {
-		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
-			for(const obj of Array.prototype.map.call(children.children, byObjs).filter(onlyGraphics).sort(byZIndex)) {
-				children.lastChild.after(obj.timelineItem);
 			}
 		}
 		storeObjs();
