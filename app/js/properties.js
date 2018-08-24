@@ -4,6 +4,7 @@ const hideFullPreview = () => {
 	if(fullPreview.classList.contains("opaque")) {
 		fullPreview.classList.remove("opaque");
 		setTimeout(makeFullPreviewHidden, 150);
+		setActive(propertyContainer);
 	}
 };
 const makeFullPreviewOpaque = () => {
