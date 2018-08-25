@@ -199,16 +199,10 @@ const indicateTarget = target => {
 	const indicated = target;
 	if(target) {
 		const rect = target.getBoundingClientRect();
-		targetIndicator.style.left = `${rect.left}px`;
-		targetIndicator.style.top = `${rect.top}px`;
-		targetIndicator.style.width = `${rect.width}px`;
-		targetIndicator.style.height = `${rect.height}px`;
+		targetIndicator.style.transform = `translate(${rect.left + rect.width / 2 - 0.5}px, ${rect.top + rect.height / 2 - 0.5}px) scale(${rect.width}, ${rect.height})`;
 		targetIndicator.classList.add("visible");
 	} else if(targetIndicator.classList.contains("visible")) {
-		targetIndicator.style.left = "";
-		targetIndicator.style.top = "";
-		targetIndicator.style.width = "";
-		targetIndicator.style.height = "";
+		targetIndicator.style.transform = "";
 		targetIndicator.classList.remove("visible");
 	}
 };

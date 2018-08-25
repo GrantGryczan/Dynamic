@@ -775,10 +775,12 @@ label:not(.mdc-floating-label) {
 }
 #targetIndicator {
 	position: absolute;
-	background-color: #8000ff;
+	width: 1px;
+	height: 1px;
 	opacity: 0;
 	z-index: 5;
 	pointer-events: none;
+	background-color: #8000ff;
 	transition: opacity 0.15s ease-out;
 }
 #targetIndicator.visible {

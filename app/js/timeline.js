@@ -339,7 +339,7 @@ const addDuration = quantity => {
 	proj[sel].data.duration += quantity;
 	updateTimeRuler();
 };
-const scrollFrameIntoView = (timeline, value) => {
+const scrollFrameIntoView = value => {
 	if(value === undefined) {
 		value = proj[sel].time;
 	}
@@ -358,5 +358,5 @@ const updateTimeUnits = () => {
 		timeUnit.classList[topFrames[timeUnit._value] ? "add" : "remove"]("selected");
 		timeUnit.classList[proj[sel].time === timeUnit._value ? "add" : "remove"]("focus");
 	}
-	scrubber.style.left = `${storage.frameWidth * proj[sel].time + storage.frameWidth / 2 - timeRuler.scrollLeft}px`;
+	scrubber.style.transform = `translateX(${storage.frameWidth * proj[sel].time + storage.frameWidth / 2 - timeRuler.scrollLeft}px)`;
 };
