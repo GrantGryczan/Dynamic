@@ -391,13 +391,9 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === jumpToPrev) {
 							leftFrameJump();
 						} else if(mouseTarget0 === playButton) {
-							
-							playButton.classList.add("hidden");
-							pauseButton.classList.remove("hidden");
+							play();
 						} else if(mouseTarget0 === pauseButton) {
-							
-							pauseButton.classList.add("hidden");
-							playButton.classList.remove("hidden");
+							pause();
 						} else if(mouseTarget0 === jumpToNext) {
 							rightFrameJump();
 						} else if(mouseTarget0 === jumpToEnd) {

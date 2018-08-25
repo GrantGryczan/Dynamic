@@ -387,3 +387,45 @@ const rightFrameJump = () => {
 	updateTimelines();
 	scrollFrameIntoView();
 };
+let playing = false;
+let lastNow;
+const animate = () => {
+	requestAnimationFrame(animate);
+	if(playing) {
+		const now = performance.now();
+		const change = Math.floor(proj[sel].data.fps * (now - lastNow) / 1000);
+		if(change > 0) {
+			lastNow = now;
+			const newTime = Math.min(proj[sel].data.duration - 1, proj[sel].time + change);
+			moveFrameStates(newTime - proj[sel].time);
+			proj[sel].time = newTime;
+			updateTimelines();
+			scrollFrameIntoView();
+			if(newTime === proj[sel].data.duration - 1) {
+				pause();
+			}
+		}
+	}
+};
+const play = () => {
+	if(!playing) {
+		if(proj[sel].time === proj[sel].data.duration - 1) {
+			moveFrameStates(-proj[sel].time);
+			proj[sel].time = 0;
+			updateTimelines();
+			scrollFrameIntoView();
+		}
+		lastNow = performance.now();
+		playing = true;
+		playButton.classList.add("hidden");
+		pauseButton.classList.remove("hidden");
+	}
+};
+const pause = () => {
+	if(playing) {
+		playing = false;
+		pauseButton.classList.add("hidden");
+		playButton.classList.remove("hidden");
+	}
+};
+animate();

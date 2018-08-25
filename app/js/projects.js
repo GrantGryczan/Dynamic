@@ -139,6 +139,7 @@ class DynamicProject {
 	}
 }
 const select = id => {
+	pause();
 	if(!proj[id]) {
 		id = "home";
 	}
