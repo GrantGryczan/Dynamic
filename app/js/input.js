@@ -255,6 +255,11 @@ document.addEventListener("keydown", evt => {
 				hideFullPreview();
 			}
 		}
+	} else if(evt.keyCode === 32) { // `space`
+		if(focused() && notTyping()) {
+			evt.preventDefault();
+			(playing ? pause : play)();
+		}
 	} else if(evt.keyCode === 113) { // `F2`
 		setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
 	} else if(evt.keyCode === 122) { // `F11`
