@@ -539,7 +539,7 @@ label:not(.mdc-floating-label) {
 #scrubber {
 	position: absolute;
 	width: 1px;
-	height: 100%;
+	height: calc(100% - 13px);
 	z-index: 1;
 	background-color: #8000ff;
 	pointer-events: none;
@@ -573,6 +573,9 @@ label:not(.mdc-floating-label) {
 .timeUnit.selected {
 	background-color: rgba(128, 0, 255, 0.075);
 }
+.timeUnit.focus {
+	border-top: 1px solid #8000ff;
+}
 .timeLabel, .timeUnitLabel {
 	position: absolute;
 	height: 100%;
@@ -584,22 +587,22 @@ label:not(.mdc-floating-label) {
 	position: absolute;
 }
 .timeLabel > .label {
-	bottom: 21px;
+	bottom: 20px;
 	font-size: 10px;
 	line-height: 11px;
 }
 .timeUnitLabel > .label {
-	bottom: 9px;
+	bottom: 8px;
 	font-size: 12px;
 	line-height: 13px;
 }
 .second .timeLabel > .label {
-	bottom: 18px;
+	bottom: 17px;
 	font-size: 12px;
 	line-height: 13px;
 }
 .second .timeUnitLabel > .label {
-	bottom: 10px;
+	bottom: 9px;
 	font-size: 10px;
 	line-height: 11px;
 }
