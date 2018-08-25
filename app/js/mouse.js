@@ -399,11 +399,14 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === jumpToEnd) {
 							endFrameJump();
 						} else if(mouseTarget0 === alignScrubberLeft) {
-							timeRuler.scrollLeft = proj[sel].time * storage.frameWidth;
+							timeRuler.scrollLeft = timelineBox.scrollLeft = proj[sel].time * storage.frameWidth;
+							scrollTimeRuler = scrollTimelines = true;
 						} else if(mouseTarget0 === alignScrubberCenter) {
-							timeRuler.scrollLeft = proj[sel].time * storage.frameWidth - timeRuler.offsetWidth / 2 + SCROLLBAR_SIZE;
+							timeRuler.scrollLeft = timelineBox.scrollLeft = proj[sel].time * storage.frameWidth - timeRuler.offsetWidth / 2 + SCROLLBAR_SIZE;
+							scrollTimeRuler = scrollTimelines = true;
 						} else if(mouseTarget0 === alignScrubberRight) {
-							timeRuler.scrollLeft = proj[sel].time * storage.frameWidth - timeRuler.offsetWidth + 2 + storage.frameWidth + SCROLLBAR_SIZE;
+							timeRuler.scrollLeft = timelineBox.scrollLeft = proj[sel].time * storage.frameWidth - timeRuler.offsetWidth + 2 + storage.frameWidth + SCROLLBAR_SIZE;
+							scrollTimeRuler = scrollTimelines = true;
 						} else if(mouseTarget0 === enableLoop) {
 							
 							enableLoop.classList.add("hidden");

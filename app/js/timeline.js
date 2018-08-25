@@ -314,7 +314,6 @@ const selectFrame = (timeline, value, button, shift) => {
 		}
 		focusFrame(timeline, value);
 	}
-	updateTimelines();
 	scrollFrameIntoView(value);
 	setActive(timelineContainer);
 };
@@ -328,7 +327,6 @@ const moveFrameStates = change => {
 const selectTimeUnit = value => {
 	moveFrameStates(value - proj[sel].time);
 	proj[sel].time = value;
-	updateTimelines();
 	scrollFrameIntoView();
 };
 const addDuration = quantity => {
@@ -346,10 +344,13 @@ const scrollFrameIntoView = value => {
 	const left = storage.frameWidth * value - timeRuler.scrollLeft;
 	let offset;
 	if(left < 1) {
-		timeRuler.scrollLeft += left;
+		timeRuler.scrollLeft = timelineBox.scrollLeft += left;
+		scrollTimeRuler = scrollTimelines = true;
 	} else if(left > (offset = timeRuler.offsetWidth - 2 - storage.frameWidth - SCROLLBAR_SIZE) - 1) {
-		timeRuler.scrollLeft += left - offset;
+		timeRuler.scrollLeft = timelineBox.scrollLeft += left - offset;
+		scrollTimeRuler = scrollTimelines = true;
 	}
+	updateTimeRuler();
 };
 const updateTimeUnits = () => {
 	const topFrames = getTopFrames();
@@ -366,40 +367,36 @@ const endFrameJump = () => {
 	const value = proj[sel].data.duration - 1;
 	moveFrameStates(value - proj[sel].time);
 	proj[sel].time = value;
-	updateTimelines();
 	scrollFrameIntoView();
 };
 const homeFrameJump = () => {
 	moveFrameStates(-proj[sel].time);
 	proj[sel].time = 0;
-	updateTimelines();
 	scrollFrameIntoView();
 };
 const leftFrameJump = () => {
 	moveFrameStates(-1);
 	proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
-	updateTimelines();
 	scrollFrameIntoView();
 };
 const rightFrameJump = () => {
 	moveFrameStates(1);
 	proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
-	updateTimelines();
 	scrollFrameIntoView();
 };
 let playing = false;
-let lastNow;
+let then;
 const animate = () => {
 	requestAnimationFrame(animate);
 	if(playing) {
 		const now = performance.now();
-		const change = Math.floor(proj[sel].data.fps * (now - lastNow) / 1000);
+		const change = Math.floor(proj[sel].data.fps * (now - then) / 1000);
+		console.log(change); // TODO: Fix
 		if(change > 0) {
-			lastNow = now;
+			then = now;
 			const newTime = Math.min(proj[sel].data.duration - 1, proj[sel].time + change);
 			moveFrameStates(newTime - proj[sel].time);
 			proj[sel].time = newTime;
-			updateTimelines();
 			scrollFrameIntoView();
 			if(newTime === proj[sel].data.duration - 1) {
 				pause();
@@ -412,20 +409,21 @@ const play = () => {
 		if(proj[sel].time === proj[sel].data.duration - 1) {
 			moveFrameStates(-proj[sel].time);
 			proj[sel].time = 0;
-			updateTimelines();
 			scrollFrameIntoView();
 		}
-		lastNow = performance.now();
+		then = performance.now();
 		playing = true;
 		playButton.classList.add("hidden");
 		pauseButton.classList.remove("hidden");
+		console.time();
 	}
 };
 const pause = () => {
 	if(playing) {
+		console.timeEnd();
 		playing = false;
 		pauseButton.classList.add("hidden");
 		playButton.classList.remove("hidden");
 	}
 };
-animate();
+requestAnimationFrame(animate);

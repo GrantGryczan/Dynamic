@@ -273,7 +273,6 @@ document.addEventListener("input", evt => {
 	}
 	if(evt.target === currentFrame) {
 		proj[sel].time = currentFrame.value;
-		updateTimelines();
 		scrollFrameIntoView();
 	} else if(evt.target === prop.fps.elements[0]) {
 		proj[sel].data.fps = prop.fps.elements[0].value;
