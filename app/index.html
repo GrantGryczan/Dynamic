@@ -17,9 +17,9 @@
 			</div>
 			<div id="toolbar" class="mdc-elevation--z2">
 				<div id="loading"></div>
-				<button id="newProj" class="mdc-icon-button material-icons spaced" title="New Project">add</button><button id="openProj" class="mdc-icon-button material-icons spaced" title="Open Project">folder</button><button id="saveProj" class="mdc-icon-button material-icons spaced" title="Save Project" disabled>save</button><button id="saveProjAs" class="mdc-icon-button material-icons double-icon spaced" title="Save Project As" disabled>
+				<button id="newProj" class="mdc-icon-button material-icons filled spaced" title="New Project">add</button><button id="openProj" class="mdc-icon-button material-icons filled spaced" title="Open Project">folder</button><button id="saveProj" class="mdc-icon-button material-icons filled spaced" title="Save Project" disabled>save</button><button id="saveProjAs" class="mdc-icon-button material-icons filled double-icon spaced" title="Save Project As" disabled>
 					<span>save</span><span>edit</span>
-				</button><button id="exportProj" class="mdc-icon-button material-icons spaced" title="Export Project" disabled>save_alt</button>
+				</button><button id="exportProj" class="mdc-icon-button material-icons filled spaced" title="Export Project" disabled>save_alt</button>
 			</div>
 			<div id="homePage" class="page hidden"></div>
 			<div id="projectPage" class="page hidden">
@@ -30,7 +30,7 @@
 								<div class="handle right" title="Double-click to reset size."></div>
 								<div class="contents">
 									<div class="head">
-										<span class="label spaced">Assets</span><button id="addAsset" class="mdc-icon-button material-icons spaced" title="Add asset">add</button><button id="sortAssets" class="mdc-icon-button material-icons spaced" title="Sort assets">sort</button>
+										<span class="label spaced">Assets</span><button id="addAsset" class="mdc-icon-button material-icons filled spaced" title="Add asset">add</button><button id="sortAssets" class="mdc-icon-button material-icons filled spaced" title="Sort assets">sort</button>
 									</div>
 									<div id="assets" class="box">
 										<div class="drag"></div>
@@ -46,7 +46,7 @@
 							<div class="contents">
 								<div id="timelineItemContainer">
 									<div class="head">
-										<span class="label spaced">Timeline</span><button id="addObj" class="mdc-icon-button material-icons spaced" title="Add object">add</button><button id="sortObjs" class="mdc-icon-button material-icons spaced" title="Sort objects">sort</button>
+										<span class="label spaced">Timeline</span><button id="addObj" class="mdc-icon-button material-icons filled spaced" title="Add object">add</button><button id="sortObjs" class="mdc-icon-button material-icons filled spaced" title="Sort objects">sort</button>
 									</div>
 									<div id="timelineItems" class="box">
 										<div class="drag"></div>
@@ -64,6 +64,12 @@
 										<div id="timelines"></div>
 									</div>
 								</div>
+							</div>
+							<div class="foot">
+								<div class="separator"></div><div class="mdc-text-field" title="Current frame">
+									<input id="currentFrame" type="number" class="mdc-text-field__input" min="0" value="0" required>
+									<div class="mdc-line-ripple"></div>
+								</div><div class="separator"></div><button id="jumpToStart" class="mdc-icon-button material-icons" title="Jump to first frame">skip_previous</button><button id="jumpToPrev" class="mdc-icon-button material-icons" title="Jump to previous frame">fast_rewind</button><button id="playButton" class="mdc-icon-button material-icons" title="Play">play_arrow</button><button id="pauseButton" class="mdc-icon-button material-icons hidden" title="Pause">pause</button><button id="jumpToNext" class="mdc-icon-button material-icons" title="Jump to next frame">fast_forward</button><button id="jumpToEnd" class="mdc-icon-button material-icons" title="Jump to last frame">skip_next</button><div class="separator"></div><button id="alignScrubberLeft" class="mdc-icon-button material-icons rotated" title="Align scrubber to left">vertical_align_bottom</button><button id="alignScrubberCenter" class="mdc-icon-button material-icons rotated" title="Align scrubber to center">vertical_align_center</button><button id="alignScrubberRight" class="mdc-icon-button material-icons rotated" title="Align scrubber to right">vertical_align_top</button><div class="separator"></div><button id="enableLoop" class="mdc-icon-button material-icons translucent" title="Enable looping">repeat</button><button id="disableLoop" class="mdc-icon-button material-icons hidden" title="Disable looping">repeat</button><div class="separator"></div>
 							</div>
 						</div>
 					</div>

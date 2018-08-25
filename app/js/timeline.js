@@ -359,4 +359,31 @@ const updateTimeUnits = () => {
 		timeUnit.classList[proj[sel].time === timeUnit._value ? "add" : "remove"]("focus");
 	}
 	scrubber.style.transform = `translateX(${storage.frameWidth * proj[sel].time + storage.frameWidth / 2 - timeRuler.scrollLeft}px)`;
+	currentFrame.max = proj[sel].data.duration - 1;
+	currentFrame.value = proj[sel].time;
+};
+const endFrameJump = () => {
+	const value = proj[sel].data.duration - 1;
+	moveFrameStates(value - proj[sel].time);
+	proj[sel].time = value;
+	updateTimelines();
+	scrollFrameIntoView();
+};
+const homeFrameJump = () => {
+	moveFrameStates(-proj[sel].time);
+	proj[sel].time = 0;
+	updateTimelines();
+	scrollFrameIntoView();
+};
+const leftFrameJump = () => {
+	moveFrameStates(-1);
+	proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
+	updateTimelines();
+	scrollFrameIntoView();
+};
+const rightFrameJump = () => {
+	moveFrameStates(1);
+	proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
+	updateTimelines();
+	scrollFrameIntoView();
 };

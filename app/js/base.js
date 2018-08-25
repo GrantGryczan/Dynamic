@@ -60,6 +60,19 @@ const timeUnits = timeRuler.querySelector("#timeUnits");
 const timelineBox = timelineArea.querySelector("#timelineBox");
 const timelineFiller = timelineBox.querySelector(".filler");
 const timelines = timelineBox.querySelector("#timelines");
+const timelineFoot = timelineContainer.querySelector(".foot");
+const currentFrame = timelineFoot.querySelector("#currentFrame");
+const jumpToStart = timelineFoot.querySelector("#jumpToStart");
+const jumpToPrev = timelineFoot.querySelector("#jumpToPrev");
+const playButton = timelineFoot.querySelector("#playButton");
+const pauseButton = timelineFoot.querySelector("#pauseButton");
+const jumpToNext = timelineFoot.querySelector("#jumpToNext");
+const jumpToEnd = timelineFoot.querySelector("#jumpToEnd");
+const alignScrubberLeft = timelineFoot.querySelector("#alignScrubberLeft");
+const alignScrubberCenter = timelineFoot.querySelector("#alignScrubberCenter");
+const alignScrubberRight = timelineFoot.querySelector("#alignScrubberRight");
+const enableLoop = timelineFoot.querySelector("#enableLoop");
+const disableLoop = timelineFoot.querySelector("#disableLoop");
 const propertyContainer = projectPage.querySelector("#propertyContainer");
 const properties = propertyContainer.querySelector("#properties");
 const propElems = properties.querySelectorAll("[data-key]");
@@ -262,6 +275,7 @@ const updatePanels = () => {
 		child.classList.remove("hidden");
 	}
 	updateTimeRuler();
+	timelineFoot.style.paddingLeft = `${timelineItemContainer.offsetWidth - 12}px`;
 };
 window.addEventListener("resize", () => {
 	if(sel !== "home") {

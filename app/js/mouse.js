@@ -385,7 +385,39 @@ const handleMouseUp = (evt, button) => {
 				} else if(mouseTarget0.classList.contains("handle")) {
 					store();
 				} else if(evt.target === mouseTarget0) {
-					if(mouseTarget0.parentNode === toolbar) {
+					if(mouseTarget0.parentNode === timelineFoot) {
+						if(mouseTarget0 === jumpToStart) {
+							homeFrameJump();
+						} else if(mouseTarget0 === jumpToPrev) {
+							leftFrameJump();
+						} else if(mouseTarget0 === playButton) {
+							
+							playButton.classList.add("hidden");
+							pauseButton.classList.remove("hidden");
+						} else if(mouseTarget0 === pauseButton) {
+							
+							pauseButton.classList.add("hidden");
+							playButton.classList.remove("hidden");
+						} else if(mouseTarget0 === jumpToNext) {
+							rightFrameJump();
+						} else if(mouseTarget0 === jumpToEnd) {
+							endFrameJump();
+						} else if(mouseTarget0 === alignScrubberLeft) {
+							timeRuler.scrollLeft = proj[sel].time * storage.frameWidth;
+						} else if(mouseTarget0 === alignScrubberCenter) {
+							timeRuler.scrollLeft = proj[sel].time * storage.frameWidth - timeRuler.offsetWidth / 2 + SCROLLBAR_SIZE;
+						} else if(mouseTarget0 === alignScrubberRight) {
+							timeRuler.scrollLeft = proj[sel].time * storage.frameWidth - timeRuler.offsetWidth + 2 + storage.frameWidth + SCROLLBAR_SIZE;
+						} else if(mouseTarget0 === enableLoop) {
+							
+							enableLoop.classList.add("hidden");
+							disableLoop.classList.remove("hidden");
+						} else if(mouseTarget0 === disableLoop) {
+							
+							disableLoop.classList.add("hidden");
+							enableLoop.classList.remove("hidden");
+						}
+					} else if(mouseTarget0.parentNode === toolbar) {
 						if(mouseTarget0 === newProj) {
 							new DynamicProject();
 						} else if(mouseTarget0 === openProj) {

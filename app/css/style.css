@@ -72,14 +72,19 @@ button:focus {
 button * {
 	pointer-events: none;
 }
+button.filled {
+	background-color: #6e00db;
+	color: #ffffff !important;
+}
+button.filled::before, button.filled::after {
+	background-color: #ffffff;
+}
 .mdc-icon-button {
 	padding: 0;
 	border-radius: 50%;
-	color: #ffffff !important;
 }
 .mdc-icon-button::before, .mdc-icon-button::after {
 	border-radius: inherit;
-	background-color: #ffffff;
 }
 .double-icon > * {
 	display: inline-block;
@@ -209,6 +214,7 @@ label:not(.mdc-floating-label) {
 	opacity: 1;
 }
 .separator {
+	display: inline-block;
 	width: 1px;
 	height: 100%;
 	margin: 0 8px;
@@ -306,7 +312,6 @@ label:not(.mdc-floating-label) {
 	width: 36px;
 	height: 36px;
 	border-radius: 8px;
-	background-color: #6e00db;
 }
 #loading {
 	display: none;
@@ -397,17 +402,49 @@ label:not(.mdc-floating-label) {
 	padding: 6px;
 	background-color: #f0f0f0;
 }
-.head {
+.head, .foot {
 	height: 24px;
 	min-height: 24px;
 	line-height: 24px;
+	white-space: nowrap;
 }
-.head button {
+.head button, .foot button {
 	width: 24px;
 	height: 24px;
 	vertical-align: bottom;
 	font-size: 18px;
-	background-color: #6e00db;
+}
+.foot {
+	margin-top: 2px;
+}
+.foot > :not(.separator) {
+	opacity: 0.6;
+}
+.foot button {
+	transform: translateY(-1px);
+}
+.foot button.rotated {
+	transform: translateY(-1px) rotate(90deg);
+}
+.foot button.translucent {
+	opacity: 0.2;
+}
+.foot .mdc-text-field, .foot .mdc-text-field > input {
+	width: initial;
+	height: 20px !important;
+}
+.foot .mdc-text-field {
+	margin: 0;
+}
+.foot .mdc-text-field > input {
+	padding: 0;
+	font-size: 15px;
+}
+#currentFrame {
+	text-align: right;
+}
+.foot > * {
+	vertical-align: middle;
 }
 .panel > .contents {
 	height: 100%;
@@ -503,6 +540,7 @@ label:not(.mdc-floating-label) {
 }
 #timelineContainer > .contents {
 	display: flex;
+	height: calc(100% - 22px);
 }
 #timelineItemContainer {
 	display: flex;

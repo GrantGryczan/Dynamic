@@ -35,27 +35,17 @@ document.addEventListener("keydown", evt => {
 	if(evt.keyCode === 35) { // `end`
 		if(focused() && notTyping()) {
 			evt.preventDefault();
-			const value = proj[sel].data.duration - 1;
-			moveFrameStates(value - proj[sel].time);
-			proj[sel].time = value;
-			updateTimelines();
-			scrollFrameIntoView();
+			endFrameJump();
 		}
 	} else if(evt.keyCode === 36) { // `home`
 		if(focused() && notTyping()) {
 			evt.preventDefault();
-			moveFrameStates(-proj[sel].time);
-			proj[sel].time = 0;
-			updateTimelines();
-			scrollFrameIntoView();
+			homeFrameJump();
 		}
 	} else if(evt.keyCode === 37) { // `left`
 		if(focused() && notTyping()) {
 			evt.preventDefault();
-			moveFrameStates(-1);
-			proj[sel].time = ((proj[sel].time - 1) % proj[sel].data.duration + proj[sel].data.duration) % proj[sel].data.duration;
-			updateTimelines();
-			scrollFrameIntoView();
+			leftFrameJump();
 		}
 	} else if(evt.keyCode === 38) { // `up`
 		if(focused() && notTyping()) {
@@ -92,10 +82,7 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 39) { // `right`
 		if(focused() && notTyping()) {
 			evt.preventDefault();
-			moveFrameStates(1);
-			proj[sel].time = (proj[sel].time + 1) % proj[sel].data.duration;
-			updateTimelines();
-			scrollFrameIntoView();
+			rightFrameJump();
 		}
 	} else if(evt.keyCode === 40) { // `down`
 		if(focused() && notTyping()) {
@@ -284,7 +271,11 @@ document.addEventListener("input", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === prop.fps.elements[0]) {
+	if(evt.target === currentFrame) {
+		proj[sel].time = currentFrame.value;
+		updateTimelines();
+		scrollFrameIntoView();
+	} else if(evt.target === prop.fps.elements[0]) {
 		proj[sel].data.fps = prop.fps.elements[0].value;
 		for(let i = 0; i < timeUnits.children.length; i++) {
 			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
