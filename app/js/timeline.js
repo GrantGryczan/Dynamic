@@ -390,10 +390,11 @@ const animate = () => {
 	requestAnimationFrame(animate);
 	if(playing) {
 		const now = performance.now();
-		const change = Math.floor(proj[sel].data.fps * (now - then) / 1000);
-		console.log(change); // TODO: Fix
+		const elapsed = now - then;
+		const interval = 1000 / proj[sel].data.fps;
+		const change = Math.floor(elapsed / interval);
 		if(change > 0) {
-			then = now;
+			then = now - elapsed % interval;
 			const newTime = Math.min(proj[sel].data.duration - 1, proj[sel].time + change);
 			moveFrameStates(newTime - proj[sel].time);
 			proj[sel].time = newTime;
@@ -415,12 +416,10 @@ const play = () => {
 		playing = true;
 		playButton.classList.add("hidden");
 		pauseButton.classList.remove("hidden");
-		console.time();
 	}
 };
 const pause = () => {
 	if(playing) {
-		console.timeEnd();
 		playing = false;
 		pauseButton.classList.add("hidden");
 		playButton.classList.remove("hidden");
