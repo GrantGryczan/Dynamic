@@ -275,7 +275,7 @@ document.addEventListener("input", evt => {
 		proj[sel].time = currentFrame.value;
 		scrollFrameIntoView();
 	} else if(evt.target === prop.fps.elements[0]) {
-		proj[sel].data.fps = prop.fps.elements[0].value;
+		proj[sel].data.fps = +prop.fps.elements[0].value;
 		for(let i = 0; i < timeUnits.children.length; i++) {
 			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
 		}

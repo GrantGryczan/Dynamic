@@ -392,7 +392,7 @@ const animate = () => {
 		const now = performance.now();
 		const elapsed = now - then;
 		const interval = 1000 / proj[sel].data.fps;
-		const change = Math.floor(elapsed / interval);
+		const change = proj[sel].data.fps === 0 ? 1 : Math.floor(elapsed / interval);
 		if(change > 0) {
 			then = now - elapsed % interval;
 			const newTime = Math.min(proj[sel].data.duration - 1, proj[sel].time + change);
