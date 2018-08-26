@@ -642,7 +642,7 @@ label:not(.mdc-floating-label) {
 .timeLabel, .timeUnitLabel {
 	position: absolute;
 	height: 100%;
-	padding-left: 1px;
+	margin-left: 1px;
 	z-index: 1;
 	overflow: visible;
 }
@@ -682,7 +682,7 @@ label:not(.mdc-floating-label) {
 	height: 9px;
 }
 .timeUnitLabel::before, .timeLabel::before {
-	left: -1px;
+	left: -2px;
 }
 .timeUnitLabel::before {
 	height: 20px;
