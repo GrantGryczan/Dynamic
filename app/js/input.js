@@ -141,6 +141,8 @@ document.addEventListener("keydown", evt => {
 				project.data.duration -= quantity;
 				setTime(Math.max(0, value));
 			}
+		} else if(altKey) {
+			insertFrames(true);
 		} else {
 			insertFrames();
 		}
