@@ -19,6 +19,9 @@ const onMouseDown = evt => {
 	mouseMoved = false;
 	mouseX = evt.clientX;
 	mouseY = evt.clientY;
+	shiftKey = evt.shiftKey;
+	superKey = evt.metaKey || evt.ctrlKey;
+	altKey = evt.altKey;
 	if(evt.button === 0) {
 		mouseTarget0 = evt.target;
 	} else if(evt.button === 2) {
