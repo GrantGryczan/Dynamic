@@ -460,6 +460,7 @@ label:not(.mdc-floating-label) {
 .filler {
 	display: inline-block;
 	overflow: visible;
+	pointer-events: none;
 }
 #assetContainer {
 	width: 300px;
@@ -604,6 +605,7 @@ label:not(.mdc-floating-label) {
 	height: 100%;
 	min-width: 100%;
 	overflow: visible;
+	pointer-events: initial;
 }
 .loopRange {
 	z-index: 1;
@@ -822,10 +824,10 @@ label:not(.mdc-floating-label) {
 	min-height: 26px;
 	padding: 4px 8px;
 	border-top: 1px solid #d0d0d0;
+	cursor: default;
 	background-color: #e8e8e8;
 	font-size: 14px;
 	color: #909090;
-	pointer-events: none;
 }
 #statusBar > div {
 	display: inline-block;

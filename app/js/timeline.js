@@ -191,14 +191,30 @@ const updateTimelines = () => {
 	for(const frame of timelines.querySelectorAll(".frame.highlight")) {
 		frame.classList.remove("highlight");
 	}
-	const values = Object.values(project.frames);
+	let frameCount = 0;
+	const topFrames = new Array(project.data.duration).fill(0);
+	for(const obj of project.data.objs) {
+		const frames = project.frames[obj.id];
+		for(let i = 0; i < frames.length; i++) {
+			if(frames[i]) {
+				frameCount++;
+			}
+			topFrames[i] = Math.max(topFrames[i], frames[i]);
+		}
+	}
+	topFrames[project.time] = 2;
+	status.frames.textContent = frameCount;
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
 		timeline.id = `timeline_${(timeline._obj = objs[start + i]).id}`;
 	}
+	let objCount = 0;
 	for(const obj of project.data.objs) {
 		const focusHighlight = project.frames[obj.id].includes(2);
 		const highlight = focusHighlight || project.frames[obj.id].includes(1);
+		if(highlight) {
+			objCount++;
+		}
 		obj.timelineItem.classList[highlight ? "add" : "remove"]("selected");
 		const timeline = obj.timeline;
 		if(timeline) {
@@ -207,13 +223,12 @@ const updateTimelines = () => {
 			for(let i = 0; i < timeline.children.length; i++) {
 				const frame = timeline.children[i];
 				frame.id = `frame_${obj.id}_${frame._value = timeUnits.children[i]._value}`;
-				const currentTime = project.time === frame._value;
-				if(highlight || currentTime || values.some(frames => frames[frame._value])) {
+				if(highlight || topFrames[frame._value]) {
 					frame.classList.add("highlight");
 					if(highlight && project.frames[obj.id][frame._value]) {
 						frame.classList.add("selected");
 					}
-					if(focusHighlight || currentTime) {
+					if(focusHighlight || topFrames[frame._value] === 2) {
 						frame.classList.add("focusHighlight");
 						if(focusHighlight && project.frames[obj.id][frame._value] === 2) {
 							frame.classList.add("focus");
@@ -223,6 +238,7 @@ const updateTimelines = () => {
 			}
 		}
 	}
+	status.objs.textContent = objCount;
 	updateTimeUnits();
 };
 const clearFrames = () => {
@@ -361,7 +377,13 @@ const scrollFrameIntoView = value => {
 };
 const updateTimeUnits = () => {
 	const topFrames = getTopFrames();
-	let currentTime = false;
+	let duration = 0;
+	for(const topFrame of topFrames) {
+		if(topFrame) {
+			duration++;
+		}
+	}
+	status.duration.textContent = duration;
 	for(const timeUnit of timeUnits.children) {
 		timeUnit.classList[topFrames[timeUnit._value] ? "add" : "remove"]("selected");
 		timeUnit.classList[project.time === timeUnit._value ? "add" : "remove"]("focus");
