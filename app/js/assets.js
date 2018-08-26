@@ -1,11 +1,11 @@
 "use strict";
-const getAsset = id => proj[sel].data.assets.find(asset => asset.id === id);
+const getAsset = id => project.data.assets.find(asset => asset.id === id);
 class DynamicAsset {
 	constructor(value) {
 		if(!(value instanceof Object)) {
 			throw new MiroError("The `value` parameter must be an object.");
 		}
-		this.id = value.id || uid(proj[sel].data.assets.map(byID));
+		this.id = value.id || uid(project.data.assets.map(byID));
 		this.type = value.type;
 		this[_name] = value.name;
 		if(this.type === "group") {
@@ -47,7 +47,7 @@ class DynamicAsset {
 		} else {
 			throw new MiroError("The `type` value is invalid.");
 		}
-		proj[sel].data.assets.push(this);
+		project.data.assets.push(this);
 		if(value.parent) {
 			this.parent = getAsset(value.parent);
 		}
@@ -82,27 +82,27 @@ class DynamicAsset {
 		}
 	}
 	get objects() {
-		return proj[sel].data.objs.filter(obj => obj.asset === this);
+		return project.data.objs.filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {
 	(asset.parent && asset.parent.type === "group" ? asset.parent.element.lastElementChild : assets).appendChild(asset.element);
 };
 const storeAssets = () => {
-	proj[sel].data.assets = [];
+	project.data.assets = [];
 	for(const assetElem of assets.querySelectorAll(".asset")) {
 		if(assetElem.parentNode === assets) {
 			delete assetElem._asset.parent;
 		} else {
 			assetElem._asset.parent = assetElem.parentNode.parentNode._asset;
 		}
-		proj[sel].data.assets.push(assetElem._asset);
+		project.data.assets.push(assetElem._asset);
 	}
-	proj[sel].saved = false;
+	project.saved = false;
 };
 const removeAsset = assetElem => {
-	if(proj[sel].selectedAsset === assetElem.id) {
-		proj[sel].selectedAsset = null;
+	if(project.selectedAsset === assetElem.id) {
+		project.selectedAsset = null;
 	}
 	if(assetElem._asset.type === "group") {
 		while(assetElem.lastElementChild.firstElementChild) {
@@ -110,7 +110,7 @@ const removeAsset = assetElem => {
 		}
 	} else {
 		if(assetElem._asset.type === "obj") {
-			if(proj[sel].rootAsset === assetElem._asset.id) {
+			if(project.rootAsset === assetElem._asset.id) {
 				rootAsset();
 			} else {
 				// TODO: Close asset upon removal
@@ -167,7 +167,7 @@ const deselectAssets = () => {
 		assetElem.classList.remove("selected");
 		assetElem.classList.remove("focus");
 	}
-	proj[sel].selectedAsset = null;
+	project.selectedAsset = null;
 };
 const selectAllAssets = () => {
 	for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
@@ -185,20 +185,20 @@ const selectAsset = (target, button) => {
 				assetElem.classList.remove("selected");
 			}
 			target.classList.add("selected");
-			proj[sel].selectedAsset = target.id;
+			project.selectedAsset = target.id;
 		}
 	} else if(shiftKey) {
-		let selecting = !proj[sel].selectedAsset;
-		const classListMethod = superKey && proj[sel].selectedAsset && !assets.querySelector(`#${proj[sel].selectedAsset}`).classList.contains("selected") ? "remove" : "add";
+		let selecting = !project.selectedAsset;
+		const classListMethod = superKey && project.selectedAsset && !assets.querySelector(`#${project.selectedAsset}`).classList.contains("selected") ? "remove" : "add";
 		for(const assetElem of assets.querySelectorAll(".asset")) {
-			if(assetElem.id === proj[sel].selectedAsset || assetElem.id === target.id) {
+			if(assetElem.id === project.selectedAsset || assetElem.id === target.id) {
 				if(selecting) {
 					assetElem.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
 					assetElem.classList[classListMethod]("selected");
-					if(proj[sel].selectedAsset !== target.id) {
+					if(project.selectedAsset !== target.id) {
 						selecting = true;
 					}
 				}
@@ -209,7 +209,7 @@ const selectAsset = (target, button) => {
 			}
 		}
 	} else {
-		proj[sel].selectedAsset = target.id;
+		project.selectedAsset = target.id;
 		if(superKey) {
 			target.classList.toggle("selected");
 		} else {
@@ -221,8 +221,8 @@ const selectAsset = (target, button) => {
 				}
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
-				proj[sel].selectedAsset = null;
-				proj[sel].focusedAsset = target.id;
+				project.selectedAsset = null;
+				project.focusedAsset = target.id;
 			}
 		}
 	}
@@ -256,7 +256,7 @@ const addFiles = async files => {
 			`);
 			continue;
 		}
-		const names = proj[sel].data.assets.map(byInsensitiveName);
+		const names = project.data.assets.map(byInsensitiveName);
 		let name = files[i].name;
 		for(let j = 2; names.includes(name.toLowerCase()); j++) {
 			name = `${files[i].name} ${j}`;
@@ -288,7 +288,7 @@ const addFiles = async files => {
 		}
 		asset.element.classList.add("selected");
 		if(i === 0) {
-			proj[sel].selectedAsset = asset.element.id;
+			project.selectedAsset = asset.element.id;
 		}
 	}
 	storeAssets();

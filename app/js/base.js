@@ -283,7 +283,7 @@ const updatePanels = () => {
 	timelineFoot.style.paddingLeft = `${timelineItemContainer.offsetWidth - 12}px`;
 };
 window.addEventListener("resize", () => {
-	if(sel !== "home") {
+	if(selectedProject !== "home") {
 		if(!fullPreview.classList.contains("hidden")) {
 			absoluteCenter(fullPreviewImage);
 		}
@@ -302,7 +302,7 @@ const confirmClose = value => {
 const unsaved = project => !project.saved;
 window.onbeforeunload = () => {
 	if(shouldNotClose && notConfirmingClose) {
-		if(Object.values(proj).some(unsaved)) {
+		if(Object.values(projects).some(unsaved)) {
 			notConfirmingClose = false;
 			new Miro.Dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
 			return true;

@@ -48,7 +48,7 @@ const assetCreationMenuItems = [{
 			}
 		}
 		deselectAssets();
-		const names = proj[sel].data.assets.map(byInsensitiveName);
+		const names = project.data.assets.map(byInsensitiveName);
 		let name = "Object";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Object ${i}`;
@@ -63,7 +63,7 @@ const assetCreationMenuItems = [{
 		}
 		storeAssets();
 		asset.element.classList.add("selected");
-		proj[sel].selectedAsset = asset.element.id;
+		project.selectedAsset = asset.element.id;
 		setActive(assetContainer);
 	}
 }, {
@@ -74,7 +74,7 @@ const assetCreationMenuItems = [{
 		for(const assetElem of assetElems) {
 			assetElem.classList.remove("selected");
 		}
-		const names = proj[sel].data.assets.map(byInsensitiveName);
+		const names = project.data.assets.map(byInsensitiveName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Group ${i}`;
@@ -90,7 +90,7 @@ const assetCreationMenuItems = [{
 		asset.element.classList.add("open");
 		storeAssets();
 		asset.element.classList.add("selected");
-		proj[sel].selectedAsset = asset.element.id;
+		project.selectedAsset = asset.element.id;
 		updateProperties();
 	}
 }, {
@@ -218,7 +218,7 @@ const assetMenuGroupItems = [{
 			childrenToSelect[i].classList.add("selected");
 			if(i === 0) {
 				childrenToSelect[i].classList.add("focus");
-				proj[sel].focusedAsset = childrenToSelect[i].id;
+				project.focusedAsset = childrenToSelect[i].id;
 			}
 		}
 		updateProperties();
@@ -254,7 +254,7 @@ const timelineCreationMenuItems = [{
 		for(const timelineItem of timelineItemArray) {
 			timelineItem.classList.remove("selected");
 		}
-		const names = proj[sel].data.objs.map(byInsensitiveName);
+		const names = project.data.objs.map(byInsensitiveName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Group ${i}`;
@@ -277,7 +277,7 @@ const timelineCreationMenuItems = [{
 			}
 		};
 		obj.timelineItem.classList.add("selected");
-		proj[sel].selectedTimelineItem = obj.timelineItem.id;
+		project.selectedTimelineItem = obj.timelineItem.id;
 		obj.timelineItem.classList.add("open");
 		storeObjs();
 		updateSelectedTimelineItems();
@@ -394,7 +394,7 @@ const timelineMenuItems = [{
 			childrenToSelect[i].classList.add("selected");
 			if(i === 0) {
 				childrenToSelect[i].classList.add("focus");
-				proj[sel].focusedTimelineItem = childrenToSelect[i].id;
+				project.focusedTimelineItem = childrenToSelect[i].id;
 			}
 		}
 		updateSelectedTimelineItems();
@@ -412,7 +412,7 @@ const openCtx = target => {
 	const template = [];
 	if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		template.push(...textMenuItems);
-	} else if(sel !== "home") {
+	} else if(selectedProject !== "home") {
 		if(ctxTarget === addAsset) {
 			template.push(...assetCreationMenuItems);
 		} else if(ctxTarget === sortAssets) {

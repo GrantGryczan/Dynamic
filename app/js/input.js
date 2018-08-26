@@ -52,27 +52,27 @@ document.addEventListener("keydown", evt => {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const assetElems = assets.querySelectorAll(".asset");
-				const assetElem = assetElems[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${proj[sel].focusedAsset}`)) || assetElems.length) - 1) : 0];
+				const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) || assetElems.length) - 1) : 0];
 				if(assetElem) {
-					proj[sel].focusedAsset = assetElem.id;
+					project.focusedAsset = assetElem.id;
 					if(!superKey) {
 						selectAsset(assetElem);
 					}
 				}
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
+				const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 				if(layer) {
-					proj[sel].focusedLayer = layer.id;
+					project.focusedLayer = layer.id;
 					if(!superKey) {
 						selectLayer(layer);
 					}
 				}
 			} else if(timelineContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const timelineItem = proj[sel].focusedTimelineItem ? timelineItems.querySelector(`#${proj[sel].focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
+				const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
 				if(timelineItem) {
-					proj[sel].focusedTimelineItem = timelineItem.id;
+					project.focusedTimelineItem = timelineItem.id;
 					if(!superKey) {
 						selectTimelineItem(timelineItem);
 					}
@@ -89,27 +89,27 @@ document.addEventListener("keydown", evt => {
 			if(assetContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const assetElems = assets.querySelectorAll(".asset");
-				const assetElem = assetElems[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % assetElems.length];
+				const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) : -1) + 1) % assetElems.length];
 				if(assetElem) {
-					proj[sel].focusedAsset = assetElem.id;
+					project.focusedAsset = assetElem.id;
 					if(!superKey) {
 						selectAsset(assetElem);
 					}
 				}
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
+				const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 				if(layer) {
-					proj[sel].focusedLayer = layer.id;
+					project.focusedLayer = layer.id;
 					if(!superKey) {
 						selectLayer(layer);
 					}
 				}
 			} else if(timelineContainer.classList.contains("active")) {
 				evt.preventDefault();
-				const timelineItem = proj[sel].focusedTimelineItem ? timelineItems.querySelector(`#${proj[sel].focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
+				const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
 				if(timelineItem) {
-					proj[sel].focusedTimelineItem = timelineItem.id;
+					project.focusedTimelineItem = timelineItem.id;
 					if(!superKey) {
 						selectTimelineItem(timelineItem);
 					}
@@ -123,22 +123,22 @@ document.addEventListener("keydown", evt => {
 		}
 	} else if(evt.keyCode === 116) { // `F5`
 		if(shiftKey) {
-			if(proj[sel].data.duration > 1) {
+			if(project.data.duration > 1) {
 				const topFrames = getTopFrames();
 				let quantity = 0;
-				let value = proj[sel].time;
+				let value = project.time;
 				for(let i = topFrames.length - 1; i >= 0; i--) {
 					if(topFrames[i]) {
 						quantity++;
-						if(i > proj[sel].time) {
+						if(i > project.time) {
 							value--;
 						}
-						for(const obj of proj[sel].data.objs) {
-							proj[sel].frames[obj.id].splice(i, 1);
+						for(const obj of project.data.objs) {
+							project.frames[obj.id].splice(i, 1);
 						}
 					}
 				}
-				proj[sel].data.duration -= quantity;
+				project.data.duration -= quantity;
 				setTime(Math.max(0, value));
 			}
 		} else {
@@ -147,14 +147,14 @@ document.addEventListener("keydown", evt => {
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
 			if(focused()) {
-				if(sel === "home") {
-					if(Object.keys(proj).length) {
-						select(tabs.lastElementChild._proj.id);
+				if(selectedProject === "home") {
+					if(Object.keys(projects).length) {
+						select(tabs.lastElementChild._project.id);
 					}
-				} else if(proj[sel].tab.previousElementSibling === homeTab) {
+				} else if(project.tab.previousElementSibling === homeTab) {
 					select("home");
 				} else {
-					select(proj[sel].tab.previousElementSibling._proj.id);
+					select(project.tab.previousElementSibling._project.id);
 				}
 			}
 		} else if(shiftKey) {
@@ -167,20 +167,20 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(evt.keyCode === 9 || evt.keyCode === 34) { // ^`tab` || ^`page down`
 			if(focused()) {
-				if(sel === "home") {
-					if(Object.keys(proj).length) {
-						select(homeTab.nextElementSibling._proj.id);
+				if(selectedProject === "home") {
+					if(Object.keys(projects).length) {
+						select(homeTab.nextElementSibling._project.id);
 					}
-				} else if(proj[sel].tab.nextElementSibling) {
-					select(proj[sel].tab.nextElementSibling._proj.id);
+				} else if(project.tab.nextElementSibling) {
+					select(project.tab.nextElementSibling._project.id);
 				} else {
 					select("home");
 				}
 			}
 		} else if(evt.keyCode === 57) { // ^`9`
 			if(focused()) {
-				if(Object.keys(proj).length) {
-					select(tabs.lastElementChild._proj.id);
+				if(Object.keys(projects).length) {
+					select(tabs.lastElementChild._project.id);
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
@@ -207,16 +207,16 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(evt.keyCode === 87 || evt.keyCode === 115) { // ^`W` || ^`F4`
 			if(focused()) {
-				if(proj[sel]) {
-					proj[sel].close();
+				if(project) {
+					project.close();
 				} else {
 					win.close();
 				}
 			}
 		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
 			if(focused()) {
-				if(Object.keys(proj).length) {
-					select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._proj.id);
+				if(Object.keys(projects).length) {
+					select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._project.id);
 				}
 			}
 		}
@@ -302,30 +302,30 @@ document.addEventListener("input", evt => {
 	if(evt.target === currentFrame) {
 		setTime(+currentFrame.value);
 	} else if(evt.target === prop.fps.elements[0]) {
-		proj[sel].data.fps = +prop.fps.elements[0].value;
+		project.data.fps = +prop.fps.elements[0].value;
 		for(let i = 0; i < timeUnits.children.length; i++) {
 			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
 		}
-		proj[sel].saved = false;
+		project.saved = false;
 	} else if(evt.target === prop.canvasSize.elements[0]) {
-		content.style.width = `${proj[sel].data.width = +evt.target.value}px`;
+		content.style.width = `${project.data.width = +evt.target.value}px`;
 		absoluteCenter(content);
-		proj[sel].saved = false;
+		project.saved = false;
 	} else if(evt.target === prop.canvasSize.elements[1]) {
-		content.style.height = `${proj[sel].data.height = +evt.target.value}px`;
+		content.style.height = `${project.data.height = +evt.target.value}px`;
 		absoluteCenter(content);
-		proj[sel].saved = false;
+		project.saved = false;
 	} else if(evt.target === prop.name.elements[0]) {
 		if(assetContainer.classList.contains("activeProperties")) {
-			if(!proj[sel].data.assets.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
+			if(!project.data.assets.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
 				assets.querySelector(".asset.selected")._asset.name = evt.target.value;
 			}
 		} else if(timelineContainer.classList.contains("activeProperties")) {
-			if(!proj[sel].data.objs.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
+			if(!project.data.objs.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
 				timelineItems.querySelector(".timelineItem.selected")._obj.name = evt.target.value;
 			}
 		}
-		proj[sel].saved = false;
+		project.saved = false;
 	}
 }, capturePassive);
 document.addEventListener("change", evt => {
@@ -337,7 +337,7 @@ document.addEventListener("change", evt => {
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {
-	if(proj[sel] && focused() && notTyping()) {
+	if(project && focused() && notTyping()) {
 		if(evt.clipboardData.items.length) {
 			let file;
 			let string;

@@ -1,8 +1,9 @@
 "use strict";
-const proj = {}; // the object of projects, the probject
-let projID = 0;
-let sel;
-const prevSel = [];
+const projects = {}; // the object of projects, the probject
+let projectID = 0;
+let selectedProject;
+let project;
+const prevSelectedProjects = [];
 const baseData = {
 	service: "Miroware Dynamic",
 	version: 0
@@ -16,14 +17,14 @@ class DynamicProject {
 		if(typeof value.name === "string") {
 			this[_name] = value.name;
 		} else if(!validLocation) {
-			const projects = Object.values(proj);
+			const projectValues = Object.values(projects);
 			let i = 0;
 			do {
 				this[_name] = `Project ${++i}`;
-			} while(projects.some(project => project.name === this[_name]));
+			} while(projectValues.some(project => project.name === this[_name]));
 		}
 		Object.assign(this, {
-			id: String(++projID),
+			id: String(++projectID),
 			tab: html`
 				<div class="tab">
 					<div class="label">$${this[_name]}</div>
@@ -45,9 +46,9 @@ class DynamicProject {
 			loop: false,
 			onionskin: storage.onionskin
 		});
-		tabs.appendChild((this.tab._proj = this).tab);
+		tabs.appendChild((this.tab._project = this).tab);
 		this.saved = value.saved;
-		select((proj[this.id] = this).id);
+		select((projects[this.id] = this).id);
 		updateTimeRuler();
 	}
 	get location() {
@@ -78,12 +79,12 @@ class DynamicProject {
 		`, ["Yes", "No"]) !== 0) {
 			return;
 		}
-		if(this.id === sel) {
-			prevSel.pop();
-			select(prevSel.pop());
+		if(this.id === selectedProject) {
+			prevSelectedProjects.pop();
+			select(prevSelectedProjects.pop());
 		}
 		this.tab.remove();
-		delete proj[this.id];
+		delete projects[this.id];
 	}
 	get selectedAsset() {
 		return this[_selectedAsset];
@@ -145,31 +146,32 @@ class DynamicProject {
 }
 const select = id => {
 	pause();
-	if(!proj[id]) {
+	if(!projects[id]) {
 		id = "home";
 	}
-	const prevSelIndex = prevSel.indexOf(id);
+	const prevSelIndex = prevSelectedProjects.indexOf(id);
 	if(prevSelIndex !== -1) {
-		prevSel.splice(prevSelIndex, 1);
+		prevSelectedProjects.splice(prevSelIndex, 1);
 	}
-	if(proj[sel]) {
-		proj[sel].scrollAssets = assets.scrollTop;
-		proj[sel].scrollProperties = propertyContainer.scrollTop;
-		proj[sel].scrollContentLeft = contentContainer.scrollLeft;
-		proj[sel].scrollContentTop = contentContainer.scrollTop;
-		proj[sel].scrollLayers = layers.scrollTop;
-		proj[sel].scrollTimelinesLeft = timelineBox.scrollLeft;
-		proj[sel].scrollTimelinesTop = timelineBox.scrollTop;
+	if(project) {
+		project.scrollAssets = assets.scrollTop;
+		project.scrollProperties = propertyContainer.scrollTop;
+		project.scrollContentLeft = contentContainer.scrollLeft;
+		project.scrollContentTop = contentContainer.scrollTop;
+		project.scrollLayers = layers.scrollTop;
+		project.scrollTimelinesLeft = timelineBox.scrollLeft;
+		project.scrollTimelinesTop = timelineBox.scrollTop;
 		projectPage.classList.add("hidden");
 	} else {
 		homePage.classList.add("hidden");
 	}
-	if(proj[sel]) {
+	if(project) {
 		for(const elem of projectPage.querySelectorAll(".asset, .layer, .timelineItem")) {
 			elem.remove();
 		}
 	}
-	prevSel.push(sel = id);
+	prevSelectedProjects.push(selectedProject = id);
+	project = projects[selectedProject];
 	for(const tab of tabs.children) {
 		tab.classList.remove("current");
 	}
@@ -178,26 +180,26 @@ const select = id => {
 		homeTab.classList.add("current");
 		homePage.classList.remove("hidden");
 	} else {
-		proj[sel].data.assets.forEach(appendAsset);
-		proj[sel].data.objs.forEach(appendObj);
+		project.data.assets.forEach(appendAsset);
+		project.data.objs.forEach(appendObj);
 		updateLayers();
-		saveProj.disabled = proj[sel].saved;
-		rootAsset(proj[sel].rootAsset ? getAsset(proj[sel].rootAsset) : null);
-		openAsset(proj[sel].openAsset ? getAsset(proj[sel].openAsset) : null);
+		saveProj.disabled = project.saved;
+		rootAsset(project.rootAsset ? getAsset(project.rootAsset) : null);
+		openAsset(project.openAsset ? getAsset(project.openAsset) : null);
 		updateProperties();
-		proj[sel].tab.classList.add("current");
+		project.tab.classList.add("current");
 		projectPage.classList.remove("hidden");
-		prop.fps.elements[0].value = proj[sel].data.fps;
-		content.style.width = `${prop.canvasSize.elements[0].value = proj[sel].data.width || storage.canvasWidth}px`;
-		content.style.height = `${prop.canvasSize.elements[1].value = proj[sel].data.height || storage.canvasHeight}px`;
+		prop.fps.elements[0].value = project.data.fps;
+		content.style.width = `${prop.canvasSize.elements[0].value = project.data.width || storage.canvasWidth}px`;
+		content.style.height = `${prop.canvasSize.elements[1].value = project.data.height || storage.canvasHeight}px`;
 		updatePanels();
-		assets.scrollTop = proj[sel].scrollAssets;
-		propertyContainer.scrollTop = proj[sel].scrollProperties;
-		contentContainer.scrollLeft = proj[sel].scrollContentLeft;
-		contentContainer.scrollTop = proj[sel].scrollContentTop;
-		layers.scrollTop = proj[sel].scrollLayers;
-		timelineBox.scrollLeft = proj[sel].scrollTimelinesLeft;
-		timelineBox.scrollTop = proj[sel].scrollTimelinesTop;
+		assets.scrollTop = project.scrollAssets;
+		propertyContainer.scrollTop = project.scrollProperties;
+		contentContainer.scrollLeft = project.scrollContentLeft;
+		contentContainer.scrollTop = project.scrollContentTop;
+		layers.scrollTop = project.scrollLayers;
+		timelineBox.scrollLeft = project.scrollTimelinesLeft;
+		timelineBox.scrollTop = project.scrollTimelinesTop;
 		updateOnionskin();
 	}
 };
@@ -213,10 +215,10 @@ const fileOptions = {
 	}]
 };
 const save = async as => {
-	if(proj[sel] && (as || !proj[sel].saved) && (proj[sel].location = (!as && proj[sel].location) || electron.remote.dialog.showSaveDialog(win, fileOptions))) {
+	if(project && (as || !project.saved) && (project.location = (!as && project.location) || electron.remote.dialog.showSaveDialog(win, fileOptions))) {
 		loadIndeterminate(true);
 		try {
-			await fs.writeFile(proj[sel].location, await zip(JSON.stringify(proj[sel].data)));
+			await fs.writeFile(project.location, await zip(JSON.stringify(project.data)));
 		} catch(err) {
 			console.warn(err);
 			new Miro.Dialog("Error", "An error occurred while trying to save.");
@@ -224,7 +226,7 @@ const save = async as => {
 			return;
 		}
 		loadIndeterminate(false);
-		proj[sel].saved = true;
+		project.saved = true;
 	}
 };
 const open = async location => {
@@ -252,16 +254,16 @@ const open = async location => {
 			location
 		});
 		if(data.fps >= 0) {
-			proj[sel].data.fps = +data.fps;
+			project.data.fps = +data.fps;
 		}
 		if(data.width > 0) {
-			proj[sel].data.width = +data.width;
+			project.data.width = +data.width;
 		}
 		if(data.height > 0) {
-			proj[sel].data.height = +data.height;
+			project.data.height = +data.height;
 		}
 		if(data.duration > 0) {
-			proj[sel].data.duration = +data.duration;
+			project.data.duration = +data.duration;
 		}
 		loadIndeterminate(false);
 		loadProgress(0);
@@ -294,7 +296,7 @@ const open = async location => {
 				`);
 			}
 		}
-		select(sel);
+		select(selectedProject);
 		loadProgress(1);
 	} else {
 		return false;

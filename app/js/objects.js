@@ -1,19 +1,19 @@
 "use strict";
-const getObj = id => proj[sel].data.objs.find(obj => obj.id === id);
+const getObj = id => project.data.objs.find(obj => obj.id === id);
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZ = obj => obj.z;
 class DynamicObject {
 	constructor(value) {
 		if(!value.id) {
-			this.id = uid(proj[sel].data.objs.map(byID));
+			this.id = uid(project.data.objs.map(byID));
 		}
 		if(typeof value === "string") {
 			this.date = Date.now();
 			const asset = getAsset(value);
 			if(asset.type === "group") {
 				this.type = "group";
-				const names = proj[sel].data.objs.map(byInsensitiveName);
+				const names = project.data.objs.map(byInsensitiveName);
 				this[_name] = asset.name;
 				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
 					this[_name] = `${asset.name} ${i}`;
@@ -27,7 +27,7 @@ class DynamicObject {
 				this.asset = asset;
 			}
 			if(onlyGraphics(this)) {
-				const maxZ = Math.max(...proj[sel].data.objs.filter(onlyGraphics).map(byZ));
+				const maxZ = Math.max(...project.data.objs.filter(onlyGraphics).map(byZ));
 				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
 			}
 		} else if(value instanceof Object) {
@@ -41,8 +41,8 @@ class DynamicObject {
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
-		proj[sel].data.objs.push(this);
-		proj[sel].frames[this.id] = new Array(proj[sel].duration).fill(0);
+		project.data.objs.push(this);
+		project.frames[this.id] = new Array(project.duration).fill(0);
 		if(this.type === "group") {
 			this.timelineItem = html`
 				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
@@ -168,35 +168,35 @@ const appendObj = (obj, create) => {
 };
 const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
-	for(const obj of proj[sel].data.objs.filter(onlyGraphics).sort(byZIndex)) {
+	for(const obj of project.data.objs.filter(onlyGraphics).sort(byZIndex)) {
 		obj.layer.querySelector(".z").textContent = obj.z;
 		layers.appendChild(obj.layer);
 	}
 };
 const storeObjs = () => {
-	for(const obj of proj[sel].data.objs) {
-		obj._frames = proj[sel].frames[obj.id];
+	for(const obj of project.data.objs) {
+		obj._frames = project.frames[obj.id];
 	}
-	proj[sel].data.objs = [];
-	proj[sel].frames = {};
+	project.data.objs = [];
+	project.frames = {};
 	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
 		if(timelineItem.parentNode === timelineItems) {
 			delete timelineItem._obj.parent;
 		} else {
 			timelineItem._obj.parent = timelineItem.parentNode.parentNode._obj;
 		}
-		proj[sel].data.objs.push(timelineItem._obj);
-		proj[sel].frames[timelineItem._obj.id] = timelineItem._obj._frames;
+		project.data.objs.push(timelineItem._obj);
+		project.frames[timelineItem._obj.id] = timelineItem._obj._frames;
 		delete timelineItem._obj._frames;
 	}
-	proj[sel].saved = false;
+	project.saved = false;
 };
 const removeObj = objElem => {
-	if(proj[sel].selectedTimelineItem === `timelineItem_${objElem._obj.id}`) {
-		proj[sel].selectedTimelineItem = null;
+	if(project.selectedTimelineItem === `timelineItem_${objElem._obj.id}`) {
+		project.selectedTimelineItem = null;
 	}
-	if(proj[sel].selectedLayer === `layer_${objElem._obj.id}`) {
-		proj[sel].selectedLayer = null;
+	if(project.selectedLayer === `layer_${objElem._obj.id}`) {
+		project.selectedLayer = null;
 	}
 	while(objElem._obj.timelineItem.lastElementChild.firstElementChild) {
 		objElem._obj.timelineItem.before(objElem._obj.timelineItem.lastElementChild.firstElementChild);
@@ -264,7 +264,7 @@ const deselectLayers = () => {
 		layer.classList.remove("selected");
 		layer.classList.remove("focus");
 	}
-	proj[sel].selectedLayer = null;
+	project.selectedLayer = null;
 };
 const selectAllLayers = () => {
 	for(const layer of layers.querySelectorAll(".layer:not(.selected)")) {
@@ -282,20 +282,20 @@ const selectLayer = (target, button) => {
 				layer.classList.remove("selected");
 			}
 			target.classList.add("selected");
-			proj[sel].selectedLayer = target.id;
+			project.selectedLayer = target.id;
 		}
 	} else if(shiftKey) {
-		let selecting = !proj[sel].selectedLayer;
-		const classListMethod = superKey && proj[sel].selectedLayer && !layers.querySelector(`#${proj[sel].selectedLayer}`).classList.contains("selected") ? "remove" : "add";
+		let selecting = !project.selectedLayer;
+		const classListMethod = superKey && project.selectedLayer && !layers.querySelector(`#${project.selectedLayer}`).classList.contains("selected") ? "remove" : "add";
 		for(const layer of layers.querySelectorAll(".layer")) {
-			if(layer.id === proj[sel].selectedLayer || layer.id === target.id) {
+			if(layer.id === project.selectedLayer || layer.id === target.id) {
 				if(selecting) {
 					layer.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
 					layer.classList[classListMethod]("selected");
-					if(proj[sel].selectedLayer !== target.id) {
+					if(project.selectedLayer !== target.id) {
 						selecting = true;
 					}
 				}
@@ -306,7 +306,7 @@ const selectLayer = (target, button) => {
 			}
 		}
 	} else {
-		proj[sel].selectedLayer = target.id;
+		project.selectedLayer = target.id;
 		if(superKey) {
 			target.classList.toggle("selected");
 		} else {
@@ -318,8 +318,8 @@ const selectLayer = (target, button) => {
 				}
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
-				proj[sel].selectedLayer = null;
-				proj[sel].focusedLayer = target.id;
+				project.selectedLayer = null;
+				project.focusedLayer = target.id;
 			}
 		}
 	}
@@ -333,7 +333,7 @@ const deselectTimelineItems = () => {
 		timelineItem.classList.remove("selected");
 		timelineItem.classList.remove("focus");
 	}
-	proj[sel].selectedTimelineItem = null;
+	project.selectedTimelineItem = null;
 	updateSelectedTimelineItems();
 };
 const selectAllTimelineItems = () => {
@@ -345,8 +345,8 @@ const selectAllTimelineItems = () => {
 };
 const updateSelectedTimelineItems = () => {
 	const topFrames = getTopFrames();
-	for(const obj of proj[sel].data.objs) {
-		const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
+	for(const obj of project.data.objs) {
+		const frames = project.frames[obj.id] = new Array(project.data.duration).fill(0);
 		if(obj.timelineItem.classList.contains("selected")) {
 			const focus = obj.timelineItem.classList.contains("focus");
 			for(let i = 0; i < topFrames.length; i++) {
@@ -368,20 +368,20 @@ const selectTimelineItem = (target, button) => {
 				timelineItem.classList.remove("selected");
 			}
 			target.classList.add("selected");
-			proj[sel].selectedTimelineItem = target.id;
+			project.selectedTimelineItem = target.id;
 		}
 	} else if(shiftKey) {
-		let selecting = !proj[sel].selectedTimelineItem;
-		const classListMethod = superKey && proj[sel].selectedTimelineItem && !timelineItems.querySelector(`#${proj[sel].selectedTimelineItem}`).classList.contains("selected") ? "remove" : "add";
+		let selecting = !project.selectedTimelineItem;
+		const classListMethod = superKey && project.selectedTimelineItem && !timelineItems.querySelector(`#${project.selectedTimelineItem}`).classList.contains("selected") ? "remove" : "add";
 		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
-			if(timelineItem.id === proj[sel].selectedTimelineItem || timelineItem.id === target.id) {
+			if(timelineItem.id === project.selectedTimelineItem || timelineItem.id === target.id) {
 				if(selecting) {
 					timelineItem.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
 					timelineItem.classList[classListMethod]("selected");
-					if(proj[sel].selectedTimelineItem !== target.id) {
+					if(project.selectedTimelineItem !== target.id) {
 						selecting = true;
 					}
 				}
@@ -392,7 +392,7 @@ const selectTimelineItem = (target, button) => {
 			}
 		}
 	} else {
-		proj[sel].selectedTimelineItem = target.id;
+		project.selectedTimelineItem = target.id;
 		if(superKey) {
 			target.classList.toggle("selected");
 		} else {
@@ -404,8 +404,8 @@ const selectTimelineItem = (target, button) => {
 				}
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
-				proj[sel].selectedTimelineItem = null;
-				proj[sel].focusedTimelineItem = target.id;
+				project.selectedTimelineItem = null;
+				project.focusedTimelineItem = target.id;
 			}
 		}
 	}
@@ -436,9 +436,9 @@ const addToTimeline = () => {
 				child[_parent] = obj.timelineItem.lastElementChild;
 			}
 		}
-		proj[sel].data.objs.unshift(obj);
+		project.data.objs.unshift(obj);
 		obj.timelineItem.classList.add("selected");
-		proj[sel].selectedTimelineItem = obj.timelineItem.id;
+		project.selectedTimelineItem = obj.timelineItem.id;
 		if(obj.type === "group") {
 			obj.timelineItem.classList.add("open");
 		}

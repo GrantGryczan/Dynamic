@@ -6,13 +6,13 @@ const animate = () => {
 	if(playing) {
 		const now = performance.now();
 		const elapsed = now - then;
-		const interval = 1000 / proj[sel].data.fps;
-		const change = proj[sel].data.fps === 0 ? 1 : Math.floor(elapsed / interval);
+		const interval = 1000 / project.data.fps;
+		const change = project.data.fps === 0 ? 1 : Math.floor(elapsed / interval);
 		if(change > 0) {
 			then = now - elapsed % interval;
-			const lastFrame = proj[sel].data.duration - 1;
-			let value = proj[sel].time + change;
-			if((proj[sel].time === lastFrame || value >= lastFrame) && !proj[sel].loop) {
+			const lastFrame = project.data.duration - 1;
+			let value = project.time + change;
+			if((project.time === lastFrame || value >= lastFrame) && !project.loop) {
 				pause();
 				value = lastFrame;
 			}
@@ -23,7 +23,7 @@ const animate = () => {
 requestAnimationFrame(animate);
 const play = () => {
 	if(!playing) {
-		if(proj[sel].time === proj[sel].data.duration - 1) {
+		if(project.time === project.data.duration - 1) {
 			setTime(0);
 		}
 		then = performance.now();
@@ -40,7 +40,7 @@ const pause = () => {
 	}
 };
 const updateOnionskin = () => {
-	if(proj[sel].onionskin) {
+	if(project.onionskin) {
 		enableOnionskin.classList.add("hidden");
 		disableOnionskin.classList.remove("hidden");
 	} else {
