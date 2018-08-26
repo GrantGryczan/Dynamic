@@ -39,7 +39,8 @@ class DynamicProject {
 				duration: storage.fps * 2
 			},
 			time: 0,
-			frames: {}
+			frames: {},
+			loop: false
 		});
 		tabs.appendChild((this.tab._proj = this).tab);
 		select((proj[this.id] = this).id);
