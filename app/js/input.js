@@ -142,33 +142,7 @@ document.addEventListener("keydown", evt => {
 				setTime(Math.max(0, value));
 			}
 		} else {
-			const topFrames = getTopFrames();
-			let value = -1;
-			let quantity = 0;
-			for(let i = 0; i < topFrames.length; i++) {
-				if(topFrames[i]) {
-					if(value === -1) {
-						value = i;
-					}
-					quantity++;
-				}
-			}
-			proj[sel].data.duration += quantity;
-			for(const obj of proj[sel].data.objs) {
-				const focus = proj[sel].frames[obj.id].includes(2);
-				const selected = focus || proj[sel].frames[obj.id].includes(1);
-				const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
-				if(selected) {
-					for(let i = value; i < value + quantity; i++) {
-						frames[i] = 1;
-					}
-					if(focus) {
-						frames[value] = 2;
-					}
-				}
-			}
-			proj[sel].time = value;
-			updateTimeRuler();
+			insertFrames();
 		}
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`

@@ -385,46 +385,6 @@ const leftFrameJump = () => {
 const rightFrameJump = () => {
 	setTime(proj[sel].time + 1);
 };
-let playing = false;
-let then;
-const animate = () => {
-	requestAnimationFrame(animate);
-	if(playing) {
-		const now = performance.now();
-		const elapsed = now - then;
-		const interval = 1000 / proj[sel].data.fps;
-		const change = proj[sel].data.fps === 0 ? 1 : Math.floor(elapsed / interval);
-		if(change > 0) {
-			then = now - elapsed % interval;
-			const lastFrame = proj[sel].data.duration - 1;
-			let value = proj[sel].time + change;
-			if((proj[sel].time === lastFrame || value >= lastFrame) && !proj[sel].loop) {
-				pause();
-				value = lastFrame;
-			}
-			setTime(value);
-		}
-	}
-};
-const play = () => {
-	if(!playing) {
-		if(proj[sel].time === proj[sel].data.duration - 1) {
-			setTime(0);
-		}
-		then = performance.now();
-		playing = true;
-		playButton.classList.add("hidden");
-		pauseButton.classList.remove("hidden");
-	}
-};
-const pause = () => {
-	if(playing) {
-		playing = false;
-		pauseButton.classList.add("hidden");
-		playButton.classList.remove("hidden");
-	}
-};
-requestAnimationFrame(animate);
 const updateLoop = () => {
 	if(proj[sel].loop) {
 		enableLoop.classList.add("hidden");
@@ -447,4 +407,41 @@ const setLoop = () => {
 	}
 	scrollFrameIntoView(value);
 	updateLoop();
+};
+const insertFrames = (toRight, quantity) => {
+	const topFrames = getTopFrames();
+	let value = -1;
+	const noQuantity = typeof quantity !== "number";
+	if(noQuantity) {
+		quantity = 0;
+	}
+	for(let i = 0; i < topFrames.length; i++) {
+		if(topFrames[i]) {
+			if(toRight || value === -1) {
+				value = i;
+			}
+			if(noQuantity) {
+				quantity++;
+			}
+		}
+	}
+	if(toRight) {
+		value++;
+	}
+	proj[sel].data.duration += quantity;
+	for(const obj of proj[sel].data.objs) {
+		const focus = proj[sel].frames[obj.id].includes(2);
+		const selected = focus || proj[sel].frames[obj.id].includes(1);
+		const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
+		if(selected) {
+			for(let i = value; i < value + quantity; i++) {
+				frames[i] = 1;
+			}
+			if(focus) {
+				frames[value] = 2;
+			}
+		}
+	}
+	proj[sel].time = value;
+	updateTimeRuler();
 };
