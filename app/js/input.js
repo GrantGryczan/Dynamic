@@ -121,6 +121,55 @@ document.addEventListener("keydown", evt => {
 		if(ctxCandidates.length) {
 			openCtx(ctxCandidates[ctxCandidates.length - 1]);
 		}
+	} else if(evt.keyCode === 116) { // `F5`
+		if(shiftKey) {
+			if(proj[sel].data.duration > 1) {
+				const topFrames = getTopFrames();
+				let quantity = 0;
+				let value = proj[sel].time;
+				for(let i = topFrames.length - 1; i >= 0; i--) {
+					if(topFrames[i]) {
+						quantity++;
+						if(i > proj[sel].time) {
+							value--;
+						}
+						for(const obj of proj[sel].data.objs) {
+							proj[sel].frames[obj.id].splice(i, 1);
+						}
+					}
+				}
+				proj[sel].data.duration -= quantity;
+				setTime(Math.max(0, value));
+			}
+		} else {
+			const topFrames = getTopFrames();
+			let value = -1;
+			let quantity = 0;
+			for(let i = 0; i < topFrames.length; i++) {
+				if(topFrames[i]) {
+					if(value === -1) {
+						value = i;
+					}
+					quantity++;
+				}
+			}
+			proj[sel].data.duration += quantity;
+			for(const obj of proj[sel].data.objs) {
+				const focus = proj[sel].frames[obj.id].includes(2);
+				const selected = focus || proj[sel].frames[obj.id].includes(1);
+				const frames = proj[sel].frames[obj.id] = new Array(proj[sel].data.duration).fill(0);
+				if(selected) {
+					for(let i = value; i < value + quantity; i++) {
+						frames[i] = 1;
+					}
+					if(focus) {
+						frames[value] = 2;
+					}
+				}
+			}
+			proj[sel].time = value;
+			updateTimeRuler();
+		}
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
 			if(focused()) {
