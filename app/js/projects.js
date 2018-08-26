@@ -40,7 +40,8 @@ class DynamicProject {
 			},
 			time: 0,
 			frames: {},
-			loop: false
+			loop: false,
+			onionskin: storage.onionskin
 		});
 		tabs.appendChild((this.tab._proj = this).tab);
 		select((proj[this.id] = this).id);
@@ -194,6 +195,7 @@ const select = id => {
 		layers.scrollTop = proj[sel].scrollLayers;
 		timelineBox.scrollLeft = proj[sel].scrollTimelinesLeft;
 		timelineBox.scrollTop = proj[sel].scrollTimelinesTop;
+		updateOnionskin();
 	}
 };
 select("home");

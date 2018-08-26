@@ -417,6 +417,12 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === disableLoop) {
 							proj[sel].loop = false;
 							updateLoop();
+						} else if(mouseTarget0 === enableOnionskin) {
+							storage.onionskin = proj[sel].onionskin = true;
+							updateOnionskin();
+						} else if(mouseTarget0 === disableOnionskin) {
+							storage.onionskin = proj[sel].onionskin = false;
+							updateOnionskin();
 						}
 					} else if(mouseTarget0.parentNode === toolbar) {
 						if(mouseTarget0 === newProj) {
