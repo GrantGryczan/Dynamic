@@ -421,8 +421,8 @@ const updateLoop = () => {
 	if(proj[sel].loop) {
 		enableLoop.classList.add("hidden");
 		disableLoop.classList.remove("hidden");
-		loopRangeStart.style.width = `${storage.frameWidth * proj[sel].loop[0]}px`;
-		loopRangeStart.style.marginRight = `${storage.frameWidth * (proj[sel].loop[1] - proj[sel].loop[0]) - (proj[sel].loop[0] === 0 ? 3 : 1)}px`;
+		loopRangeStart.style.width = `${proj[sel].loop[0] === 0 ? 0 : storage.frameWidth * proj[sel].loop[0] + 1}px`;
+		loopRangeStart.style.marginRight = `${storage.frameWidth * (proj[sel].loop[1] - proj[sel].loop[0]) - (proj[sel].loop[0] === 0 ? 2 : 1)}px`;
 		loopField.classList.remove("hidden");
 	} else {
 		enableLoop.classList.remove("hidden");

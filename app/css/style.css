@@ -459,6 +459,7 @@ label:not(.mdc-floating-label) {
 }
 .filler {
 	display: inline-block;
+	overflow: visible;
 }
 #assetContainer {
 	width: 300px;
@@ -602,6 +603,7 @@ label:not(.mdc-floating-label) {
 	width: inherit;
 	height: 100%;
 	min-width: 100%;
+	overflow: visible;
 }
 .loopRange {
 	z-index: 1;
@@ -609,6 +611,7 @@ label:not(.mdc-floating-label) {
 	cursor: pointer;
 }
 .loopRange.start {
+	margin-left: -1px;
 	border-right: 2px solid #8000ff;
 }
 .loopRange.end {
