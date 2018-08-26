@@ -452,6 +452,5 @@ const addToTimeline = () => {
 	}
 	updateSelectedTimelineItems();
 	updateTimelines();
-	proj[sel].saved = false;
 	setActive(contentContainer);
 };

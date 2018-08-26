@@ -694,13 +694,15 @@ label:not(.mdc-floating-label) {
 	margin: 0 -1px 0 0;
 	overflow: scroll;
 }
+#timelineBox > .filler {
+	margin-bottom: -4px;
+}
 #timelines {
 	display: inline-block;
 	position: absolute;
 	top: 0;
 	left: 0;
 	min-width: 100%;
-	margin-bottom: -4px;
 	white-space: nowrap;
 }
 .timeline {

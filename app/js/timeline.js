@@ -77,7 +77,7 @@ const updateTimeRuler = () => {
 	oldStartFrame = startFrame;
 	oldEndFrame = endFrame;
 	startFrame = Math.floor(timeRuler.scrollLeft / storage.frameWidth);
-	endFrame = Math.min(proj[sel].data.duration, startFrame + Math.ceil(timeRuler.offsetWidth / storage.frameWidth));
+	endFrame = Math.min(proj[sel].data.duration, startFrame + Math.ceil((timeRuler.offsetWidth - SCROLLBAR_SIZE) / storage.frameWidth) + 1);
 	const transform = timeUnits.style.transform = `translateX(${storage.frameWidth * startFrame}px)`;
 	if(timelinesTranslateXSet || translateX.test(timelines.style.transform)) {
 		timelines.style.transform = timelines.style.transform.replace(translateX, transform);
@@ -150,11 +150,12 @@ const baseFrame = html`<div class="frame"></div>`;
 baseFrame.style.width = `${storage.frameWidth}px`;
 const updateTimelines = () => {
 	const objs = proj[sel].data.objs.filter(byVisible);
-	const totalHeight = Math.min(24 * objs.length - 4, timelineItems.scrollHeight);
+	const totalHeight = timelineItems.scrollHeight - SCROLLBAR_SIZE;
 	if(timelineFiller.offsetHeight !== totalHeight) {
 		timelineFiller.style.height = `${totalHeight}px`;
 	}
-	const count = Math.min(objs.length, Math.ceil(timelineBox.offsetHeight / 24));
+	const start = Math.floor(timelineBox.scrollTop / 24);
+	const count = Math.min(objs.length - start, Math.ceil((timelineBox.offsetHeight - SCROLLBAR_SIZE) / 24) + 1);
 	if(count !== timelineCount) {
 		if(timelineCount < count) {
 			const length = count - timelineCount;
@@ -191,7 +192,6 @@ const updateTimelines = () => {
 		frame.classList.remove("highlight");
 	}
 	const values = Object.values(proj[sel].frames);
-	const start = Math.floor(timelineBox.scrollTop / 24);
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
 		timeline.id = `timeline_${(timeline._obj = objs[start + i]).id}`;
