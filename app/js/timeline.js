@@ -372,6 +372,9 @@ const updateTimeUnits = () => {
 };
 const endFrameJump = () => {
 	setTime((proj[sel].loop ? proj[sel].loop[1] : proj[sel].data.duration) - 1);
+	if(!proj[sel].loop) {
+		pause();
+	}
 };
 const homeFrameJump = () => {
 	setTime(proj[sel].loop ? proj[sel].loop[0] : 0);
@@ -393,16 +396,21 @@ const animate = () => {
 		const change = proj[sel].data.fps === 0 ? 1 : Math.floor(elapsed / interval);
 		if(change > 0) {
 			then = now - elapsed % interval;
-			const value = proj[sel].time + change;
-			setTime(value);
-			if(value === proj[sel].data.duration - 1 && !proj[sel].loop) {
+			const lastFrame = proj[sel].data.duration - 1;
+			let value = proj[sel].time + change;
+			if((proj[sel].time === lastFrame || value >= lastFrame) && !proj[sel].loop) {
 				pause();
+				value = lastFrame;
 			}
+			setTime(value);
 		}
 	}
 };
 const play = () => {
 	if(!playing) {
+		if(proj[sel].time === proj[sel].data.duration - 1) {
+			setTime(0);
+		}
 		then = performance.now();
 		playing = true;
 		playButton.classList.add("hidden");
