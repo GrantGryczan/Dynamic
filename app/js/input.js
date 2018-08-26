@@ -54,28 +54,28 @@ document.addEventListener("keydown", evt => {
 				const assetElems = assets.querySelectorAll(".asset");
 				const assetElem = assetElems[proj[sel].focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${proj[sel].focusedAsset}`)) || assetElems.length) - 1) : 0];
 				if(assetElem) {
+					proj[sel].focusedAsset = assetElem.id;
 					if(!superKey) {
 						selectAsset(assetElem);
 					}
-					proj[sel].focusedAsset = assetElem.id;
 				}
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 				if(layer) {
+					proj[sel].focusedLayer = layer.id;
 					if(!superKey) {
 						selectLayer(layer);
 					}
-					proj[sel].focusedLayer = layer.id;
 				}
 			} else if(timelineContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const timelineItem = proj[sel].focusedTimelineItem ? timelineItems.querySelector(`#${proj[sel].focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
 				if(timelineItem) {
+					proj[sel].focusedTimelineItem = timelineItem.id;
 					if(!superKey) {
 						selectTimelineItem(timelineItem);
 					}
-					proj[sel].focusedTimelineItem = timelineItem.id;
 				}
 			}
 		}
@@ -91,28 +91,28 @@ document.addEventListener("keydown", evt => {
 				const assetElems = assets.querySelectorAll(".asset");
 				const assetElem = assetElems[((proj[sel].focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${proj[sel].focusedAsset}`)) : -1) + 1) % assetElems.length];
 				if(assetElem) {
+					proj[sel].focusedAsset = assetElem.id;
 					if(!superKey) {
 						selectAsset(assetElem);
 					}
-					proj[sel].focusedAsset = assetElem.id;
 				}
 			} else if(layerContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const layer = proj[sel].focusedLayer ? layers.querySelector(`#${proj[sel].focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 				if(layer) {
+					proj[sel].focusedLayer = layer.id;
 					if(!superKey) {
 						selectLayer(layer);
 					}
-					proj[sel].focusedLayer = layer.id;
 				}
 			} else if(timelineContainer.classList.contains("active")) {
 				evt.preventDefault();
 				const timelineItem = proj[sel].focusedTimelineItem ? timelineItems.querySelector(`#${proj[sel].focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
 				if(timelineItem) {
+					proj[sel].focusedTimelineItem = timelineItem.id;
 					if(!superKey) {
 						selectTimelineItem(timelineItem);
 					}
-					proj[sel].focusedTimelineItem = timelineItem.id;
 				}
 			}
 		}
