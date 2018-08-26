@@ -332,12 +332,15 @@ document.addEventListener("input", evt => {
 		for(let i = 0; i < timeUnits.children.length; i++) {
 			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
 		}
+		proj[sel].saved = false;
 	} else if(evt.target === prop.canvasSize.elements[0]) {
-		content.style.width = `${proj[sel].data.width = evt.target.value}px`;
+		content.style.width = `${proj[sel].data.width = +evt.target.value}px`;
 		absoluteCenter(content);
+		proj[sel].saved = false;
 	} else if(evt.target === prop.canvasSize.elements[1]) {
-		content.style.height = `${proj[sel].data.height = evt.target.value}px`;
+		content.style.height = `${proj[sel].data.height = +evt.target.value}px`;
 		absoluteCenter(content);
+		proj[sel].saved = false;
 	} else if(evt.target === prop.name.elements[0]) {
 		if(assetContainer.classList.contains("activeProperties")) {
 			if(!proj[sel].data.assets.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {

@@ -25,18 +25,20 @@ class DynamicProject {
 		Object.assign(this, {
 			id: String(++projID),
 			tab: html`
-				<div class="tab${(this[_saved] = !!value.saved) ? " saved" : ""}">
+				<div class="tab">
 					<div class="label">$${this[_name]}</div>
 					<div class="close material-icons"></div>
 				</div>
 			`,
 			location: validLocation ? value.location : null,
-			data: value.data || {
+			data: {
 				...baseData,
-				assets: [],
-				objs: [],
 				fps: storage.fps,
-				duration: storage.fps * 2
+				width: storage.canvasWidth,
+				height: storage.canvasHeight,
+				duration: storage.fps * 2,
+				assets: [],
+				objs: []
 			},
 			time: 0,
 			frames: {},
@@ -44,6 +46,7 @@ class DynamicProject {
 			onionskin: storage.onionskin
 		});
 		tabs.appendChild((this.tab._proj = this).tab);
+		this.saved = value.saved;
 		select((proj[this.id] = this).id);
 		updateTimeRuler();
 	}
@@ -248,6 +251,18 @@ const open = async location => {
 			saved: true,
 			location
 		});
+		if(data.fps >= 0) {
+			proj[sel].data.fps = +data.fps;
+		}
+		if(data.width > 0) {
+			proj[sel].data.width = +data.width;
+		}
+		if(data.height > 0) {
+			proj[sel].data.height = +data.height;
+		}
+		if(data.duration > 0) {
+			proj[sel].data.duration = +data.duration;
+		}
 		loadIndeterminate(false);
 		loadProgress(0);
 		for(let i = 0; i < data.assets.length; i++) {
@@ -269,7 +284,6 @@ const open = async location => {
 				`);
 			}
 		}
-		storeAssets();
 		for(const dataObj of data.objs) {
 			try {
 				const obj = new DynamicObject(dataObj);
@@ -280,8 +294,7 @@ const open = async location => {
 				`);
 			}
 		}
-		storeObjs();
-		updateTimelines();
+		select(sel);
 		loadProgress(1);
 	} else {
 		return false;
