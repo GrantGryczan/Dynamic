@@ -28,10 +28,13 @@ document.addEventListener("focus", evt => {
 		}
 	}
 }, capturePassive);
-document.addEventListener("keydown", evt => {
+const setKeys = evt => {
 	shiftKey = evt.shiftKey;
 	superKey = evt.metaKey || evt.ctrlKey;
 	altKey = evt.altKey;
+};
+document.addEventListener("keydown", evt => {
+	setKeys(evt);
 	if(evt.keyCode === 35) { // `end`
 		if(focused() && notTyping()) {
 			evt.preventDefault();
