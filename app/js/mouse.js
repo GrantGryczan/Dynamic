@@ -187,7 +187,7 @@ document.addEventListener("mousemove", evt => {
 			}
 		} else if(mouseTarget.classList.contains("frame")) {
 			let timeline;
-			let value;
+			let value = false;
 			if(evt.target.classList.contains("frame")) {
 				timeline = evt.target.parentNode._obj.id;
 				value = evt.target._value;
@@ -198,7 +198,7 @@ document.addEventListener("mousemove", evt => {
 				timeline = obj.id;
 				value = Math.max(0, Math.min(project.data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
 			}
-			if(timeline && typeof value === "number") {
+			if(timeline && value !== false) {
 				if(initialTargetPos) {
 					// TODO: Move frames
 				} else {
@@ -355,6 +355,10 @@ const handleMouseUp = (evt, button) => {
 						updateTimelines();
 					}
 				}
+			}
+		} else if(mouseTarget === foot.currentFrame) {
+			if(!mouseMoved) {
+				foot.currentFrame.select();
 			}
 		} else if(slider.contains(mouseTarget)) {
 			slider.classList.remove("mdc-slider--active");

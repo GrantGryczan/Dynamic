@@ -305,7 +305,22 @@ document.addEventListener("input", evt => {
 		return;
 	}
 	if(evt.target === foot.currentFrame) {
-		setTime(+foot.currentFrame.value);
+		let value;
+		if(mathTest.test(value = foot.currentFrame.value.replace(whitespace, ""))) {
+			if(!startNumberTest.test(value)) {
+				value = project.time + value;
+			}
+			try {
+				value = vm.runInThisContext(value);
+			} catch(err) {
+				console.warn(err);
+			}
+		} else {
+			value = NaN;
+		}
+		if(isFinite(value)) {
+			setTime(value);
+		}
 	} else if(evt.target === prop.fps.elements[0]) {
 		project.data.fps = +prop.fps.elements[0].value;
 		for(let i = 0; i < timeUnits.children.length; i++) {
@@ -337,7 +352,9 @@ document.addEventListener("change", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === prop.name.elements[0] && evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
+	if(evt.target === foot.currentFrame) {
+		foot.currentFrame.value = project.time;
+	} else if(evt.target === prop.name.elements[0] && evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
 		new Miro.Dialog("Error", "That name is already in use.");
 	}
 }, capturePassive);

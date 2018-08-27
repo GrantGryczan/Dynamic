@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const zlib = require("zlib");
 const http = require("http");
 const https = require("https");
+const vm = require("vm");
 const electron = require("electron");
 const _saved = Symbol("saved");
 const _name = Symbol("name");
@@ -21,6 +22,9 @@ const slashes = /[\\\/]/g;
 const htmlFilenameTest = /\/([^\/]+?)"/;
 const translateX = /translateX\(.*?\)/;
 const translateY = /translateY\(.*?\)/;
+const startNumberTest = /^\d/;
+const whitespace = /\s+/g;
+const mathTest = /^[\d+\-*\/\(\)e\s]+$/i;
 const container = document.querySelector("#container");
 const tabs = container.querySelector("#tabs");
 const homeTab = tabs.querySelector("#homeTab");
@@ -67,9 +71,8 @@ const timelineFoot = timelineContainer.querySelector(".foot");
 const slider = timelineFoot.querySelector("#slider");
 const sliderTrack = slider.querySelector(".mdc-slider__track");
 const sliderThumb = slider.querySelector(".mdc-slider__thumb-container");
-const footElems = timelineFoot.querySelectorAll("[data-key]");
 const foot = {};
-for(const footElem of footElems) {
+for(const footElem of timelineFoot.querySelectorAll("[data-key]")) {
 	foot[footElem.getAttribute("data-key")] = footElem;
 }
 const propertyContainer = projectPage.querySelector("#propertyContainer");
