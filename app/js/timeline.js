@@ -348,7 +348,7 @@ const setTime = value => {
 		const rangeSize = project.loop[1] - project.loop[0];
 		value = (((value - project.loop[0]) % rangeSize + rangeSize) % rangeSize) + project.loop[0];
 	} else {
-		value = value % project.data.duration;
+		value = (value % project.data.duration + project.data.duration) % project.data.duration;
 	}
 	moveFrameStates(value - project.time);
 	project.time = value;
