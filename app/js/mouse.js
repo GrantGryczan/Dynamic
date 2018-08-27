@@ -56,6 +56,10 @@ const onMouseDown = evt => {
 	} else if(mouseTarget.classList.contains("frame")) {
 		initialTargetPos = project.frames[mouseTarget.parentNode._obj.id][mouseTarget._value];
 		selectFrame(mouseTarget.parentNode._obj.id, mouseTarget._value, downActive === timelineContainer ? 2 : evt.button);
+	} else if(slider.contains(mouseTarget)) {
+		initialTargetPos = (mouseX - slider.getBoundingClientRect().left) / slider.offsetWidth;
+		slider.classList.add("mdc-slider--active");
+		changeSlider(0);
 	} else if(mouseTarget === timelineBox) {
 		const rect = timelineBox.getBoundingClientRect();
 		if(mouseX < rect.left + rect.width - SCROLLBAR_SIZE - 1 && mouseY < rect.top + rect.height - SCROLLBAR_SIZE - 1) {
@@ -201,6 +205,8 @@ document.addEventListener("mousemove", evt => {
 					selectFrame(timeline, value, 0, true);
 				}
 			}
+		} else if(slider.contains(mouseTarget)) {
+			changeSlider(evt.movementX);
 		} else if(mouseTarget.parentNode && mouseTarget.parentNode === loopField) {
 			setLoop();
 		} else if(mouseTarget0) {
@@ -350,6 +356,8 @@ const handleMouseUp = (evt, button) => {
 					}
 				}
 			}
+		} else if(slider.contains(mouseTarget)) {
+			slider.classList.remove("mdc-slider--active");
 		} else if(evtButton0) {
 			if(mouseTarget0) {
 				if(mouseTarget0.classList.contains("tab")) {

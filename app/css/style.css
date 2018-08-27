@@ -146,6 +146,23 @@ label:not(.mdc-floating-label) {
 	pointer-events: none;
 	background-color: #f4f4f4;
 }
+.mdc-slider {
+	height: 24px;
+	overflow: visible;
+}
+.mdc-slider:not(.mdc-slider--disabled) .mdc-slider__track-container {
+	background-color: rgba(98, 0, 238, 0.26);
+}
+.mdc-slider:not(.mdc-slider--disabled) .mdc-slider__track {
+	background-color: #6200ee;
+}
+.mdc-slider__thumb-container {
+	margin-top: -12px;
+}
+.mdc-slider:not(.mdc-slider--disabled) .mdc-slider__thumb {
+	fill: #6200ee;
+	stroke: #6200ee;
+}
 .barCell {
 	width: 100%;
 	max-width: 0;
@@ -755,6 +772,15 @@ label:not(.mdc-floating-label) {
 }
 .frame.variable::before {
 	background-color: #bf80ff;
+}
+#timelineContainer > .foot {
+	display: flex;
+	overflow: visible;
+}
+#timelineContainer > .foot .mdc-slider {
+	flex-grow: 1;
+	width: 0;
+	margin: -1px 8px 0 8px;
 }
 #propertyContainer {
 	flex-grow: 1;

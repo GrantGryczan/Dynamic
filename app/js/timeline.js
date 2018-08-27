@@ -142,6 +142,7 @@ const updateTimeRuler = () => {
 	}
 	updateTimelines();
 	updateLoop();
+	updateSlider();
 };
 let timelineCount = 0;
 const byVisible = obj => obj.timelineItem.offsetWidth;
@@ -332,6 +333,7 @@ const selectFrame = (timeline, value, button, shift) => {
 		focusFrame(timeline, value);
 	}
 	scrollFrameIntoView(value);
+	updateSlider();
 	setActive(timelineContainer);
 };
 const moveFrameStates = change => {
@@ -351,6 +353,7 @@ const setTime = value => {
 	moveFrameStates(value - project.time);
 	project.time = value;
 	scrollFrameIntoView();
+	updateSlider();
 };
 const addDuration = quantity => {
 	const moreFrames = new Array(quantity).fill(0);
@@ -419,6 +422,7 @@ const updateLoop = () => {
 		disableLoop.classList.add("hidden");
 		loopField.classList.add("hidden");
 	}
+	updateSlider();
 };
 const setLoop = () => {
 	let value;
@@ -429,6 +433,22 @@ const setLoop = () => {
 	}
 	scrollFrameIntoView(value);
 	updateLoop();
+};
+const updateSlider = () => {
+	const progress = project.loop ? (project.time - project.loop[0]) / (project.loop[1] - project.loop[0] - 1) : project.time / (project.data.duration - 1);
+	sliderThumb.style.transform = `translateX(-50%) translateX(${slider.offsetWidth * progress}px)`;
+	sliderTrack.style.transform = `scaleX(${progress})`;
+};
+const changeSlider = change => {
+	const rect = slider.getBoundingClientRect();
+	let loopLength;
+	const max = storage.frameWidth * (project.loop ? loopLength = project.loop[1] - project.loop[0] : project.data.duration) / slider.offsetWidth;
+	initialTargetPos += change / slider.offsetWidth / Math.max(1, Math.min(max, (Math.abs(rect.top + slider.offsetHeight / 2 - mouseY) - slider.offsetHeight) * max / (timelineContainer.offsetHeight - slider.offsetHeight)));
+	if(project.loop) {
+		setTime(Math.min(project.loop[1] - 1, Math.round(project.loop[0] + (loopLength - 1) * Math.max(0, initialTargetPos))));
+	} else {
+		setTime(Math.min(project.data.duration - 1, Math.round((project.data.duration - 1) * Math.max(0, initialTargetPos))));
+	}
 };
 const insertFrames = (toRight, quantity) => {
 	const topFrames = getTopFrames();
