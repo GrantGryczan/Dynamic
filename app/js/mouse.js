@@ -399,37 +399,37 @@ const handleMouseUp = (evt, button) => {
 					store();
 				} else if(evt.target === mouseTarget0) {
 					if(mouseTarget0.parentNode === timelineFoot) {
-						if(mouseTarget0 === jumpToStart) {
+						if(mouseTarget0 === foot.jumpToStart) {
 							homeFrameJump();
-						} else if(mouseTarget0 === jumpToPrev) {
+						} else if(mouseTarget0 === foot.jumpToPrev) {
 							leftFrameJump();
-						} else if(mouseTarget0 === playButton) {
+						} else if(mouseTarget0 === foot.play) {
 							play();
-						} else if(mouseTarget0 === pauseButton) {
+						} else if(mouseTarget0 === foot.pause) {
 							pause();
-						} else if(mouseTarget0 === jumpToNext) {
+						} else if(mouseTarget0 === foot.jumpToNext) {
 							rightFrameJump();
-						} else if(mouseTarget0 === jumpToEnd) {
+						} else if(mouseTarget0 === foot.jumpToEnd) {
 							endFrameJump();
-						} else if(mouseTarget0 === alignScrubberLeft) {
+						} else if(mouseTarget0 === foot.alignScrubberLeft) {
 							timeRuler.scrollLeft = timelineBox.scrollLeft = project.time * storage.frameWidth;
 							scrollTimeRuler = scrollTimelines = true;
-						} else if(mouseTarget0 === alignScrubberCenter) {
+						} else if(mouseTarget0 === foot.alignScrubberCenter) {
 							timeRuler.scrollLeft = timelineBox.scrollLeft = project.time * storage.frameWidth - timeRuler.offsetWidth / 2 + SCROLLBAR_SIZE;
 							scrollTimeRuler = scrollTimelines = true;
-						} else if(mouseTarget0 === alignScrubberRight) {
+						} else if(mouseTarget0 === foot.alignScrubberRight) {
 							timeRuler.scrollLeft = timelineBox.scrollLeft = project.time * storage.frameWidth - timeRuler.offsetWidth + 2 + storage.frameWidth + SCROLLBAR_SIZE;
 							scrollTimeRuler = scrollTimelines = true;
-						} else if(mouseTarget0 === enableLoop) {
+						} else if(mouseTarget0 === foot.enableLoop) {
 							project.loop = [Math.max(0, project.time - 1), Math.min(project.data.duration, project.time + 2)];
 							updateLoop();
-						} else if(mouseTarget0 === disableLoop) {
+						} else if(mouseTarget0 === foot.disableLoop) {
 							project.loop = false;
 							updateLoop();
-						} else if(mouseTarget0 === enableOnionskin) {
+						} else if(mouseTarget0 === foot.enableOnionskin) {
 							storage.onionskin = project.onionskin = true;
 							updateOnionskin();
-						} else if(mouseTarget0 === disableOnionskin) {
+						} else if(mouseTarget0 === foot.disableOnionskin) {
 							storage.onionskin = project.onionskin = false;
 							updateOnionskin();
 						}

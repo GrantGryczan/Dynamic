@@ -304,8 +304,8 @@ document.addEventListener("input", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
 	}
-	if(evt.target === currentFrame) {
-		setTime(+currentFrame.value);
+	if(evt.target === foot.currentFrame) {
+		setTime(+foot.currentFrame.value);
 	} else if(evt.target === prop.fps.elements[0]) {
 		project.data.fps = +prop.fps.elements[0].value;
 		for(let i = 0; i < timeUnits.children.length; i++) {

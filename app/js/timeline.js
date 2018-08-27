@@ -392,8 +392,8 @@ const updateTimeUnits = () => {
 		timeUnit.classList[project.time === timeUnit._value ? "add" : "remove"]("focus");
 	}
 	scrubber.style.transform = `translateX(${storage.frameWidth * project.time + storage.frameWidth / 2 - timeRuler.scrollLeft}px)`;
-	currentFrame.max = project.data.duration - 1;
-	currentFrame.value = project.time;
+	foot.currentFrame.size = String(project.data.duration - 1).length;
+	foot.currentFrame.value = project.time;
 };
 const endFrameJump = () => {
 	setTime((project.loop ? project.loop[1] : project.data.duration) - 1);
@@ -412,14 +412,14 @@ const rightFrameJump = () => {
 };
 const updateLoop = () => {
 	if(project.loop) {
-		enableLoop.classList.add("hidden");
-		disableLoop.classList.remove("hidden");
+		foot.enableLoop.classList.add("hidden");
+		foot.disableLoop.classList.remove("hidden");
 		loopRangeStart.style.width = `${project.loop[0] === 0 ? 0 : storage.frameWidth * project.loop[0] + 1}px`;
 		loopRangeStart.style.marginRight = `${storage.frameWidth * (project.loop[1] - project.loop[0]) - (project.loop[0] === 0 ? 2 : 1)}px`;
 		loopField.classList.remove("hidden");
 	} else {
-		enableLoop.classList.remove("hidden");
-		disableLoop.classList.add("hidden");
+		foot.enableLoop.classList.remove("hidden");
+		foot.disableLoop.classList.add("hidden");
 		loopField.classList.add("hidden");
 	}
 	updateSlider();
@@ -435,7 +435,7 @@ const setLoop = () => {
 	updateLoop();
 };
 const updateSlider = () => {
-	const progress = project.loop ? (project.time - project.loop[0]) / (project.loop[1] - project.loop[0] - 1) : project.time / (project.data.duration - 1);
+	const progress = Math.max(0, Math.min(1, project.loop ? (project.time - project.loop[0]) / (project.loop[1] - project.loop[0] - 1) : project.time / (project.data.duration - 1)));
 	sliderThumb.style.transform = `translateX(-50%) translateX(${slider.offsetWidth * progress}px)`;
 	sliderTrack.style.transform = `scaleX(${progress})`;
 };

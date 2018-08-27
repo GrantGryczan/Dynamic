@@ -28,23 +28,23 @@ const play = () => {
 		}
 		then = performance.now();
 		playing = true;
-		playButton.classList.add("hidden");
-		pauseButton.classList.remove("hidden");
+		foot.play.classList.add("hidden");
+		foot.pause.classList.remove("hidden");
 	}
 };
 const pause = () => {
 	if(playing) {
 		playing = false;
-		pauseButton.classList.add("hidden");
-		playButton.classList.remove("hidden");
+		foot.pause.classList.add("hidden");
+		foot.play.classList.remove("hidden");
 	}
 };
 const updateOnionskin = () => {
 	if(project.onionskin) {
-		enableOnionskin.classList.add("hidden");
-		disableOnionskin.classList.remove("hidden");
+		foot.enableOnionskin.classList.add("hidden");
+		foot.disableOnionskin.classList.remove("hidden");
 	} else {
-		disableOnionskin.classList.add("hidden");
-		enableOnionskin.classList.remove("hidden");
+		foot.disableOnionskin.classList.add("hidden");
+		foot.enableOnionskin.classList.remove("hidden");
 	}
 };

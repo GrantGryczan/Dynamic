@@ -64,23 +64,14 @@ const timelineBox = timelineArea.querySelector("#timelineBox");
 const timelineFiller = timelineBox.querySelector(".filler");
 const timelines = timelineBox.querySelector("#timelines");
 const timelineFoot = timelineContainer.querySelector(".foot");
-const currentFrame = timelineFoot.querySelector("#currentFrame");
-const jumpToStart = timelineFoot.querySelector("#jumpToStart");
-const jumpToPrev = timelineFoot.querySelector("#jumpToPrev");
-const playButton = timelineFoot.querySelector("#playButton");
-const pauseButton = timelineFoot.querySelector("#pauseButton");
-const jumpToNext = timelineFoot.querySelector("#jumpToNext");
-const jumpToEnd = timelineFoot.querySelector("#jumpToEnd");
-const alignScrubberLeft = timelineFoot.querySelector("#alignScrubberLeft");
-const alignScrubberCenter = timelineFoot.querySelector("#alignScrubberCenter");
-const alignScrubberRight = timelineFoot.querySelector("#alignScrubberRight");
-const enableLoop = timelineFoot.querySelector("#enableLoop");
-const disableLoop = timelineFoot.querySelector("#disableLoop");
-const enableOnionskin = timelineFoot.querySelector("#enableOnionskin");
-const disableOnionskin = timelineFoot.querySelector("#disableOnionskin");
 const slider = timelineFoot.querySelector("#slider");
 const sliderTrack = slider.querySelector(".mdc-slider__track");
 const sliderThumb = slider.querySelector(".mdc-slider__thumb-container");
+const footElems = timelineFoot.querySelectorAll("[data-key]");
+const foot = {};
+for(const footElem of footElems) {
+	foot[footElem.getAttribute("data-key")] = footElem;
+}
 const propertyContainer = projectPage.querySelector("#propertyContainer");
 const properties = propertyContainer.querySelector("#properties");
 const propElems = properties.querySelectorAll("[data-key]");
@@ -98,9 +89,8 @@ const layerBox = layerContainer.querySelector("#layerBox");
 const layers = layerBox.querySelector("#layers");
 const layerDrag = layerBox.querySelector(".drag");
 layerDrag.remove();
-const statusElems = projectPage.querySelectorAll("#statusBar [data-key]");
 const status = {};
-for(const statusElem of statusElems) {
+for(const statusElem of projectPage.querySelectorAll("#statusBar [data-key]")) {
 	status[statusElem.getAttribute("data-key")] = statusElem;
 }
 const targetIndicator = container.querySelector("#targetIndicator");
