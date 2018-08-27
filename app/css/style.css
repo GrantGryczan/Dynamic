@@ -432,12 +432,12 @@ label:not(.mdc-floating-label) {
 	font-size: 18px;
 }
 .foot {
-	margin-top: 2px;
+	margin-top: 3px;
 }
 .foot > :not(.separator) {
 	opacity: 0.6;
 }
-.foot button {
+.foot > .separator, .foot button {
 	transform: translateY(-1px);
 }
 .foot button.rotated {
@@ -452,6 +452,7 @@ label:not(.mdc-floating-label) {
 }
 .foot .mdc-text-field {
 	margin: 0;
+	transform: translateY(2px);
 }
 .foot .mdc-text-field > input {
 	padding: 0;
@@ -780,7 +781,7 @@ label:not(.mdc-floating-label) {
 #timelineContainer > .foot .mdc-slider {
 	flex-grow: 1;
 	width: 0;
-	margin: -1px 8px 0 8px;
+	margin: -2px 8px 0 8px;
 }
 #propertyContainer {
 	flex-grow: 1;
