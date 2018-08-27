@@ -300,6 +300,7 @@ document.addEventListener("keyup", evt => {
 	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
 	altKey = evt.keyCode !== 18 && evt.altKey;
 }, capturePassive);
+let canChangeCurrentFrameValue = true;
 document.addEventListener("input", evt => {
 	if(!evt.target.checkValidity()) {
 		return;
@@ -319,7 +320,9 @@ document.addEventListener("input", evt => {
 			value = NaN;
 		}
 		if(isFinite(value)) {
+			canChangeCurrentFrameValue = false;
 			setTime(value);
+			canChangeCurrentFrameValue = true;
 		}
 	} else if(evt.target === prop.fps.elements[0]) {
 		project.data.fps = +prop.fps.elements[0].value;
