@@ -124,31 +124,6 @@ document.addEventListener("keydown", evt => {
 		if(ctxCandidates.length) {
 			openCtx(ctxCandidates[ctxCandidates.length - 1]);
 		}
-	} else if(evt.keyCode === 116) { // `F5`
-		if(shiftKey) {
-			if(project.data.duration > 1) {
-				const topFrames = getTopFrames();
-				let quantity = 0;
-				let value = project.time;
-				for(let i = topFrames.length - 1; i >= 0; i--) {
-					if(topFrames[i]) {
-						quantity++;
-						if(i > project.time) {
-							value--;
-						}
-						for(const obj of project.data.objs) {
-							project.frames[obj.id].splice(i, 1);
-						}
-					}
-				}
-				project.data.duration -= quantity;
-				setTime(Math.max(0, value));
-			}
-		} else if(altKey) {
-			insertFrames(true);
-		} else {
-			insertFrames();
-		}
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
 			if(focused()) {
@@ -163,7 +138,11 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(shiftKey) {
-			if(evt.keyCode === 73) { // ^`shift`+`I`
+			if(evt.keyCode === 65) { // ^`shift`+`A`
+				if(focused() && notTyping()) {
+					selectFramesInRows();
+				}
+			} else if(evt.keyCode === 73) { // ^`shift`+`I`
 				win.toggleDevTools();
 			} else if(evt.keyCode === 83) { // ^`shift`+`S`
 				if(focused()) {
@@ -219,16 +198,20 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
-			if(focused()) {
-				if(Object.keys(projects).length) {
-					select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._project.id);
-				}
+			if(focused() && Object.keys(projects).length) {
+				select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._project.id);
 			}
+		}
+	} else if(shiftKey) {
+		if(focused() && evt.keyCode === 116) { // `shift`+`F5`
+			deleteFrames();
 		}
 	} else if(altKey) {
 		if(focused()) {
 			if(evt.keyCode === 36) { // `alt`+`home`
 				select("home");
+			} else if(evt.keyCode === 116) { // `alt`+`F5`
+				insertFrames(true);
 			}
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
@@ -289,7 +272,13 @@ document.addEventListener("keydown", evt => {
 			(playing ? pause : play)();
 		}
 	} else if(evt.keyCode === 113) { // `F2`
-		setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
+		if(focused()) {
+			setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
+		}
+	} else if(evt.keyCode === 116) { // `F5`
+		if(focused()) {
+			insertFrames();
+		}
 	} else if(evt.keyCode === 122) { // `F11`
 		const fullScreen = !win.isFullScreen();
 		win.setFullScreen(fullScreen);

@@ -174,33 +174,26 @@ const sortAssetsMenuItems = [{
 		storeAssets();
 	}
 }];
-const removeAssetsMenuItem = {
-	label: "Remove",
-	accelerator: "delete",
-	click: removeSelectedAssets
-};
-const renameSingleMenuItem = {
+const renameMenuItem = {
 	label: "Rename",
 	accelerator: "F2",
 	click: prop.name.elements[0].select.bind(prop.name.elements[0])
 };
-const renameMultipleMenuItem = {
-	label: "Rename",
-	accelerator: "F2",
-	enabled: false
-};
-const addToTimelineMenuItem = {
+const selectedAssetsMenuItems = [{
+	label: "Remove asset(s)",
+	accelerator: "Delete",
+	click: removeSelectedAssets
+}, renameMenuItem, menuSeparator, {
 	label: "Add to timeline",
 	click: addToTimeline
-};
-const deselectAssetsMenuItem = {
+}, menuSeparator, {
 	label: "Deselect",
-	accelerator: "esc",
+	accelerator: "Esc",
 	click: () => {
 		deselectAssets();
 		updateProperties();
 	}
-};
+}];
 const assetMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
@@ -225,28 +218,28 @@ const assetMenuGroupItems = [{
 	}
 }];
 const selectAllAssetsMenuItem = {
-	label: "Select all",
+	label: "Select all asset(s)",
 	accelerator: "CmdOrCtrl+A",
 	click: selectAllAssets
 };
 const layerMenuItems = [{
-	label: "Remove",
-	accelerator: "delete",
+	label: "Remove object(s)",
+	accelerator: "Delete",
 	click: removeSelectedLayers
 }, menuSeparator, {
 	label: "Deselect",
-	accelerator: "esc",
+	accelerator: "Esc",
 	click: () => {
 		deselectLayers();
 		updateProperties();
 	}
 }];
 const selectAllLayersMenuItem = {
-	label: "Select all",
+	label: "Select all layer(s)",
 	accelerator: "CmdOrCtrl+A",
 	click: selectAllLayers
 };
-const timelineCreationMenuItems = [{
+const timelineItemCreationMenuItems = [{
 	label: "Create group",
 	click: () => {
 		setActive(timelineContainer);
@@ -268,14 +261,6 @@ const timelineCreationMenuItems = [{
 			timelineItemArray[0].before(obj.timelineItem);
 			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
-		const deselectAssetsMenuItem = {
-			label: "Deselect",
-			accelerator: "esc",
-			click: () => {
-				deselectAssets();
-				updateProperties();
-			}
-		};
 		obj.timelineItem.classList.add("selected");
 		project.selectedTimelineItem = obj.timelineItem.id;
 		obj.timelineItem.classList.add("open");
@@ -364,19 +349,19 @@ const sortObjsMenuItems = [{
 		updateTimelines();
 	}
 }];
-const removeTimelinesMenuItem = {
-	label: "Remove",
-	accelerator: "delete",
-	click: removeSelectedTimelineItems
-};
-const timelineMenuItems = [{
+const deselectTimelinesMenuItem = {
 	label: "Deselect",
-	accelerator: "esc",
+	accelerator: "Esc",
 	click: () => {
 		deselectTimelineItems();
 		updateProperties();
 	}
-}, {
+};
+const timelineItemMenuItems = [{
+	label: "Remove object(s)",
+	accelerator: "Delete",
+	click: removeSelectedTimelineItems
+}, renameMenuItem, menuSeparator, deselectTimelinesMenuItem, {
 	label: "Select children",
 	click: () => {
 		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem")) {
@@ -401,11 +386,33 @@ const timelineMenuItems = [{
 		updateProperties();
 	}
 }];
-const selectAllTimelinesMenuItem = {
-	label: "Select all",
+const selectAllObjectsMenuItem = {
+	label: "Select all object(s)",
 	accelerator: "CmdOrCtrl+A",
 	click: selectAllTimelineItems
 };
+const removeTimelineItemsMenuItem = {
+	label: "Remove object(s)",
+	click: removeSelectedTimelineItems
+};
+const timelineMenuItems = [{
+	label: "Insert frames to left",
+	accelerator: "F5"
+}, {
+	label: "Insert frames to right",
+	accelerator: "Alt+F5"
+}, {
+	label: "Delete frame(s)",
+	accelerator: "CmdOrCtrl+Delete",
+	click: deleteFrames
+}, {
+	label: "Remove object(s)",
+	click: removeSelectedTimelineItems
+}, menuSeparator, deselectTimelinesMenuItem, {
+	label: "Select frame(s) in row(s)",
+	accelerator: "CmdOrCtrl+Shift+A",
+	click: selectFramesInRows
+}, selectAllObjectsMenuItem];
 let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
@@ -418,14 +425,15 @@ const openCtx = target => {
 		} else if(ctxTarget === sortAssets) {
 			template.push(...sortAssetsMenuItems)
 		} else if(ctxTarget === addObj) {
-			template.push(...timelineCreationMenuItems);
+			template.push(...timelineItemCreationMenuItems);
 		} else if(ctxTarget === sortObjs) {
 			template.push(...sortObjsMenuItems);
 		} else {
 			if(assets.contains(ctxTarget)) {
 				const selected = assets.querySelectorAll(".asset.selected");
 				if(selected.length) {
-					template.push(removeAssetsMenuItem, selected.length === 1 ? renameSingleMenuItem : renameMultipleMenuItem, menuSeparator, addToTimelineMenuItem, menuSeparator, deselectAssetsMenuItem);
+					renameMenuItem.enabled = selected.length === 1;
+					template.push(...selectedAssetsMenuItems);
 					if(assets.querySelector(".asset.typeGroup.selected")) {
 						template.push(...assetMenuGroupItems);
 					}
@@ -439,9 +447,14 @@ const openCtx = target => {
 			} else if(timelineItems.contains(ctxTarget)) {
 				const selected = timelineItems.querySelectorAll(".timelineItem.selected");
 				if(selected.length) {
-					template.push(removeTimelinesMenuItem, selected.length === 1 ? renameSingleMenuItem : renameMultipleMenuItem, menuSeparator, ...timelineMenuItems);
+					renameMenuItem.enabled = selected.length === 1;
+					template.push(...timelineItemMenuItems);
 				}
-				template.push(selectAllTimelinesMenuItem, menuSeparator, ...timelineCreationMenuItems);
+				template.push(selectAllObjectsMenuItem, menuSeparator, ...timelineItemCreationMenuItems);
+			} else if(timelineArea.contains(ctxTarget)) {
+				const topFrames = getTopFrames();
+				//.enabled = topFrames.includes(1) || topFrames.includes(2);
+				template.push(...timelineMenuItems);
 			}
 			if(template.length) {
 				template.push(menuSeparator);

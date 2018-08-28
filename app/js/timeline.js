@@ -244,7 +244,10 @@ const updateTimelines = () => {
 };
 const clearFrames = () => {
 	for(const obj of project.data.objs) {
-		project.frames[obj.id] = new Array(project.data.duration).fill(0);
+		const frames = project.frames[obj.id];
+		if(frames.includes(1) || frames.includes(2)) {
+			project.frames[obj.id] = new Array(project.data.duration).fill(0);
+		}
 	}
 };
 const blurFrames = () => {
@@ -452,6 +455,26 @@ const changeSlider = change => {
 		setTime(Math.min(project.data.duration - 1, Math.round((project.data.duration - 1) * Math.max(0, initialTargetPos))));
 	}
 };
+const deleteFrames = () => {
+	if(project.data.duration > 1) {
+		const topFrames = getTopFrames();
+		let quantity = 0;
+		let value = project.time;
+		for(let i = topFrames.length - 1; i >= 0; i--) {
+			if(topFrames[i]) {
+				quantity++;
+				if(i > project.time) {
+					value--;
+				}
+				for(const obj of project.data.objs) {
+					project.frames[obj.id].splice(i, 1);
+				}
+			}
+		}
+		project.data.duration -= quantity;
+		setTime(Math.max(0, value));
+	}
+};
 const insertFrames = (toRight, quantity) => {
 	const topFrames = getTopFrames();
 	let value = -1;
@@ -488,4 +511,17 @@ const insertFrames = (toRight, quantity) => {
 	}
 	project.time = value;
 	updateTimeRuler();
+};
+const selectFramesInRows = () => {
+	for(const obj of project.data.objs) {
+		if(obj.timelineItem.classList.contains("selected")) {
+			const frames = project.frames[obj.id];
+			for(let i = 0; i < frames.length; i++) {
+				if(!frames[i]) {
+					frames[i] = 1;
+				}
+			}
+		}
+	}
+	updateTimelines();
 };
