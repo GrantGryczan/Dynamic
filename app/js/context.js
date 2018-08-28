@@ -179,6 +179,11 @@ const renameMenuItem = {
 	accelerator: "F2",
 	click: prop.name.elements[0].select.bind(prop.name.elements[0])
 };
+const selectAllAssetsMenuItem = {
+	label: "Select all asset(s)",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllAssets
+};
 const selectedAssetsMenuItems = [{
 	label: "Remove asset(s)",
 	accelerator: "Delete",
@@ -193,7 +198,7 @@ const selectedAssetsMenuItems = [{
 		deselectAssets();
 		updateProperties();
 	}
-}];
+}, selectAllAssetsMenuItem];
 const assetMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
@@ -217,11 +222,6 @@ const assetMenuGroupItems = [{
 		updateProperties();
 	}
 }];
-const selectAllAssetsMenuItem = {
-	label: "Select all asset(s)",
-	accelerator: "CmdOrCtrl+A",
-	click: selectAllAssets
-};
 const layerMenuItems = [{
 	label: "Remove object(s)",
 	accelerator: "Delete",
@@ -349,19 +349,23 @@ const sortObjsMenuItems = [{
 		updateTimelines();
 	}
 }];
-const deselectTimelinesMenuItem = {
+const objectSelectionTimelineMenu = [{
 	label: "Deselect",
 	accelerator: "Esc",
 	click: () => {
 		deselectTimelineItems();
 		updateProperties();
 	}
-};
+}, {
+	label: "Select all object(s)",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllTimelineItems
+}];
 const timelineItemMenuItems = [{
 	label: "Remove object(s)",
 	accelerator: "Delete",
 	click: removeSelectedTimelineItems
-}, renameMenuItem, menuSeparator, deselectTimelinesMenuItem, {
+}, renameMenuItem, menuSeparator, ...objectSelectionTimelineMenu, {
 	label: "Select children",
 	click: () => {
 		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem")) {
@@ -386,11 +390,6 @@ const timelineItemMenuItems = [{
 		updateProperties();
 	}
 }];
-const selectAllObjectsMenuItem = {
-	label: "Select all object(s)",
-	accelerator: "CmdOrCtrl+A",
-	click: selectAllTimelineItems
-};
 const removeTimelineItemsMenuItem = {
 	label: "Remove object(s)",
 	click: removeSelectedTimelineItems
@@ -410,7 +409,7 @@ const timelineMenuItems = [{
 }, {
 	label: "Remove object(s)",
 	click: removeSelectedTimelineItems
-}, menuSeparator, deselectTimelinesMenuItem, selectAllObjectsMenuItem, {
+}, menuSeparator, ...objectSelectionTimelineMenu, {
 	label: "Select frame(s) in row(s)",
 	accelerator: "CmdOrCtrl+Shift+A",
 	click: selectFramesInRows
@@ -439,8 +438,10 @@ const openCtx = target => {
 					if(assets.querySelector(".asset.typeGroup.selected")) {
 						template.push(...assetMenuGroupItems);
 					}
+				} else {
+					template.push(selectAllAssetsMenuItem);
 				}
-				template.push(selectAllAssetsMenuItem, menuSeparator, ...assetCreationMenuItems);
+				template.push(menuSeparator, ...assetCreationMenuItems);
 			} else if(layerBox.contains(ctxTarget)) {
 				if(ctxTarget.parentNode.classList.contains("layer")) {
 					template.push(...layerMenuItems);
@@ -451,11 +452,11 @@ const openCtx = target => {
 				if(selected.length) {
 					renameMenuItem.enabled = selected.length === 1;
 					template.push(...timelineItemMenuItems);
+				} else {
+					template.push(selectAllObjectsMenuItem);
 				}
-				template.push(selectAllObjectsMenuItem, menuSeparator, ...timelineItemCreationMenuItems);
+				template.push(menuSeparator, ...timelineItemCreationMenuItems);
 			} else if(timelineArea.contains(ctxTarget)) {
-				const topFrames = getTopFrames();
-				//.enabled = topFrames.includes(1) || topFrames.includes(2);
 				template.push(...timelineMenuItems);
 			}
 			if(template.length) {
