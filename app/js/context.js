@@ -349,6 +349,11 @@ const sortObjsMenuItems = [{
 		updateTimelines();
 	}
 }];
+const selectAllObjectsMenuItem = {
+	label: "Select all object(s)",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllTimelineItems
+};
 const objectSelectionTimelineMenu = [{
 	label: "Deselect",
 	accelerator: "Esc",
@@ -356,11 +361,7 @@ const objectSelectionTimelineMenu = [{
 		deselectTimelineItems();
 		updateProperties();
 	}
-}, {
-	label: "Select all object(s)",
-	accelerator: "CmdOrCtrl+A",
-	click: selectAllTimelineItems
-}];
+}, selectAllObjectsMenuItem];
 const timelineItemMenuItems = [{
 	label: "Remove object(s)",
 	accelerator: "Delete",
