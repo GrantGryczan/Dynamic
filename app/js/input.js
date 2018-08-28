@@ -197,6 +197,8 @@ document.addEventListener("keydown", evt => {
 					win.close();
 				}
 			}
+		} else if(evt.keyCode === 116) { // ^`F5`
+			insertFrames(true);
 		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
 			if(focused() && Object.keys(projects).length) {
 				select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._project.id);
@@ -207,12 +209,8 @@ document.addEventListener("keydown", evt => {
 			deleteFrames();
 		}
 	} else if(altKey) {
-		if(focused()) {
-			if(evt.keyCode === 36) { // `alt`+`home`
-				select("home");
-			} else if(evt.keyCode === 116) { // `alt`+`F5`
-				insertFrames(true);
-			}
+		if(focused() && evt.keyCode === 36) { // `alt`+`home`
+			select("home");
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
 		if(focused() && notTyping()) {
