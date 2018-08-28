@@ -168,23 +168,19 @@ document.addEventListener("mousemove", evt => {
 			if(!mouseMoved) {
 				selectLayer(mouseTarget.parentNode, 2);
 			}
-			if(layerContainer.contains(evt.target)) {
-				let side;
-				let minDist = Infinity;
-				let minLayer;
-				for(const layer of layers.querySelectorAll(".layer")) {
-					const distTop = mouseY - layer.firstElementChild.getBoundingClientRect().top - layer.firstElementChild.offsetHeight / 2;
-					const absDistTop = Math.abs(distTop);
-					if(absDistTop < minDist) {
-						minDist = absDistTop;
-						minLayer = layer;
-						side = distTop < 0 ? "before" : "after";
-					}
+			let side;
+			let minDist = Infinity;
+			let minLayer;
+			for(const layer of layers.querySelectorAll(".layer")) {
+				const distTop = mouseY - layer.firstElementChild.getBoundingClientRect().top - layer.firstElementChild.offsetHeight / 2;
+				const absDistTop = Math.abs(distTop);
+				if(absDistTop < minDist) {
+					minDist = absDistTop;
+					minLayer = layer;
+					side = distTop < 0 ? "before" : "after";
 				}
-				minLayer.querySelector(".bar")[side](layerDrag);
-			} else {
-				layerDrag.remove();
 			}
+			minLayer.querySelector(".bar")[side](layerDrag);
 		} else if(mouseTarget.classList.contains("frame")) {
 			let timeline;
 			let value = false;
@@ -282,27 +278,28 @@ const handleMouseUp = (evt, button) => {
 					storeAssets();
 					assetDrag.remove();
 				}
-			} else {
-				if(mouseTarget === assets) {
-					if(mouseX < assets.getBoundingClientRect().left + assets.scrollWidth) {
-						deselectAssets();
-						updateProperties();
-					}
-				} else if(mouseTarget.classList.contains("bar")) {
-					selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : button);
-				} else if(evtButton0) {
-					if(mouseTarget0.classList.contains("close")) {
-						confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
-					} else if(mouseTarget0.classList.contains("icon")) {
-						mouseTarget0.parentNode.parentNode.classList.toggle("open");
-					}
+			} else if(mouseTarget === assets) {
+				if(mouseX < assets.getBoundingClientRect().left + assets.scrollWidth) {
+					deselectAssets();
+					updateProperties();
+				}
+			} else if(mouseTarget.classList.contains("bar")) {
+				selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : button);
+			} else if(evtButton0) {
+				if(mouseTarget0.classList.contains("close")) {
+					confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
+				} else if(mouseTarget0.classList.contains("icon")) {
+					mouseTarget0.parentNode.parentNode.classList.toggle("open");
 				}
 			}
 		} else if(layerBox.contains(mouseTarget) && button === mouseDown) {
 			if(layerBox.contains(mouseTarget)) {
 				if(mouseMoved && mouseTarget.parentNode.classList.contains("layer")) {
 					if(layerDrag.parentNode) {
-						const zs = project.data.objs.filter(onlyGraphics).map(byZ);
+						const zs = [];
+						for(const layer of layers.querySelectorAll(".layer")) {
+							zs.push(layer._obj.z); /* get property */
+						}
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
 						layerDrag.parentNode.parentNode[side](layerDrag);
 						for(const layer of layers.querySelectorAll(".layer.selected")) {
@@ -311,21 +308,19 @@ const handleMouseUp = (evt, button) => {
 						layerDrag.remove();
 						const layerElems = layers.querySelectorAll(".layer");
 						for(let i = 0; i < layerElems.length; i++) {
-							layerElems[i]._obj.z = zs[i]; // set property
+							layerElems[i]._obj.z = zs[i]; /* set property */
 						}
 						updateLayers();
 						project.saved = false;
 					}
+				} else if(mouseTarget.parentNode.classList.contains("layer")) {
+					selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : button);
+				} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
+					confirmRemoveObjElem(mouseTarget0.parentNode.parentNode.parentNode);
 				} else {
-					if(mouseTarget.parentNode.classList.contains("layer")) {
-						selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : button);
-					} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
-						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode.parentNode);
-					} else {
-						if(mouseX < layerBox.getBoundingClientRect().left + layerBox.scrollWidth) {
-							deselectLayers();
-							updateProperties();
-						}
+					if(mouseX < layerBox.getBoundingClientRect().left + layerBox.scrollWidth) {
+						deselectLayers();
+						updateProperties();
 					}
 				}
 			}
@@ -341,19 +336,17 @@ const handleMouseUp = (evt, button) => {
 				timelineItemDrag.remove();
 				storeObjs();
 				updateTimelines();
-			} else {
-				if(mouseTarget === timelineItems) {
-					deselectTimelineItems();
-					updateProperties();
-				} else if(mouseTarget.classList.contains("bar")) {
-					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : button);
-				} else if(evtButton0) {
-					if(mouseTarget0.classList.contains("close")) {
-						confirmRemoveObjElem(mouseTarget0.parentNode.parentNode);
-					} else if(mouseTarget0.classList.contains("icon")) {
-						mouseTarget0.parentNode.parentNode.classList.toggle("open");
-						updateTimelines();
-					}
+			} else if(mouseTarget === timelineItems) {
+				deselectTimelineItems();
+				updateProperties();
+			} else if(mouseTarget.classList.contains("bar")) {
+				selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : button);
+			} else if(evtButton0) {
+				if(mouseTarget0.classList.contains("close")) {
+					confirmRemoveObjElem(mouseTarget0.parentNode.parentNode);
+				} else if(mouseTarget0.classList.contains("icon")) {
+					mouseTarget0.parentNode.parentNode.classList.toggle("open");
+					updateTimelines();
 				}
 			}
 		} else if(mouseTarget === foot.currentFrame) {

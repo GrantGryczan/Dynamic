@@ -2,7 +2,8 @@
 const getObj = id => project.data.objs.find(obj => obj.id === id);
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
-const byZ = obj => obj.z;
+const byZ = obj => obj.z; /* get property */
+const byZIndex = (a, b) => b.z - a.z; /* get property */
 class DynamicObject {
 	constructor(value) {
 		if(!value.id) {
@@ -28,7 +29,7 @@ class DynamicObject {
 			}
 			if(onlyGraphics(this)) {
 				const maxZ = Math.max(...project.data.objs.filter(onlyGraphics).map(byZ));
-				this.z = isFinite(maxZ) ? maxZ + 1 : 1; // set property
+				this.z = isFinite(maxZ) ? maxZ + 1 : 1; /* set property */
 			}
 		} else if(value instanceof Object) {
 			Object.assign(this, value);
@@ -69,7 +70,7 @@ class DynamicObject {
 				<table>
 					<tbody>
 						<tr id="layer_${this.id}" class="layer" title="$${this.name}">
-							<td class="z">${this.z}</td>
+							<td class="z">${this.z /* get property */}</td>
 							<td class="barCell">
 								<div class="bar">
 									<div class="label">$${this.name}</div>
@@ -157,7 +158,7 @@ const appendObj = (obj, create) => {
 	if(obj.layer) {
 		let sibling = null;
 		for(const eachLayer of layers.querySelectorAll(".layer")) {
-			if(eachLayer._obj.z < obj.z) {
+			if(eachLayer._obj.z < obj.z) { /* get property */
 				sibling = eachLayer;
 				break;
 			}
@@ -166,10 +167,9 @@ const appendObj = (obj, create) => {
 	}
 	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
 };
-const byZIndex = (a, b) => b.z - a.z;
 const updateLayers = () => {
 	for(const obj of project.data.objs.filter(onlyGraphics).sort(byZIndex)) {
-		obj.layer.querySelector(".z").textContent = obj.z;
+		obj.layer.querySelector(".z").textContent = obj.z; /* get property */
 		layers.appendChild(obj.layer);
 	}
 };
