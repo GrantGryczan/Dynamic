@@ -397,10 +397,12 @@ const removeTimelineItemsMenuItem = {
 };
 const timelineMenuItems = [{
 	label: "Insert frames to left",
-	accelerator: "F5"
+	accelerator: "F5",
+	click: promptInsertFrames.bind(null, false)
 }, {
 	label: "Insert frames to right",
-	accelerator: "Alt+F5"
+	accelerator: "Alt+F5",
+	click: promptInsertFrames.bind(null, true)
 }, {
 	label: "Delete frame(s)",
 	accelerator: "CmdOrCtrl+Delete",

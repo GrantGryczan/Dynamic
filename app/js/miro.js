@@ -166,7 +166,7 @@ class MiroDialog {
 					evt.preventDefault();
 					submitted = true;
 					setTimeout(() => {
-						formState = !surfaceElem[_disabled];
+						formState = !surfaceElem._disabled;
 						Miro.formState(surfaceElem, false);
 					});
 				});

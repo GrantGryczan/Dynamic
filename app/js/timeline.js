@@ -512,6 +512,30 @@ const insertFrames = (toRight, quantity) => {
 	project.time = value;
 	updateTimeRuler();
 };
+const promptInsertFrames = toRight => {
+	const topFrames = getTopFrames();
+	let quantity = 0;
+	for(let i = 0; i < topFrames.length; i++) {
+		if(topFrames[i]) {
+			quantity++;
+		}
+	}
+	const dialog = new Miro.Dialog("Insert frames", html`
+		<div class="mdc-text-field">
+			<input id="insertFrameQuantity" name="quantity" class="mdc-text-field__input" type="number" value="${quantity}" min="1" required>
+			<label class="mdc-floating-label mdc-floating-label--float-above" for="insertFrameQuantity">Quantity</label>
+			<div class="mdc-line-ripple"></div>
+		</div>
+	`, [{
+		text: "Okay",
+		type: "submit"
+	}, "Cancel"]).then(value => {
+		if(value === 0) {
+			insertFrames(toRight, +dialog.form.elements.quantity.value);
+		}
+	});
+	dialog.form.elements.quantity.select();
+};
 const selectFramesInRows = () => {
 	for(const obj of project.data.objs) {
 		if(obj.timelineItem.classList.contains("selected")) {
