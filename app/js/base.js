@@ -299,12 +299,12 @@ const confirmClose = value => {
 };
 const unsaved = project => !project.saved;
 window.onbeforeunload = () => {
-	if(shouldNotClose && notConfirmingClose) {
-		if(Object.values(projects).some(unsaved)) {
-			notConfirmingClose = false;
-			new Miro.Dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
-			return true;
-		}
+	if(shouldNotClose && notConfirmingClose && Object.values(projects).some(unsaved)) {
+		notConfirmingClose = false;
+		new Miro.Dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
+		return true;
+	} else {
+		win.removeAllListeners();
 	}
 };
 const focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
