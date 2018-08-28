@@ -410,11 +410,11 @@ const timelineMenuItems = [{
 }, {
 	label: "Remove object(s)",
 	click: removeSelectedTimelineItems
-}, menuSeparator, deselectTimelinesMenuItem, {
+}, menuSeparator, deselectTimelinesMenuItem, selectAllObjectsMenuItem, {
 	label: "Select frame(s) in row(s)",
 	accelerator: "CmdOrCtrl+Shift+A",
 	click: selectFramesInRows
-}, selectAllObjectsMenuItem];
+}];
 let ctxTarget;
 const openCtx = target => {
 	ctxTarget = target;
