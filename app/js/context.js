@@ -401,7 +401,7 @@ const timelineMenuItems = [{
 	click: promptInsertFrames.bind(null, false)
 }, {
 	label: "Insert frames to right",
-	accelerator: "Alt+F5",
+	accelerator: "CmdOrCtrl+F5",
 	click: promptInsertFrames.bind(null, true)
 }, {
 	label: "Delete frame(s)",
