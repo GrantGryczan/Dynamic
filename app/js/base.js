@@ -116,9 +116,11 @@ const onFocus = () => {
 };
 const onBlur = () => {
 	document.body.classList.remove("focus");
-	shiftKey = false;
-	superKey = false;
-	altKey = false;
+	try {
+		shiftKey = false;
+		superKey = false;
+		altKey = false;
+	} catch(err) {}
 };
 win.on("focus", onFocus);
 win.on("blur", onBlur);

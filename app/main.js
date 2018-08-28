@@ -28,15 +28,15 @@ electron.app.once("ready", () => {
 		title: "Miroware Dynamic",
 		show: false,
 		minWidth: 480,
-		minHeight: 480
+		minHeight: 480,
+		backgroundColor: "#e0e0e0"
 	});
-	win.webContents.once("did-finish-load", () => {
-		win.show();
+	win.once("ready-to-show", () => {
+		win.maximize();
 		while(filesToOpen.length) {
 			win.webContents.send("argv", filesToOpen.pop());
 		}
 		addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
 	});
-	win.maximize();
 	win.loadURL(`file://${__dirname}/index.html`);
 });
