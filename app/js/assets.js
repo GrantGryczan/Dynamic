@@ -128,6 +128,7 @@ const confirmRemoveAsset = assetElem => {
 		if(value === 0) {
 			removeAsset(assetElem);
 			storeAssets();
+			storeObjs();
 			updateProperties();
 		}
 	};
@@ -154,6 +155,7 @@ const confirmRemoveAssets = assetElems => {
 			if(value === 0) {
 				assetElems.forEach(removeAsset);
 				storeAssets();
+				storeObjs();
 				updateProperties();
 			}
 		});
