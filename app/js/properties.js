@@ -100,15 +100,3 @@ const updateProperties = () => {
 		}
 	}
 };
-class DynamicProperty extends Array {
-	constructor() {
-		super(...arguments);
-	}
-	push() {
-		for(let item of arguments) {
-			// TODO: Add keyframes
-			super.push(item);
-		}
-	}
-}
-DynamicProperty.prototype[Symbol.species] = Array;

@@ -154,9 +154,15 @@ class DynamicObject {
 		}
 	}
 	get(key, time) {
+		if(!isFinite(time)) {
+			time = project.time;
+		}
 		return this[key];
 	}
 	set(key, value, time) {
+		if(!isFinite(time)) {
+			time = project.time;
+		}
 		this[key] = value;
 	}
 }
