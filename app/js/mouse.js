@@ -298,7 +298,7 @@ const handleMouseUp = (evt, button) => {
 					if(layerDrag.parentNode) {
 						const zs = [];
 						for(const layer of layers.querySelectorAll(".layer")) {
-							zs.push(layer._obj.z); /* get property */
+							zs.push(layer._obj.get("z"));
 						}
 						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
 						layerDrag.parentNode.parentNode[side](layerDrag);
@@ -308,7 +308,7 @@ const handleMouseUp = (evt, button) => {
 						layerDrag.remove();
 						const layerElems = layers.querySelectorAll(".layer");
 						for(let i = 0; i < layerElems.length; i++) {
-							layerElems[i]._obj.z = zs[i]; /* set property */
+							layerElems[i]._obj.set("z", zs[i]);
 						}
 						updateLayers();
 						project.saved = false;
