@@ -192,24 +192,13 @@ const updateTimelines = () => {
 	for(const frame of timelines.querySelectorAll(".frame.highlight")) {
 		frame.classList.remove("highlight");
 	}
-	let frameCount = 0;
-	const topFrames = new Array(project.data.duration).fill(0);
-	for(const obj of project.data.objs) {
-		const frames = project.frames[obj.id];
-		for(let i = 0; i < frames.length; i++) {
-			if(frames[i]) {
-				frameCount++;
-			}
-			topFrames[i] = Math.max(topFrames[i], frames[i]);
-		}
-	}
-	topFrames[project.time] = 2;
-	status.frames.textContent = frameCount;
+	const topFrames = getTopFrames();
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
 		timeline.id = `timeline_${(timeline._obj = objs[start + i]).id}`;
 	}
 	let objCount = 0;
+	let frameCount = 0;
 	for(const obj of project.data.objs) {
 		const focusHighlight = project.frames[obj.id].includes(2);
 		const highlight = focusHighlight || project.frames[obj.id].includes(1);
@@ -228,6 +217,7 @@ const updateTimelines = () => {
 					frame.classList.add("highlight");
 					if(highlight && project.frames[obj.id][frame._value]) {
 						frame.classList.add("selected");
+						frameCount++;
 					}
 					if(focusHighlight || topFrames[frame._value] === 2) {
 						frame.classList.add("focusHighlight");
@@ -240,6 +230,7 @@ const updateTimelines = () => {
 		}
 	}
 	status.objs.textContent = objCount;
+	status.frames.textContent = frameCount;
 	updateTimeUnits();
 };
 const clearFrames = () => {
