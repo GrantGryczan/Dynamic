@@ -231,23 +231,8 @@ document.addEventListener("keydown", evt => {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		if(focused() && notTyping()) {
-			if(assetContainer.classList.contains("active")) {
-				const focusedAssetElem = assets.querySelector(".asset.focus");
-				if(focusedAssetElem && focusedAssetElem._asset.type === "obj") {
-					rootAsset(focusedAssetElem._asset);
-				} else {
-					for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-						if(assetElem._asset.type === "group") {
-							assetElem.classList.toggle("open");
-						}
-					}
-				}
-			} else if(timelineContainer.classList.contains("active")) {
-				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
-					timelineItem.classList.toggle("open");
-				}
-			}
+		if(focused() && !document.querySelector(":focus")) {
+			(playing ? pause : play)();
 		}
 	} else if(evt.keyCode === 27) { // `esc`
 		if(focused() && notTyping()) {
@@ -263,11 +248,6 @@ document.addEventListener("keydown", evt => {
 			} else if(fullPreview.classList.contains("active")) {
 				hideFullPreview();
 			}
-		}
-	} else if(evt.keyCode === 32) { // `space`
-		if(focused() && notTyping()) {
-			evt.preventDefault();
-			(playing ? pause : play)();
 		}
 	} else if(evt.keyCode === 113) { // `F2`
 		if(focused()) {
