@@ -29,7 +29,7 @@ class DynamicObject {
 			}
 			if(onlyGraphics(this)) {
 				const maxZ = Math.max(...project.data.objs.filter(onlyGraphics).map(byZ));
-				this.set("z", isFinite(maxZ) ? maxZ + 1 : 1); /* set property */
+				this.set("z", isFinite(maxZ) ? maxZ + 1 : 1);
 			}
 		} else if(value instanceof Object) {
 			Object.assign(this, value);
