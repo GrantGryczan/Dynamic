@@ -33,6 +33,7 @@ electron.app.once("ready", () => {
 	});
 	win.once("ready-to-show", () => {
 		win.maximize();
+		win.show();
 		while(filesToOpen.length) {
 			win.webContents.send("argv", filesToOpen.pop());
 		}
