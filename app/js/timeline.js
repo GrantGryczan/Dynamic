@@ -513,7 +513,7 @@ const promptInsertFrames = toRight => {
 	}
 	const dialog = new Miro.Dialog("Insert frames", html`
 		<div class="mdc-text-field">
-			<input id="insertFrameQuantity" name="quantity" class="mdc-text-field__input" type="number" value="${quantity}" min="1" required>
+			<input id="insertFrameQuantity" name="quantity" class="mdc-text-field__input" type="number" value="${quantity}" min="1" max="${600 * project.data.fps}" required>
 			<label class="mdc-floating-label mdc-floating-label--float-above" for="insertFrameQuantity">Quantity</label>
 			<div class="mdc-line-ripple"></div>
 		</div>
