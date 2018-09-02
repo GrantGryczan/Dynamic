@@ -1,4 +1,5 @@
 "use strict";
+let subject = content;
 const makeFullPreviewHidden = () => {
 	fullPreview.classList.add("hidden");
 	fullPreviewImage.src = "";
@@ -26,10 +27,18 @@ fullPreview.addEventListener("mousemove", evt => {
 	}
 });
 const canvasProperties = () => {
+	subject = content;
+	prop.name.elements[0].value = "< Canvas >";
+	prop.name.elements[0].readOnly = true;
+	prop.name.classList.remove("hidden");
+	prop.fps.elements[0].value = project.data.fps;
 	prop.fps.classList.remove("hidden");
-	prop.canvasSize.classList.remove("hidden");
+	prop.size.elements[0].value = project.data.width;
+	prop.size.elements[1].value = project.data.height;
+	prop.size.classList.remove("hidden");
 };
 const updateProperties = () => {
+	subject = null;
 	for(const propElem of propElems) {
 		propElem.classList.add("hidden");
 	}

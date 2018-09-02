@@ -288,7 +288,7 @@ document.addEventListener("input", evt => {
 		}
 		if(isFinite(value)) {
 			canChangeCurrentFrameValue = false;
-			setTime(value);
+			setTime(Math.round(value));
 			canChangeCurrentFrameValue = true;
 		}
 	} else if(evt.target === prop.fps.elements[0]) {
@@ -297,14 +297,18 @@ document.addEventListener("input", evt => {
 			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
 		}
 		project.saved = false;
-	} else if(evt.target === prop.canvasSize.elements[0]) {
-		content.style.width = `${project.data.width = +evt.target.value}px`;
-		absoluteCenter(content);
-		project.saved = false;
-	} else if(evt.target === prop.canvasSize.elements[1]) {
-		content.style.height = `${project.data.height = +evt.target.value}px`;
-		absoluteCenter(content);
-		project.saved = false;
+	} else if(evt.target === prop.size.elements[0]) {
+		if(subject === content) {
+			content.style.width = `${project.data.width = +evt.target.value}px`;
+			absoluteCenter(content);
+			project.saved = false;
+		}
+	} else if(evt.target === prop.size.elements[1]) {
+		if(subject === content) {
+			content.style.height = `${project.data.height = +evt.target.value}px`;
+			absoluteCenter(content);
+			project.saved = false;
+		}
 	} else if(evt.target === prop.name.elements[0]) {
 		if(assetContainer.classList.contains("activeProperties")) {
 			if(!project.data.assets.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {

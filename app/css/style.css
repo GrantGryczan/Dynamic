@@ -792,12 +792,12 @@ label:not(.mdc-floating-label) {
 .property {
 	position: relative;
 }
-.property[data-key="canvasSize"] .mdc-text-field {
+.property.array .mdc-text-field, .property.array .mdc-text-field {
 	display; inline-block;
 	width: initial;
 	height: initial !important;
 }
-.property[data-key="canvasSize"] input {
+.property.array input, .property.array input {
 	padding-top: 0;
 	text-align: center;
 }
@@ -807,7 +807,7 @@ label:not(.mdc-floating-label) {
 	background-size: 20px 20px;
 	cursor: pointer;
 }
-.property[data-key="preview"] audio[controls] {
+.property[data-key="preview"] audio {
 	width: 100%;
 }
 #downloadAsset {

@@ -187,11 +187,10 @@ const select = id => {
 		rootAsset(project.rootAsset ? getAsset(project.rootAsset) : null);
 		openAsset(project.openAsset ? getAsset(project.openAsset) : null);
 		updateProperties();
+		content.style.width = `${project.data.width}px`;
+		content.style.height = `${project.data.height}px`;
 		project.tab.classList.add("current");
 		projectPage.classList.remove("hidden");
-		prop.fps.elements[0].value = project.data.fps;
-		content.style.width = `${prop.canvasSize.elements[0].value = project.data.width || storage.canvasWidth}px`;
-		content.style.height = `${prop.canvasSize.elements[1].value = project.data.height || storage.canvasHeight}px`;
 		updatePanels();
 		assets.scrollTop = project.scrollAssets;
 		propertyContainer.scrollTop = project.scrollProperties;

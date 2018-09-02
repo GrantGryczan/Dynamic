@@ -95,16 +95,22 @@
 									<span class="label spaced">Properties</span>
 								</div>
 								<div id="properties">
+									<form class="property hidden" data-key="name">
+										<div class="mdc-text-field">
+											<input id="nameInput" type="text" class="mdc-text-field__input" required>
+											<label class="mdc-floating-label mdc-floating-label--float-above" for="nameInput">Name</label>
+											<div class="mdc-line-ripple"></div>
+										</div>
+									</form>
 									<form class="property hidden" data-key="fps">
 										<div class="mdc-text-field">
-											<input type="number" id="fpsInput" class="mdc-text-field__input" min="0" max="9999" required>
+											<input id="fpsInput" type="number" class="mdc-text-field__input" min="0" max="9999" required>
 											<label class="mdc-floating-label mdc-floating-label--float-above" for="fpsInput">Frame rate (FPS)</label>
 											<div class="mdc-line-ripple"></div>
 										</div>
-										<p class="mdc-text-field-helper-text">Set to 0 to let the browser determine the FPS inconsistently (not recommended).</p>
 									</form>
-									<form class="property hidden" data-key="canvasSize">
-										<label>Canvas size</label>
+									<form class="property array hidden" data-key="size">
+										<label>Size</label>
 										<div class="mdc-text-field">
 											<input type="number" class="mdc-text-field__input" min="1" max="999999" required>
 											<div class="mdc-line-ripple"></div>
@@ -113,16 +119,9 @@
 											<div class="mdc-line-ripple"></div>
 										</div>
 									</form>
-									<form class="property hidden" data-key="name">
-										<div class="mdc-text-field">
-											<input type="text" id="nameInput" class="mdc-text-field__input" required>
-											<label class="mdc-floating-label mdc-floating-label--float-above" for="nameInput">Name</label>
-											<div class="mdc-line-ripple"></div>
-										</div>
-									</form>
 									<form class="property hidden" data-key="mime">
 										<div class="mdc-text-field mdc-text-field--upgraded">
-											<input type="text" id="mimeInput" class="mdc-text-field__input" readonly>
+											<input id="mimeInput" type="text" class="mdc-text-field__input" readonly>
 											<label class="mdc-floating-label alwaysFloat" for="mimeInput">File type</label>
 											<div class="mdc-line-ripple"></div>
 										</div>
