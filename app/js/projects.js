@@ -46,6 +46,7 @@ class DynamicProject {
 			loop: false,
 			onionskin: storage.onionskin
 		});
+		this.root = this.data;
 		tabs.appendChild((this.tab._project = this).tab);
 		this.saved = value.saved;
 		select((projects[this.id] = this).id);
@@ -181,11 +182,9 @@ const select = id => {
 		homePage.classList.remove("hidden");
 	} else {
 		project.data.assets.forEach(appendAsset);
-		project.data.objs.forEach(appendObj);
+		project.root.objs.forEach(appendObj);
 		updateLayers();
 		saveProj.disabled = project.saved;
-		rootAsset(project.rootAsset ? getAsset(project.rootAsset) : null);
-		openAsset(project.openAsset ? getAsset(project.openAsset) : null);
 		updateProperties();
 		content.style.width = `${project.data.width}px`;
 		content.style.height = `${project.data.height}px`;
@@ -262,7 +261,7 @@ const open = async location => {
 			project.data.height = +data.height;
 		}
 		if(data.duration > 0) {
-			project.data.duration = +data.duration;
+			project.root.duration = +data.duration;
 		}
 		loadIndeterminate(false);
 		loadProgress(0);

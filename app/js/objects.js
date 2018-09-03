@@ -1,5 +1,5 @@
 "use strict";
-const getObj = id => project.data.objs.find(obj => obj.id === id);
+const getObj = id => project.root.objs.find(obj => obj.id === id);
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZ = obj => obj.get("z");
@@ -7,14 +7,14 @@ const byZIndex = (a, b) => b.get("z") - a.get("z");
 class DynamicObject {
 	constructor(value) {
 		if(!value.id) {
-			this.id = uid(project.data.objs.map(byID));
+			this.id = uid(project.root.objs.map(byID));
 		}
 		if(typeof value === "string") {
 			this.date = Date.now();
 			const asset = getAsset(value);
 			if(asset.type === "group") {
 				this.type = "group";
-				const names = project.data.objs.map(byInsensitiveName);
+				const names = project.root.objs.map(byInsensitiveName);
 				this[_name] = asset.name;
 				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
 					this[_name] = `${asset.name} ${i}`;
@@ -28,7 +28,7 @@ class DynamicObject {
 				this.asset = asset;
 			}
 			if(onlyGraphics(this)) {
-				const maxZ = Math.max(...project.data.objs.filter(onlyGraphics).map(byZ));
+				const maxZ = Math.max(...project.root.objs.filter(onlyGraphics).map(byZ));
 				this.set("z", isFinite(maxZ) ? maxZ + 1 : 1);
 			}
 		} else if(value instanceof Object) {
@@ -42,8 +42,8 @@ class DynamicObject {
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
-		project.data.objs.push(this);
-		project.frames[this.id] = new Array(project.duration).fill(0);
+		project.root.objs.push(this);
+		project.frames[this.id] = new Array(project.root.duration).fill(0);
 		if(this.type === "group") {
 			this.timelineItem = html`
 				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
@@ -142,8 +142,8 @@ class DynamicObject {
 	updateName() {
 		if(this.asset) {
 			this[_name] = this.asset.name;
-			if(this.asset.objects.length > 1) {
-				this[_name] += ` [${this.asset.objects.sort(byDate).indexOf(this) + 1}]`;
+			if(this.asset.presentObjects.length > 1) {
+				this[_name] += ` [${this.asset.presentObjects.sort(byDate).indexOf(this) + 1}]`;
 			}
 		}
 		if(this.timelineItem) {
@@ -180,16 +180,16 @@ const appendObj = (obj, create) => {
 	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
 };
 const updateLayers = () => {
-	for(const obj of project.data.objs.filter(onlyGraphics).sort(byZIndex)) {
+	for(const obj of project.root.objs.filter(onlyGraphics).sort(byZIndex)) {
 		obj.layer.querySelector(".z").textContent = obj.get("z");
 		layers.appendChild(obj.layer);
 	}
 };
 const storeObjs = () => {
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		obj._frames = project.frames[obj.id];
 	}
-	project.data.objs = [];
+	project.root.objs = [];
 	project.frames = {};
 	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
 		if(timelineItem.parentNode === timelineItems) {
@@ -197,7 +197,7 @@ const storeObjs = () => {
 		} else {
 			timelineItem._obj.parent = timelineItem.parentNode.parentNode._obj;
 		}
-		project.data.objs.push(timelineItem._obj);
+		project.root.objs.push(timelineItem._obj);
 		project.frames[timelineItem._obj.id] = timelineItem._obj._frames;
 		delete timelineItem._obj._frames;
 	}
@@ -224,7 +224,7 @@ const confirmRemoveObjElem = objElem => {
 			removeObj(objElem);
 			storeObjs();
 			if(objElem._obj.asset) {
-				for(const obj of objElem._obj.asset.objects) {
+				for(const obj of objElem._obj.asset.presentObjects) {
 					obj.updateName();
 				}
 			}
@@ -257,7 +257,7 @@ const confirmRemoveObjElems = objElems => {
 				storeObjs();
 				for(const objElem of objElems) {
 					if(objElem._obj.asset) {
-						for(const obj of objElem._obj.asset.objects) {
+						for(const obj of objElem._obj.asset.presentObjects) {
 							obj.updateName();
 						}
 					}
@@ -357,8 +357,8 @@ const selectAllTimelineItems = () => {
 };
 const updateSelectedTimelineItems = () => {
 	const topFrames = getTopFrames();
-	for(const obj of project.data.objs) {
-		const frames = project.frames[obj.id] = new Array(project.data.duration).fill(0);
+	for(const obj of project.root.objs) {
+		const frames = project.frames[obj.id] = new Array(project.root.duration).fill(0);
 		if(obj.timelineItem.classList.contains("selected")) {
 			const focus = obj.timelineItem.classList.contains("focus");
 			for(let i = 0; i < topFrames.length; i++) {
@@ -448,7 +448,7 @@ const addToTimeline = () => {
 				child[_parent] = obj.timelineItem.lastElementChild;
 			}
 		}
-		project.data.objs.unshift(obj);
+		project.root.objs.unshift(obj);
 		obj.timelineItem.classList.add("selected");
 		project.selectedTimelineItem = obj.timelineItem.id;
 		if(obj.type === "group") {
@@ -458,7 +458,7 @@ const addToTimeline = () => {
 	timelineItemDrag.remove();
 	storeObjs();
 	for(const assetElem of assetElems) {
-		for(const obj of assetElem._asset.objects) {
+		for(const obj of assetElem._asset.presentObjects) {
 			obj.updateName();
 		}
 	}

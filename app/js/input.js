@@ -315,7 +315,7 @@ document.addEventListener("input", evt => {
 				assets.querySelector(".asset.selected")._asset.name = evt.target.value;
 			}
 		} else if(timelineContainer.classList.contains("activeProperties")) {
-			if(!project.data.objs.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
+			if(!project.root.objs.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
 				timelineItems.querySelector(".timelineItem.selected")._obj.name = evt.target.value;
 			}
 		}

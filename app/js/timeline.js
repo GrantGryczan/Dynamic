@@ -1,28 +1,17 @@
 "use strict";
-const assetLink = (asset, selected) => {
-	
-};
-const rootAsset = asset => {
-	if(asset && project.rootAsset === asset.id) {
-		return;
+const setRoot = asset => {
+	project.root = asset || project.data;
+	for(const elem of projectPage.querySelectorAll(".layer, .timelineItem")) {
+		elem.remove();
 	}
-	openAsset(asset, true, true);
-	if(asset) {
-		project.rootAsset = asset.id;
-	} else {
-		delete project.rootAsset;
+	for(const obj of project.root.objs) {
+		appendObj(obj);
 	}
-};
-const openAsset = (asset, selected, finish) => {
-	if(asset) {
-		project.openAsset = asset.id;
-		assetLink(asset, selected);
-		if(finish) {
-			// TODO
-		}
-	} else {
-		delete project.openAsset;
-	}
+	updateLayers();
+	project.time = 0;
+	clearFrames();
+	updateTimeRuler();
+	updateProperties();
 };
 const appendFrames = timeline => {
 	while(timeline.children.length) {
@@ -70,14 +59,14 @@ let appendEndFrame = false;
 let timelinesTranslateXSet = false;
 let timelinesTranslateYSet = false;
 const updateTimeRuler = () => {
-	const totalWidth = storage.frameWidth * project.data.duration;
+	const totalWidth = storage.frameWidth * project.root.duration;
 	if(timeRulerFiller.offsetWidth !== totalWidth) {
 		timeRulerFiller.style.width = timelineFiller.style.width = `${totalWidth}px`;
 	}
 	oldStartFrame = startFrame;
 	oldEndFrame = endFrame;
 	startFrame = Math.floor(timeRuler.scrollLeft / storage.frameWidth);
-	endFrame = Math.min(project.data.duration, startFrame + Math.ceil((timeRuler.offsetWidth - SCROLLBAR_SIZE) / storage.frameWidth) + 1);
+	endFrame = Math.min(project.root.duration, startFrame + Math.ceil((timeRuler.offsetWidth - SCROLLBAR_SIZE) / storage.frameWidth) + 1);
 	const transform = timeUnits.style.transform = `translateX(${storage.frameWidth * startFrame}px)`;
 	if(timelinesTranslateXSet || translateX.test(timelines.style.transform)) {
 		timelines.style.transform = timelines.style.transform.replace(translateX, transform);
@@ -150,7 +139,7 @@ const baseTimeline = html`<div class="timeline"></div>`;
 const baseFrame = html`<div class="frame"></div>`;
 baseFrame.style.width = `${storage.frameWidth}px`;
 const updateTimelines = () => {
-	const objs = project.data.objs.filter(byVisible);
+	const objs = project.root.objs.filter(byVisible);
 	const totalHeight = timelineItems.scrollHeight - SCROLLBAR_SIZE;
 	if(timelineFiller.offsetHeight !== totalHeight) {
 		timelineFiller.style.height = `${totalHeight}px`;
@@ -199,7 +188,7 @@ const updateTimelines = () => {
 	}
 	let objCount = 0;
 	let frameCount = 0;
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		const focusHighlight = project.frames[obj.id].includes(2);
 		const highlight = focusHighlight || project.frames[obj.id].includes(1);
 		if(highlight) {
@@ -234,15 +223,15 @@ const updateTimelines = () => {
 	updateTimeUnits();
 };
 const clearFrames = () => {
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		const frames = project.frames[obj.id];
 		if(frames.includes(1) || frames.includes(2)) {
-			project.frames[obj.id] = new Array(project.data.duration).fill(0);
+			project.frames[obj.id] = new Array(project.root.duration).fill(0);
 		}
 	}
 };
 const blurFrames = () => {
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		const frames = project.frames[obj.id];
 		for(let i = 0; i < frames.length; i++) {
 			frames[i] = +!!frames[i];
@@ -250,8 +239,8 @@ const blurFrames = () => {
 	}
 };
 const getTopFrames = () => {
-	const topFrames = new Array(project.data.duration).fill(0);
-	for(const obj of project.data.objs) {
+	const topFrames = new Array(project.root.duration).fill(0);
+	for(const obj of project.root.objs) {
 		const frames = project.frames[obj.id];
 		for(let i = 0; i < frames.length; i++) {
 			topFrames[i] = Math.max(topFrames[i], frames[i]);
@@ -273,7 +262,7 @@ const selectFrame = (timeline, value, button, shift) => {
 		shift = shiftKey;
 	}
 	let index = -1;
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		index = project.frames[obj.id].indexOf(2);
 		if(index !== -1) {
 			break;
@@ -289,7 +278,7 @@ const selectFrame = (timeline, value, button, shift) => {
 	} else if(shift && index !== -1) {
 		const noSuperKey = !superKey;
 		let selecting = false;
-		for(const obj of project.data.objs) {
+		for(const obj of project.root.objs) {
 			const frames = project.frames[obj.id];
 			let changeSelecting = obj.id === timeline || frames.includes(2);
 			if(!selecting && changeSelecting) {
@@ -331,8 +320,8 @@ const selectFrame = (timeline, value, button, shift) => {
 	setActive(timelineContainer);
 };
 const moveFrameStates = change => {
-	change = ((-change % project.data.duration) + project.data.duration) % project.data.duration;
-	for(const obj of project.data.objs) {
+	change = ((-change % project.root.duration) + project.root.duration) % project.root.duration;
+	for(const obj of project.root.objs) {
 		const frames = project.frames[obj.id];
 		frames.push(...frames.splice(0, change));
 	}
@@ -342,7 +331,7 @@ const setTime = value => {
 		const rangeSize = project.loop[1] - project.loop[0];
 		value = (((value - project.loop[0]) % rangeSize + rangeSize) % rangeSize) + project.loop[0];
 	} else {
-		value = (value % project.data.duration + project.data.duration) % project.data.duration;
+		value = (value % project.root.duration + project.root.duration) % project.root.duration;
 	}
 	moveFrameStates(value - project.time);
 	project.time = value;
@@ -351,10 +340,10 @@ const setTime = value => {
 };
 const addDuration = quantity => {
 	const moreFrames = new Array(quantity).fill(0);
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		project.frames[obj.id].push(...moreFrames);
 	}
-	project.data.duration += quantity;
+	project.root.duration += quantity;
 	updateTimeRuler();
 };
 const scrollFrameIntoView = value => {
@@ -386,13 +375,13 @@ const updateTimeUnits = () => {
 		timeUnit.classList[project.time === timeUnit._value ? "add" : "remove"]("focus");
 	}
 	scrubber.style.transform = `translateX(${storage.frameWidth * project.time + storage.frameWidth / 2 - timeRuler.scrollLeft}px)`;
-	foot.currentFrame.size = String(project.data.duration - 1).length;
+	foot.currentFrame.size = String(project.root.duration - 1).length;
 	if(canChangeCurrentFrameValue) {
 		foot.currentFrame.value = project.time;
 	}
 };
 const endFrameJump = () => {
-	setTime((project.loop ? project.loop[1] : project.data.duration) - 1);
+	setTime((project.loop ? project.loop[1] : project.root.duration) - 1);
 	if(!project.loop) {
 		pause();
 	}
@@ -425,29 +414,29 @@ const setLoop = () => {
 	if(mouseTarget === loopRangeStart) {
 		value = project.loop[0] = Math.max(0, Math.min(project.loop[1] - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth + 1)));
 	} else {
-		value = project.loop[1] = Math.max(project.loop[0] + 1, Math.min(project.data.duration, Math.floor((mouseX - 1 - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
+		value = project.loop[1] = Math.max(project.loop[0] + 1, Math.min(project.root.duration, Math.floor((mouseX - 1 - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
 	}
 	scrollFrameIntoView(value);
 	updateLoop();
 };
 const updateSlider = () => {
-	const progress = Math.max(0, Math.min(1, project.loop ? (project.time - project.loop[0]) / (project.loop[1] - project.loop[0] - 1) : project.time / (project.data.duration - 1)));
+	const progress = Math.max(0, Math.min(1, project.loop ? (project.time - project.loop[0]) / (project.loop[1] - project.loop[0] - 1) : project.time / (project.root.duration - 1)));
 	sliderThumb.style.transform = `translateX(-50%) translateX(${slider.offsetWidth * progress}px)`;
 	sliderTrack.style.transform = `scaleX(${progress})`;
 };
 const changeSlider = change => {
 	const rect = slider.getBoundingClientRect();
 	let loopLength;
-	const max = storage.frameWidth * (project.loop ? loopLength = project.loop[1] - project.loop[0] : project.data.duration) / slider.offsetWidth;
+	const max = storage.frameWidth * (project.loop ? loopLength = project.loop[1] - project.loop[0] : project.root.duration) / slider.offsetWidth;
 	initialTargetPos += change / slider.offsetWidth / Math.max(1, Math.min(max, (Math.abs(rect.top + slider.offsetHeight / 2 - mouseY) - slider.offsetHeight) * max / (timelineContainer.offsetHeight - slider.offsetHeight)));
 	if(project.loop) {
 		setTime(Math.min(project.loop[1] - 1, Math.round(project.loop[0] + (loopLength - 1) * Math.max(0, initialTargetPos))));
 	} else {
-		setTime(Math.min(project.data.duration - 1, Math.round((project.data.duration - 1) * Math.max(0, initialTargetPos))));
+		setTime(Math.min(project.root.duration - 1, Math.round((project.root.duration - 1) * Math.max(0, initialTargetPos))));
 	}
 };
 const deleteFrames = () => {
-	if(project.data.duration > 1) {
+	if(project.root.duration > 1) {
 		const topFrames = getTopFrames();
 		let quantity = 0;
 		let value = project.time;
@@ -457,12 +446,12 @@ const deleteFrames = () => {
 				if(i > project.time) {
 					value--;
 				}
-				for(const obj of project.data.objs) {
+				for(const obj of project.root.objs) {
 					project.frames[obj.id].splice(i, 1);
 				}
 			}
 		}
-		project.data.duration -= quantity;
+		project.root.duration -= quantity;
 		setTime(Math.max(0, value));
 	}
 };
@@ -486,11 +475,11 @@ const insertFrames = (toRight, quantity) => {
 	if(toRight) {
 		value++;
 	}
-	project.data.duration += quantity;
-	for(const obj of project.data.objs) {
+	project.root.duration += quantity;
+	for(const obj of project.root.objs) {
 		const focus = project.frames[obj.id].includes(2);
 		const selected = focus || project.frames[obj.id].includes(1);
-		const frames = project.frames[obj.id] = new Array(project.data.duration).fill(0);
+		const frames = project.frames[obj.id] = new Array(project.root.duration).fill(0);
 		if(selected) {
 			for(let i = value; i < value + quantity; i++) {
 				frames[i] = 1;
@@ -528,7 +517,7 @@ const promptInsertFrames = toRight => {
 	dialog.form.elements.quantity.select();
 };
 const selectFramesInRows = () => {
-	for(const obj of project.data.objs) {
+	for(const obj of project.root.objs) {
 		if(obj.timelineItem.classList.contains("selected")) {
 			const frames = project.frames[obj.id];
 			for(let i = 0; i < frames.length; i++) {

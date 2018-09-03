@@ -188,11 +188,11 @@ document.addEventListener("mousemove", evt => {
 				timeline = evt.target.parentNode._obj.id;
 				value = evt.target._value;
 			} else {
-				const objs = project.data.objs.filter(byVisible);
+				const objs = project.root.objs.filter(byVisible);
 				const obj = objs[Math.max(0, Math.min(objs.length - 1, Math.floor((mouseY - timelineItems.getBoundingClientRect().top + timelineItems.scrollTop) / 24)))];
 				scrollIntoView(obj.timelineItem.querySelector(".bar"), timelineItems);
 				timeline = obj.id;
-				value = Math.max(0, Math.min(project.data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
+				value = Math.max(0, Math.min(project.root.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
 			}
 			if(timeline && value !== false) {
 				if(initialTargetPos) {
@@ -207,7 +207,7 @@ document.addEventListener("mousemove", evt => {
 			setLoop();
 		} else if(mouseTarget0) {
 			if(mouseTarget0.classList.contains("timeUnit")) {
-				setTime(Math.max(project.loop ? project.loop[0] : 0, Math.min(project.loop ? project.loop[1] - 1 : project.data.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth))));
+				setTime(Math.max(project.loop ? project.loop[0] : 0, Math.min(project.loop ? project.loop[1] - 1 : project.root.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth))));
 			} else if(mouseTarget0.classList.contains("handle")) {
 				storage.size[mouseTarget0.parentNode.id] = Math.max(150, targetOffset + (mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("top") ? -1 : 1) * evt[mouseTarget0.classList.contains("left") || mouseTarget0.classList.contains("right") ? "clientX" : "clientY"]);
 				updatePanels();
@@ -418,7 +418,7 @@ const handleMouseUp = (evt, button) => {
 							timeRuler.scrollLeft = timelineBox.scrollLeft = project.time * storage.frameWidth - timeRuler.offsetWidth + 2 + storage.frameWidth + SCROLLBAR_SIZE;
 							scrollTimeRuler = scrollTimelines = true;
 						} else if(mouseTarget0 === foot.enableLoop) {
-							project.loop = [Math.max(0, project.time - 1), Math.min(project.data.duration, project.time + 2)];
+							project.loop = [Math.max(0, project.time - 1), Math.min(project.root.duration, project.time + 2)];
 							updateLoop();
 						} else if(mouseTarget0 === foot.disableLoop) {
 							project.loop = false;
@@ -554,19 +554,25 @@ document.addEventListener("dblclick", evt => {
 		} else if(evt.target.classList.contains("bar")) {
 			if(evt.target.parentNode.classList.contains("asset")) {
 				selectAsset(evt.target.parentNode, 2);
-				if(evt.target.parentNode._asset.type === "group") {
-					evt.target.parentNode.classList.toggle("open");
-				} else if(evt.target.parentNode._asset.type === "obj") {
-					rootAsset(evt.target.parentNode._asset);
+				if(evt.target.parentNode._asset.type === "obj") {
+					setRoot(evt.target.parentNode._asset);
 				}
 			} else if(evt.target.parentNode.classList.contains("timelineItem")) {
-				evt.target.parentNode.classList.toggle("open");
+				selectTimelineItem(evt.target.parentNode, 2);
+				if(evt.target.parentNode._obj.asset && evt.target.parentNode._obj.asset.type === "obj") {
+					setRoot(evt.target.parentNode._obj.asset);
+				}
+			}
+		} else if(evt.target.parentNode.classList.contains("layer")) {
+			selectLayer(evt.target.parentNode, 2);
+			if(evt.target.parentNode._obj.asset && evt.target.parentNode._obj.asset.type === "obj") {
+				setRoot(evt.target.parentNode._obj.asset);
 			}
 		} else if(evt.target.parentNode === loopField) {
 			if(evt.target === loopRangeStart) {
 				project.loop[0] = 0;
 			} else {
-				project.loop[1] = project.data.duration;
+				project.loop[1] = project.root.duration;
 			}
 			updateLoop();
 		}

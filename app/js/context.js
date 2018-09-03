@@ -1,4 +1,5 @@
 "use strict";
+let ctxTarget;
 const menuSeparator = {
 	type: "separator"
 };
@@ -179,16 +180,23 @@ const renameMenuItem = {
 	accelerator: "F2",
 	click: prop.name.elements[0].select.bind(prop.name.elements[0])
 };
-const selectAllAssetsMenuItem = {
-	label: "Select all asset(s)",
-	accelerator: "CmdOrCtrl+A",
-	click: selectAllAssets
+const openAssetMenuItem = {
+	label: "Open asset",
+	click: () => {
+		setRoot(assets.querySelector(".asset.selected")._asset);
+	}
 };
 const selectedAssetsMenuItems = [{
 	label: "Remove asset(s)",
 	accelerator: "Delete",
 	click: removeSelectedAssets
-}, renameMenuItem, menuSeparator, {
+}, renameMenuItem, menuSeparator];
+const selectAllAssetsMenuItem = {
+	label: "Select all asset(s)",
+	accelerator: "CmdOrCtrl+A",
+	click: selectAllAssets
+};
+const selectedAssetsMenuItems2 = [{
 	label: "Add to timeline",
 	click: addToTimeline
 }, menuSeparator, {
@@ -222,18 +230,25 @@ const assetMenuGroupItems = [{
 		updateProperties();
 	}
 }];
-const layerMenuItems = [{
+const removeLayersMenuItem = {
 	label: "Remove object(s)",
 	accelerator: "Delete",
 	click: removeSelectedLayers
-}, menuSeparator, {
+};
+const openLayerMenuItem = {
+	label: "Open asset",
+	click: () => {
+		setRoot(layers.querySelector(".layer.selected")._obj.asset);
+	}
+};
+const deselectLayersMenuItem = {
 	label: "Deselect",
 	accelerator: "Esc",
 	click: () => {
 		deselectLayers();
 		updateProperties();
 	}
-}];
+};
 const selectAllLayersMenuItem = {
 	label: "Select all layer(s)",
 	accelerator: "CmdOrCtrl+A",
@@ -247,7 +262,7 @@ const timelineItemCreationMenuItems = [{
 		for(const timelineItem of timelineItemArray) {
 			timelineItem.classList.remove("selected");
 		}
-		const names = project.data.objs.map(byInsensitiveName);
+		const names = project.root.objs.map(byInsensitiveName);
 		let name = "Group";
 		for(let i = 2; names.includes(name.toLowerCase()); i++) {
 			name = `Group ${i}`;
@@ -366,7 +381,14 @@ const timelineItemMenuItems = [{
 	label: "Remove object(s)",
 	accelerator: "Delete",
 	click: removeSelectedTimelineItems
-}, renameMenuItem, menuSeparator, ...objectSelectionTimelineMenu, {
+}, renameMenuItem];
+const openTimelineItemMenuItem = {
+	label: "Open asset",
+	click: () => {
+		setRoot(timelineItems.querySelector(".timelineItem.selected")._obj.asset);
+	}
+};
+const timelineItemMenuItems2 = [menuSeparator, ...objectSelectionTimelineMenu, {
 	label: "Select children",
 	click: () => {
 		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem")) {
@@ -415,7 +437,7 @@ const timelineMenuItems = [{
 	accelerator: "CmdOrCtrl+Shift+A",
 	click: selectFramesInRows
 }];
-let ctxTarget;
+const assetObjs = objElem => objElem._obj.asset && objElem._obj.asset.type === "obj";
 const openCtx = target => {
 	ctxTarget = target;
 	const template = [];
@@ -434,8 +456,14 @@ const openCtx = target => {
 			if(assets.contains(ctxTarget)) {
 				const selected = assets.querySelectorAll(".asset.selected");
 				if(selected.length) {
-					renameMenuItem.enabled = selected.length === 1;
+					const singleSelected = selected.length === 1;
+					renameMenuItem.enabled = singleSelected;
 					template.push(...selectedAssetsMenuItems);
+					if(assets.querySelector(".asset.typeObj.selected")) {
+						openAssetMenuItem.enabled = singleSelected;
+						template.push(openAssetMenuItem);
+					}
+					template.push(...selectedAssetsMenuItems2);
 					if(assets.querySelector(".asset.typeGroup.selected")) {
 						template.push(...assetMenuGroupItems);
 					}
@@ -444,15 +472,27 @@ const openCtx = target => {
 				}
 				template.push(menuSeparator, ...assetCreationMenuItems);
 			} else if(layerBox.contains(ctxTarget)) {
-				if(ctxTarget.parentNode.classList.contains("layer")) {
-					template.push(...layerMenuItems);
+				const selected = layers.querySelectorAll(".layer.selected");
+				if(selected.length) {
+					template.push(removeLayersMenuItem);
+					if(Array.prototype.some.call(selected, assetObjs)) {
+						openLayerMenuItem.enabled = selected.length === 1;
+						template.push(menuSeparator, openLayerMenuItem);
+					}
+					template.push(menuSeparator, deselectLayersMenuItem);
 				}
 				template.push(selectAllLayersMenuItem);
 			} else if(timelineItems.contains(ctxTarget)) {
 				const selected = timelineItems.querySelectorAll(".timelineItem.selected");
 				if(selected.length) {
-					renameMenuItem.enabled = selected.length === 1;
+					const singleSelected = selected.length === 1;
+					renameMenuItem.enabled = singleSelected;
 					template.push(...timelineItemMenuItems);
+					if(Array.prototype.some.call(selected, assetObjs)) {
+						openTimelineItemMenuItem.enabled = singleSelected;
+						template.push(menuSeparator, openTimelineItemMenuItem);
+					}
+					template.push(...timelineItemMenuItems2);
 				} else {
 					template.push(selectAllObjectsMenuItem);
 				}

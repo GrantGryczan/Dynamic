@@ -10,7 +10,7 @@ const animate = () => {
 		const change = project.data.fps === 0 ? 1 : Math.floor(elapsed / interval);
 		if(change > 0) {
 			then = now - elapsed % interval;
-			const lastFrame = project.data.duration - 1;
+			const lastFrame = project.root.duration - 1;
 			let value = project.time + change;
 			if((project.time === lastFrame || value >= lastFrame) && !project.loop) {
 				pause();
@@ -23,7 +23,7 @@ const animate = () => {
 requestAnimationFrame(animate);
 const play = () => {
 	if(!playing) {
-		if(project.time === project.data.duration - 1) {
+		if(project.time === project.root.duration - 1) {
 			setTime(0);
 		}
 		then = performance.now();

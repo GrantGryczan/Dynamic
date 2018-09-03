@@ -1,5 +1,6 @@
 "use strict";
 const getAsset = id => project.data.assets.find(asset => asset.id === id);
+const byObjArrays = asset => asset.objs;
 class DynamicAsset {
 	constructor(value) {
 		if(!(value instanceof Object)) {
@@ -35,6 +36,8 @@ class DynamicAsset {
 				</div>
 			`;
 		} else if(this.type === "obj") {
+			this.objs = [];
+			this.duration = 1;
 			this.element = html`
 				<div id="asset_${this.id}" class="asset typeObj" title="$${this.name}">
 					<div class="bar">
@@ -81,8 +84,16 @@ class DynamicAsset {
 			return `data:${this.mime};base64,${this.data}`;
 		}
 	}
+	get presentObjects() {
+		return project.root.objs.filter(obj => obj.asset === this);
+	}
 	get objects() {
-		return project.data.objs.filter(obj => obj.asset === this);
+		const objs = [...project.data.objs];
+		for(const objArray of project.data.assets.map(byObjArrays)) {
+			objs.push(...objArray);
+		}
+		return objs.filter(obj => obj.asset === this);
+		// TODO (Chrome 69): return [...project.data.objs, ...project.data.assets.flatMap(byObjArrays)].filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {
@@ -109,12 +120,8 @@ const removeAsset = assetElem => {
 			assetElem.before(assetElem.lastElementChild.firstElementChild);
 		}
 	} else {
-		if(assetElem._asset.type === "obj") {
-			if(project.rootAsset === assetElem._asset.id) {
-				rootAsset();
-			} else {
-				// TODO: Close asset upon removal
-			}
+		if(project.setRoot === assetElem._asset) {
+			setRoot();
 		}
 		for(const obj of assetElem._asset.objects) {
 			removeObj(obj.timelineItem);
