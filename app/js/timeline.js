@@ -1,6 +1,8 @@
 "use strict";
 const setRoot = asset => {
 	project.root = asset || project.data;
+	objChipText.textContent = objChip.title = project.root.name;
+	objChip.classList[asset ? "remove" : "add"]("hidden");
 	for(const elem of projectPage.querySelectorAll(".layer, .timelineItem")) {
 		elem.remove();
 	}

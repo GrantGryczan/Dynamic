@@ -139,8 +139,14 @@ label:not(.mdc-floating-label) {
 	height: initial;
 	padding: 2px 8px;
 }
-.mdc-chip__text {
+.mdc-chip > * {
 	pointer-events: none;
+}
+.mdc-chip__icon {
+	min-width: 20px;
+}
+.mdc-chip__text {
+	text-overflow: ellipsis;
 }
 .mdc-chip--selected {
 	pointer-events: none;
@@ -432,16 +438,10 @@ label:not(.mdc-floating-label) {
 	font-size: 18px;
 }
 .foot {
-	margin-top: 3px;
-}
-.foot > :not(.separator) {
-	opacity: 0.6;
-}
-.foot > .separator, .foot button {
-	transform: translateY(-1px);
+	margin-top: 2px;
 }
 .foot button.rotated {
-	transform: translateY(-1px) rotate(90deg);
+	transform: rotate(90deg);
 }
 .foot button.translucent {
 	opacity: 0.2;
@@ -452,7 +452,7 @@ label:not(.mdc-floating-label) {
 }
 .foot .mdc-text-field {
 	margin: 0;
-	transform: translateY(2px);
+	transform: translateY(3px);
 }
 .foot .mdc-text-field > input {
 	padding: 0;
@@ -775,10 +775,18 @@ label:not(.mdc-floating-label) {
 	display: flex;
 	overflow: visible;
 }
-#timelineContainer > .foot .mdc-slider {
+#footStart {
+	display: flex;
+}
+#footEnd {
+	display: flex;
+	flex-grow: 1;
+	opacity: 0.6;
+}
+#footEnd > .mdc-slider {
 	flex-grow: 1;
 	width: 0;
-	margin: -2px 8px 0 8px;
+	margin: -1px 8px 0 8px;
 }
 #timelineContainer > .foot [data-key="currentFrame"] {
 	text-align: right;

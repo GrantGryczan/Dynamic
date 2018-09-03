@@ -67,6 +67,9 @@ class DynamicAsset {
 		for(const obj of this.objects) {
 			obj.updateName();
 		}
+		if(this === project.root) {
+			objChipText.textContent = objChip.title = this.name;
+		}
 	}
 	toJSON() {
 		const obj = {

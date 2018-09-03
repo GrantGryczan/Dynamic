@@ -328,8 +328,6 @@ document.addEventListener("change", evt => {
 	}
 	if(evt.target === foot.currentFrame) {
 		foot.currentFrame.value = project.time;
-	} else if(evt.target === prop.name.elements[0] && evt.target.value.trim().toLowerCase() !== (assetContainer.classList.contains("activeProperties") ? assets.querySelector(".asset.selected")._asset : timelineItems.querySelector(".timelineItem.selected")._obj).name.trim().toLowerCase()) {
-		new Miro.Dialog("Error", "That name is already in use.");
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {

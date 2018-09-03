@@ -68,6 +68,10 @@ const timelineBox = timelineArea.querySelector("#timelineBox");
 const timelineFiller = timelineBox.querySelector(".filler");
 const timelines = timelineBox.querySelector("#timelines");
 const timelineFoot = timelineContainer.querySelector(".foot");
+const sceneChip = timelineFoot.querySelector("#sceneChip");
+const sceneChipText = sceneChip.querySelector(".mdc-chip__text");
+const objChip = timelineFoot.querySelector("#objChip");
+const objChipText = objChip.querySelector(".mdc-chip__text");
 const slider = timelineFoot.querySelector("#slider");
 const sliderTrack = slider.querySelector(".mdc-slider__track");
 const sliderThumb = slider.querySelector(".mdc-slider__thumb-container");
@@ -278,7 +282,7 @@ const updatePanels = () => {
 		child.classList.remove("hidden");
 	}
 	updateTimeRuler();
-	timelineFoot.style.paddingLeft = `${timelineItemContainer.offsetWidth - 12}px`;
+	timelineFoot.firstElementChild.style.width = `${timelineItemContainer.offsetWidth - 12}px`;
 };
 window.addEventListener("resize", () => {
 	if(selectedProject !== "home") {

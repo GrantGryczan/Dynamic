@@ -349,6 +349,14 @@ const handleMouseUp = (evt, button) => {
 					updateTimelines();
 				}
 			}
+		} else if(mouseTarget === objChip) {
+			setRoot();
+		} else if(mouseTarget === sceneChip) {
+			if(project.root !== project.data) {
+				setRoot();
+			} else {
+				// TODO: Open scene panel
+			}
 		} else if(mouseTarget === foot.currentFrame) {
 			if(!mouseMoved) {
 				foot.currentFrame.select();
