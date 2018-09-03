@@ -781,6 +781,7 @@ label:not(.mdc-floating-label) {
 #footEnd {
 	display: flex;
 	flex-grow: 1;
+	overflow: visible;
 	opacity: 0.6;
 }
 #footEnd > .mdc-slider {
