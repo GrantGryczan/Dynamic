@@ -2,7 +2,7 @@
 Create HTML5 animations with ease!
 
 ## Install this repository
-Once you have [Git](https://git-scm.com/), a recent version of [Node](https://nodejs.org/), and [NPM](https://www.npmjs.com/get-npm) installed, run the following commands to set up Dynamic.
+Once you have [Git](https://git-scm.com/) and a recent version of [Node](https://nodejs.org/) installed, run the following commands to set up Dynamic.
 ```sh
 git clone https://github.com/GrantGryczan/Dynamic.git
 cd ./Dynamic
