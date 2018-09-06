@@ -36,7 +36,7 @@ const onMouseDown = evt => {
 	}
 	const active = projectPage.querySelector(".container.active");
 	if(!(active && active.contains(mouseTarget))) {
-		for(const panel of panels) {
+		for(const panel of containers) {
 			if(panel.contains(mouseTarget)) {
 				setActive(downActive = panel);
 				break;
@@ -48,6 +48,8 @@ const onMouseDown = evt => {
 			project.focusedAsset = mouseTarget.parentNode.id;
 		} else if(mouseTarget.parentNode.classList.contains("timelineItem")) {
 			project.focusedTimelineItem = mouseTarget.parentNode.id;
+		} else if(mouseTarget.parentNode.classList.contains("scene")) {
+			mouseTarget.parentNode.classList.add("focus");
 		}
 	} else if(mouseTarget.parentNode.classList.contains("layer")) {
 		project.focusedLayer = mouseTarget.parentNode.id;
@@ -163,6 +165,23 @@ document.addEventListener("mousemove", evt => {
 					minTimelineItem[side](timelineItemDrag);
 				}
 				indicateTarget();
+			} else if(mouseTarget.parentNode.classList.contains("scene")) {
+				if(!mouseMoved) {
+					selectScene(mouseTarget.parentNode);
+				}
+				let side;
+				let minDist = Infinity;
+				let minSceneElem;
+				for(const sceneElem of scenes.querySelectorAll(".scene")) {
+					const distTop = mouseY - sceneElem.firstElementChild.getBoundingClientRect().top - sceneElem.firstElementChild.offsetHeight / 2;
+					const absDistTop = Math.abs(distTop);
+					if(absDistTop < minDist) {
+						minDist = absDistTop;
+						minSceneElem = sceneElem;
+						side = distTop < 0 ? "before" : "after";
+					}
+				}
+				minSceneElem[side](sceneDrag);
 			}
 		} else if(mouseTarget.parentNode && mouseTarget.parentNode.classList.contains("layer")) {
 			if(!mouseMoved) {
@@ -264,27 +283,29 @@ const handleMouseUp = (evt, button) => {
 	const evtButton2 = button === 2;
 	if(mouseTarget && (evtButton0 || evtButton2)) {
 		if(assets.contains(mouseTarget) && button === mouseDown) {
-			if(mouseMoved && mouseTarget.classList.contains("bar")) {
-				if(!assetDrag.parentNode) {
-					addToTimeline();
-				} else {
-					for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-						try {
-							assetDrag.before(assetElem);
-						} catch(err) {
-							console.warn(err);
+			if(mouseTarget.classList.contains("bar")) {
+				if(mouseMoved) {
+					if(assetDrag.parentNode) {
+						for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+							try {
+								assetDrag.before(assetElem);
+							} catch(err) {
+								console.warn(err);
+							}
 						}
+						storeAssets();
+						assetDrag.remove();
+					} else {
+						addToTimeline();
 					}
-					storeAssets();
-					assetDrag.remove();
+				} else {
+					selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : button);
 				}
 			} else if(mouseTarget === assets) {
 				if(mouseX < assets.getBoundingClientRect().left + assets.scrollWidth) {
 					deselectAssets();
 					updateProperties();
 				}
-			} else if(mouseTarget.classList.contains("bar")) {
-				selectAsset(mouseTarget.parentNode, downActive === assetContainer ? 2 : button);
 			} else if(evtButton0) {
 				if(mouseTarget0.classList.contains("close")) {
 					confirmRemoveAsset(mouseTarget0.parentNode.parentNode);
@@ -294,53 +315,55 @@ const handleMouseUp = (evt, button) => {
 			}
 		} else if(layerBox.contains(mouseTarget) && button === mouseDown) {
 			if(layerBox.contains(mouseTarget)) {
-				if(mouseMoved && mouseTarget.parentNode.classList.contains("layer")) {
-					if(layerDrag.parentNode) {
-						const zs = [];
-						for(const layer of layers.querySelectorAll(".layer")) {
-							zs.push(layer._obj.get("z"));
+				if(mouseTarget.parentNode.classList.contains("layer")) {
+					if(mouseMoved) {
+						if(layerDrag.parentNode) {
+							const zs = [];
+							for(const layer of layers.querySelectorAll(".layer")) {
+								zs.push(layer._obj.get("z"));
+							}
+							const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
+							layerDrag.parentNode.parentNode[side](layerDrag);
+							for(const layer of layers.querySelectorAll(".layer.selected")) {
+								layerDrag.before(layer);
+							}
+							layerDrag.remove();
+							const layerElems = layers.querySelectorAll(".layer");
+							for(let i = 0; i < layerElems.length; i++) {
+								layerElems[i]._obj.set("z", zs[i]);
+							}
+							updateLayers();
+							project.saved = false;
 						}
-						const side = layerDrag === layerDrag.parentNode.firstElementChild ? "before" : "after";
-						layerDrag.parentNode.parentNode[side](layerDrag);
-						for(const layer of layers.querySelectorAll(".layer.selected")) {
-							layerDrag.before(layer);
-						}
-						layerDrag.remove();
-						const layerElems = layers.querySelectorAll(".layer");
-						for(let i = 0; i < layerElems.length; i++) {
-							layerElems[i]._obj.set("z", zs[i]);
-						}
-						updateLayers();
-						project.saved = false;
+					} else {
+						selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : button);
 					}
-				} else if(mouseTarget.parentNode.classList.contains("layer")) {
-					selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : button);
 				} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
 					confirmRemoveObjElem(mouseTarget0.parentNode.parentNode.parentNode);
-				} else {
-					if(mouseX < layerBox.getBoundingClientRect().left + layerBox.scrollWidth) {
-						deselectLayers();
-						updateProperties();
-					}
+				} else if(mouseX < layerBox.getBoundingClientRect().left + layerBox.scrollWidth) {
+					deselectLayers();
+					updateProperties();
 				}
 			}
 		} else if(timelineItems.contains(mouseTarget) && button === mouseDown) {
-			if(mouseMoved && mouseTarget.classList.contains("bar")) {
-				for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
-					try {
-						timelineItemDrag.before(timelineItem);
-					} catch(err) {
-						console.warn(err);
+			if(mouseTarget.classList.contains("bar")) {
+				if(mouseMoved) {
+					for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
+						try {
+							timelineItemDrag.before(timelineItem);
+						} catch(err) {
+							console.warn(err);
+						}
 					}
+					timelineItemDrag.remove();
+					storeObjs();
+					updateTimelines();
+				} else {
+					selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : button);
 				}
-				timelineItemDrag.remove();
-				storeObjs();
-				updateTimelines();
 			} else if(mouseTarget === timelineItems) {
 				deselectTimelineItems();
 				updateProperties();
-			} else if(mouseTarget.classList.contains("bar")) {
-				selectTimelineItem(mouseTarget.parentNode, downActive === timelineContainer ? 2 : button);
 			} else if(evtButton0) {
 				if(mouseTarget0.classList.contains("close")) {
 					confirmRemoveObjElem(mouseTarget0.parentNode.parentNode);
@@ -349,17 +372,17 @@ const handleMouseUp = (evt, button) => {
 					updateTimelines();
 				}
 			}
-		} else if(mouseTarget === objChip) {
-			setRoot();
-		} else if(mouseTarget === sceneChip) {
-			if(project.root !== project.data) {
-				setRoot();
-			} else {
-				// TODO: Open scene panel
-			}
-		} else if(mouseTarget === foot.currentFrame) {
-			if(!mouseMoved) {
-				foot.currentFrame.select();
+		} else if(scenes.contains(mouseTarget) && button === mouseDown) {
+			if(mouseTarget.classList.contains("bar")) {
+				if(mouseMoved) {
+					sceneDrag.replaceWith(scenes.querySelector(".scene.selected"));
+					sceneDrag.remove();
+					storeScenes();
+				} else {
+					selectScene(mouseTarget.parentNode);
+				}
+			} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
+				confirmRemoveSceneElem(mouseTarget0.parentNode.parentNode);
 			}
 		} else if(slider.contains(mouseTarget)) {
 			slider.classList.remove("mdc-slider--active");
@@ -450,8 +473,16 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === exportProj) {
 							// TODO: Export
 						}
-					} else if(mouseTarget0.parentNode === assetHead || mouseTarget0.parentNode === timelineHead) {
+					} else if(mouseTarget0.parentNode === assetHead || mouseTarget0.parentNode === timelineHead || mouseTarget0.parentNode === sceneHead) {
 						openCtx(mouseTarget0);
+					} else if(mouseTarget0 === objChip) {
+						setRoot();
+					} else if(mouseTarget0 === sceneChip) {
+						if(!(project.root instanceof DynamicScene)) {
+							setRoot();
+						} else {
+							openScenes();
+						}
 					} else if(mouseTarget0 === previewImage) {
 						fullPreviewImage.src = previewImage.src;
 						fullPreview.classList.remove("hidden");
@@ -476,9 +507,13 @@ const handleMouseUp = (evt, button) => {
 				}
 			}
 		}
-	}
-	if(evtButton2 && evt.target === mouseTarget2) {
-		openCtx(mouseTarget2);
+		if(evtButton2 && evt.target === mouseTarget2) {
+			if(mouseTarget2 === sceneChip) {
+				openScenes();
+			} else {
+				openCtx(mouseTarget2);
+			}
+		}
 	}
 	restoreKeyStates();
 	downActive = null;
@@ -570,6 +605,9 @@ document.addEventListener("dblclick", evt => {
 				if(evt.target.parentNode._obj.asset && evt.target.parentNode._obj.asset.type === "obj") {
 					setRoot(evt.target.parentNode._obj.asset);
 				}
+			} else if(evt.target.parentNode.classList.contains("scene")) {
+				selectScene(evt.target.parentNode);
+				sceneDialog.close(0);
 			}
 		} else if(evt.target.parentNode.classList.contains("layer")) {
 			selectLayer(evt.target.parentNode, 2);

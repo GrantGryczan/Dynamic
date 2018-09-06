@@ -37,6 +37,7 @@ body {
 	height: 100%;
 	margin: 0;
 	user-select: none;
+	color: #000000;
 }
 .indeterminate, .loading {
 	cursor: wait;
@@ -488,11 +489,11 @@ label:not(.mdc-floating-label) {
 	min-width: 150px;
 	min-height: 150px;
 }
-#assetContainer > .contents, #layerContainer > .contents {
+#assetContainer > .contents, #layerContainer > .contents, #sceneContainer > .contents {
 	display: flex;
 	flex-direction: column;
 }
-.asset, .timelineItem {
+.asset, .timelineItem, .scene {
 	overflow: visible;
 	pointer-events: none;
 }
@@ -853,6 +854,17 @@ label:not(.mdc-floating-label) {
 .layer td:first-child {
 	padding: 0 8px 0 6px;
 	opacity: 0.5;
+}
+#sceneBox {
+	display: flex;
+}
+#sceneContainer {
+	width: 100%;
+	border: 1px solid #d0d0d0;
+	color: #000000;
+}
+.scene > .bar > .icon::before {
+	content: "movie";
 }
 #statusBar {
 	display: flex;

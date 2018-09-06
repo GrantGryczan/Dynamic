@@ -25,7 +25,11 @@ document.addEventListener("focus", evt => {
 		}
 		if(target.classList.contains("intangible")) {
 			setTimeout(evt.target.blur.bind(evt.target));
+			return;
 		}
+	}
+	if(evt.target === foot.currentFrame) {
+		evt.target.select();
 	}
 }, capturePassive);
 const setKeys = evt => {
@@ -231,8 +235,12 @@ document.addEventListener("keydown", evt => {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		if(focused() && !document.querySelector(":focus")) {
-			(playing ? pause : play)();
+		if(!document.querySelector(":focus")) {
+			if(focused()) {
+				(playing ? pause : play)();
+			} else if(sceneDialog) {
+				sceneDialog.close(0);
+			}
 		}
 	} else if(evt.keyCode === 27) { // `esc`
 		if(focused() && notTyping()) {

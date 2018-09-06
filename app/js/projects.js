@@ -37,16 +37,15 @@ class DynamicProject {
 				fps: storage.fps,
 				width: storage.canvasWidth,
 				height: storage.canvasHeight,
-				duration: storage.fps * 2,
 				assets: [],
-				objs: []
+				scenes: []
 			},
 			time: 0,
 			frames: {},
 			loop: false,
 			onionskin: storage.onionskin
 		});
-		this.root = this.data;
+		this.root = this.scene = new DynamicScene(this);
 		tabs.appendChild((this.tab._project = this).tab);
 		this.saved = value.saved;
 		select((projects[this.id] = this).id);
@@ -189,6 +188,13 @@ const select = id => {
 		content.style.width = `${project.data.width}px`;
 		content.style.height = `${project.data.height}px`;
 		project.tab.classList.add("current");
+		sceneChipText.textContent = sceneChip.title = project.scene.name;
+		if(project.root instanceof DynamicScene) {
+			objChip.classList.add("hidden");
+		} else {
+			objChipText.textContent = objChip.title = project.root.name;
+			objChip.classList.remove("hidden");
+		}
 		projectPage.classList.remove("hidden");
 		updatePanels();
 		assets.scrollTop = project.scrollAssets;
@@ -260,9 +266,6 @@ const open = async location => {
 		if(data.height > 0) {
 			project.data.height = +data.height;
 		}
-		if(data.duration > 0) {
-			project.root.duration = +data.duration;
-		}
 		loadIndeterminate(false);
 		loadProgress(0);
 		for(let i = 0; i < data.assets.length; i++) {
@@ -284,14 +287,20 @@ const open = async location => {
 				`);
 			}
 		}
-		for(const dataObj of data.objs) {
-			try {
-				const obj = new DynamicObject(dataObj);
-			} catch(err) {
-				console.warn(err);
-				new Miro.Dialog("Error", html`
-					<span class="bold">${dataObj.id}</span> is not a valid object.
-				`);
+		for(const sceneData of data.scenes) {
+			const scene = new DynamicScene();
+			if(sceneData.duration > 0) {
+				scene.duration = +sceneData.duration;
+			}
+			for(const objData of sceneData.objs) {
+				try {
+					new DynamicObject(objData);
+				} catch(err) {
+					console.warn(err);
+					new Miro.Dialog("Error", html`
+						<span class="bold">${objData.id}</span> is not a valid object.
+					`);
+				}
 			}
 		}
 		select(selectedProject);
@@ -303,3 +312,25 @@ const open = async location => {
 electron.ipcRenderer.on("argv", (evt, location) => {
 	open(location);
 });
+const setRoot = data => {
+	project.root = data || project.scene;
+	if(project.root instanceof DynamicScene) {
+		sceneChipText.textContent = sceneChip.title = (project.scene = project.root).name;
+		objChip.classList.add("hidden");
+		selectScene(project.scene.element);
+	} else if(project.root) {
+		objChipText.textContent = objChip.title = project.root.name;
+		objChip.classList.remove("hidden");
+	}
+	for(const elem of projectPage.querySelectorAll(".layer, .timelineItem")) {
+		elem.remove();
+	}
+	for(const obj of project.root.objs) {
+		appendObj(obj);
+	}
+	updateLayers();
+	project.time = 0;
+	clearFrames();
+	updateTimeRuler();
+	updateProperties();
+};

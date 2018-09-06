@@ -60,10 +60,7 @@ class DynamicAsset {
 		return this[_name];
 	}
 	set name(value) {
-		this[_name] = value;
-		if(this.element) {
-			this.element.querySelector(".label").textContent = this.element.title = value;
-		}
+		this[_name] = this.element.querySelector(".label").textContent = this.element.title = value;
 		for(const obj of this.objects) {
 			obj.updateName();
 		}
@@ -91,12 +88,15 @@ class DynamicAsset {
 		return project.root.objs.filter(obj => obj.asset === this);
 	}
 	get objects() {
-		const objs = [...project.data.objs];
+		const objs = [];
+		for(const objArray of project.data.scenes.map(byObjArrays)) {
+			objs.push(...objArray);
+		}
 		for(const objArray of project.data.assets.map(byObjArrays)) {
 			objs.push(...objArray);
 		}
 		return objs.filter(obj => obj.asset === this);
-		// TODO (Chrome 69): return [...project.data.objs, ...project.data.assets.flatMap(byObjArrays)].filter(obj => obj.asset === this);
+		// TODO (Chrome 69): return [...project.data.objs, ...[...project.data.scenes, ...project.data.assets].flatMap(byObjArrays)].filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {

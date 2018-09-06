@@ -1,20 +1,4 @@
 "use strict";
-const setRoot = asset => {
-	project.root = asset || project.data;
-	objChipText.textContent = objChip.title = project.root.name;
-	objChip.classList[asset ? "remove" : "add"]("hidden");
-	for(const elem of projectPage.querySelectorAll(".layer, .timelineItem")) {
-		elem.remove();
-	}
-	for(const obj of project.root.objs) {
-		appendObj(obj);
-	}
-	updateLayers();
-	project.time = 0;
-	clearFrames();
-	updateTimeRuler();
-	updateProperties();
-};
 const appendFrames = timeline => {
 	while(timeline.children.length) {
 		timeline.lastElementChild.remove();
