@@ -46,43 +46,28 @@ const storeScenes = () => {
 	project.saved = false;
 };
 const removeScene = sceneElem => {
-	if(project.selectedAsset === assetElem.id) {
-		project.selectedAsset = null;
+	const sibling = sceneElem.previousElementSibling || sceneElem.nextElementSibling;
+	if(sceneElem.classList.contains("selected")) {
+		sibling.classList.add("selected");
 	}
-	if(assetElem._asset.type === "group") {
-		while(assetElem.lastElementChild.firstElementChild) {
-			assetElem.before(assetElem.lastElementChild.firstElementChild);
-		}
-	} else {
-		if(project.setRoot === assetElem._asset) {
-			setRoot();
-		}
-		for(const obj of assetElem._asset.objects) {
-			removeObj(obj.timelineItem);
-		}
-		updateTimelines();
+	if(project.root === sceneElem._scene) {
+		setRoot(sibling._scene);
 	}
-	assetElem.remove();
+	sceneElem.remove();
+	storeScenes();
 };
 const confirmRemoveScene = sceneElem => {
-	const actuallyRemoveAsset = value => {
-		if(value === 0) {
-			removeAsset(assetElem);
-			storeAssets();
-			storeObjs();
-			updateProperties();
-		}
-	};
-	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
-		new Miro.Dialog("Remove Asset", html`
-			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
-			Objects using the asset will also be removed.
-		`, ["Yes", "No"]).then(actuallyRemoveAsset);
-	} else if(assetElem._asset.type === "group") {
-		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
-			All assets inside the group will be taken out.
-		`, ["Yes", "No"]).then(actuallyRemoveAsset);
+	if(project.data.scenes.length > 1) {
+		new Miro.Dialog("Remove Scene", html`
+			Are you sure you want to remove <span class="bold">${sceneElem._scene.name}</span>?<br>
+			Objects and other data inside the scene will also be removed.
+		`, ["Yes", "No"]).then(value => {
+			if(value === 0) {
+				removeScene(sceneElem);
+			}
+		});
+	} else {
+		new Miro.Dialog("Error", "You must have at least one scene.");
 	}
 };
 const selectScene = sceneElem => {

@@ -382,7 +382,7 @@ const handleMouseUp = (evt, button) => {
 					selectScene(mouseTarget.parentNode);
 				}
 			} else if(evtButton0 && mouseTarget0.classList.contains("close")) {
-				confirmRemoveSceneElem(mouseTarget0.parentNode.parentNode);
+				confirmRemoveScene(mouseTarget0.parentNode.parentNode);
 			}
 		} else if(slider.contains(mouseTarget)) {
 			slider.classList.remove("mdc-slider--active");

@@ -55,35 +55,41 @@ document.addEventListener("keydown", evt => {
 			leftFrameJump();
 		}
 	} else if(evt.keyCode === 38) { // `up`
-		if(focused() && notTyping()) {
-			if(assetContainer.classList.contains("active")) {
-				evt.preventDefault();
-				const assetElems = assets.querySelectorAll(".asset");
-				const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) || assetElems.length) - 1) : 0];
-				if(assetElem) {
-					project.focusedAsset = assetElem.id;
-					if(!superKey) {
-						selectAsset(assetElem);
+		if(notTyping()) {
+			if(focused()) {
+				if(assetContainer.classList.contains("active")) {
+					evt.preventDefault();
+					const assetElems = assets.querySelectorAll(".asset");
+					const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) || assetElems.length) - 1) : 0];
+					if(assetElem) {
+						project.focusedAsset = assetElem.id;
+						if(!superKey) {
+							selectAsset(assetElem);
+						}
+					}
+				} else if(layerContainer.classList.contains("active")) {
+					evt.preventDefault();
+					const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
+					if(layer) {
+						project.focusedLayer = layer.id;
+						if(!superKey) {
+							selectLayer(layer);
+						}
+					}
+				} else if(timelineContainer.classList.contains("active")) {
+					evt.preventDefault();
+					const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
+					if(timelineItem) {
+						project.focusedTimelineItem = timelineItem.id;
+						if(!superKey) {
+							selectTimelineItem(timelineItem);
+						}
 					}
 				}
-			} else if(layerContainer.classList.contains("active")) {
+			} else if(sceneDialog) {
 				evt.preventDefault();
-				const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
-				if(layer) {
-					project.focusedLayer = layer.id;
-					if(!superKey) {
-						selectLayer(layer);
-					}
-				}
-			} else if(timelineContainer.classList.contains("active")) {
-				evt.preventDefault();
-				const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
-				if(timelineItem) {
-					project.focusedTimelineItem = timelineItem.id;
-					if(!superKey) {
-						selectTimelineItem(timelineItem);
-					}
-				}
+				const sceneElems = scenes.querySelectorAll(".scene");
+				selectScene(sceneElems[Array.prototype.indexOf.call(sceneElems, scenes.querySelector(".scene.selected")) - 1] || sceneElems[sceneElems.length - 1]);
 			}
 		}
 	} else if(evt.keyCode === 39) { // `right`
@@ -92,35 +98,41 @@ document.addEventListener("keydown", evt => {
 			rightFrameJump();
 		}
 	} else if(evt.keyCode === 40) { // `down`
-		if(focused() && notTyping()) {
-			if(assetContainer.classList.contains("active")) {
-				evt.preventDefault();
-				const assetElems = assets.querySelectorAll(".asset");
-				const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) : -1) + 1) % assetElems.length];
-				if(assetElem) {
-					project.focusedAsset = assetElem.id;
-					if(!superKey) {
-						selectAsset(assetElem);
+		if(notTyping()) {
+			if(focused()) {
+				if(assetContainer.classList.contains("active")) {
+					evt.preventDefault();
+					const assetElems = assets.querySelectorAll(".asset");
+					const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) : -1) + 1) % assetElems.length];
+					if(assetElem) {
+						project.focusedAsset = assetElem.id;
+						if(!superKey) {
+							selectAsset(assetElem);
+						}
+					}
+				} else if(layerContainer.classList.contains("active")) {
+					evt.preventDefault();
+					const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
+					if(layer) {
+						project.focusedLayer = layer.id;
+						if(!superKey) {
+							selectLayer(layer);
+						}
+					}
+				} else if(timelineContainer.classList.contains("active")) {
+					evt.preventDefault();
+					const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
+					if(timelineItem) {
+						project.focusedTimelineItem = timelineItem.id;
+						if(!superKey) {
+							selectTimelineItem(timelineItem);
+						}
 					}
 				}
-			} else if(layerContainer.classList.contains("active")) {
+			} else if(sceneDialog) {
 				evt.preventDefault();
-				const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
-				if(layer) {
-					project.focusedLayer = layer.id;
-					if(!superKey) {
-						selectLayer(layer);
-					}
-				}
-			} else if(timelineContainer.classList.contains("active")) {
-				evt.preventDefault();
-				const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
-				if(timelineItem) {
-					project.focusedTimelineItem = timelineItem.id;
-					if(!superKey) {
-						selectTimelineItem(timelineItem);
-					}
-				}
+				const sceneElems = scenes.querySelectorAll(".scene");
+				selectScene(sceneElems[Array.prototype.indexOf.call(sceneElems, scenes.querySelector(".scene.selected")) + 1] || sceneElems[0]);
 			}
 		}
 	} else if(evt.keyCode === 93) { // `context menu`
@@ -217,17 +229,21 @@ document.addEventListener("keydown", evt => {
 			select("home");
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
-		if(focused() && notTyping()) {
-			if(assetContainer.classList.contains("active")) {
-				removeSelectedAssets();
-			} else if(layerContainer.classList.contains("active")) {
-				removeSelectedLayers();
-			} else if(timelineContainer.classList.contains("active")) {
-				if(timelineArea.contains(mouseTarget)) {
-					// TODO: Remove frames
-				} else {
-					removeSelectedTimelineItems();
+		if(notTyping()) {
+			if(focused()) {
+				if(assetContainer.classList.contains("active")) {
+					removeSelectedAssets();
+				} else if(layerContainer.classList.contains("active")) {
+					removeSelectedLayers();
+				} else if(timelineContainer.classList.contains("active")) {
+					if(timelineArea.contains(mouseTarget)) {
+						// TODO: Remove frames
+					} else {
+						removeSelectedTimelineItems();
+					}
 				}
+			} else if(sceneDialog) {
+				confirmRemoveScene(scenes.querySelector(".scene.selected"));
 			}
 		}
 	} else if(evt.keyCode === 9) { // `tab`
@@ -235,12 +251,8 @@ document.addEventListener("keydown", evt => {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		if(!document.querySelector(":focus")) {
-			if(focused()) {
-				(playing ? pause : play)();
-			} else if(sceneDialog) {
-				sceneDialog.close(0);
-			}
+		if(!document.querySelector(":focus") && focused()) {
+			(playing ? pause : play)();
 		}
 	} else if(evt.keyCode === 27) { // `esc`
 		if(focused() && notTyping()) {

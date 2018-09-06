@@ -239,8 +239,7 @@ const confirmRemoveObjElem = objElem => {
 		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	} else {
 		new Miro.Dialog("Remove Object", html`
-			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?<br>
-			This cannot be undone.
+			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?
 		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	}
 };
@@ -248,10 +247,7 @@ const confirmRemoveObjElems = objElems => {
 	if(objElems.length === 1) {
 		confirmRemoveObjElem(objElems[0]);
 	} else if(objElems.length > 1) {
-		new Miro.Dialog("Remove Objects", html`
-			Are you sure you want to remove all those objects?<br>
-			This cannot be undone.
-		`, ["Yes", "No"]).then(value => {
+		new Miro.Dialog("Remove Objects", "Are you sure you want to remove all those objects?", ["Yes", "No"]).then(value => {
 			if(value === 0) {
 				objElems.forEach(removeObj);
 				storeObjs();

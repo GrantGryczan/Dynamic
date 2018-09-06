@@ -123,7 +123,7 @@ const removeAsset = assetElem => {
 			assetElem.before(assetElem.lastElementChild.firstElementChild);
 		}
 	} else {
-		if(project.setRoot === assetElem._asset) {
+		if(project.root === assetElem._asset) {
 			setRoot();
 		}
 		for(const obj of assetElem._asset.objects) {
