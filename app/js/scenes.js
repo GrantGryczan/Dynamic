@@ -5,7 +5,12 @@ class DynamicScene {
 			proj = project;
 		}
 		this.id = uid(proj.data.scenes.map(byID));
-		this[_name] = proj.data.scenes.length ? `Scene ${proj.data.scenes.length + 1}` : "Scene";
+		const names = proj.data.scenes.map(byInsensitiveName);
+		let name = "Scene";
+		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+			name = `Scene ${i}`;
+		}
+		this[_name] = name;
 		Object.assign(this, {
 			duration: proj.data.fps * 2,
 			objs: [],
@@ -20,6 +25,9 @@ class DynamicScene {
 			`
 		});
 		this.element._scene = this;
+		if(sceneDialog) {
+			scenes.appendChild(this.element);
+		}
 		proj.data.scenes.push(this);
 	}
 	get name() {
@@ -27,8 +35,8 @@ class DynamicScene {
 	}
 	set name(value) {
 		this[_name] = this.element.querySelector(".label").textContent = this.element.title = value;
-		if(this === project.root) {
-			objChipText.textContent = objChip.title = this.name;
+		if(this === project.scene) {
+			sceneChipText.textContent = sceneChip.title = this.name;
 		}
 	}
 	toJSON() {
@@ -70,12 +78,32 @@ const confirmRemoveScene = sceneElem => {
 		new Miro.Dialog("Error", "You must have at least one scene.");
 	}
 };
+const removeSelectedScene = () => {
+	confirmRemoveScene(scenes.querySelector(".scene.selected"));
+};
 const selectScene = sceneElem => {
 	const scene = sceneElem._scene;
 	for(const otherScene of project.data.scenes) {
 		otherScene.element.classList.remove("focus");
 		otherScene.element.classList[scene === otherScene ? "add" : "remove"]("selected");
 	}
+};
+const renameScene = () => {
+	const scene = scenes.querySelector(".scene.selected")._scene;
+	const input = new Miro.Dialog("Rename", html`
+		Enter a new name for <span class="bold">$${scene.name}</span>.
+		<div class="mdc-text-field">
+			<input class="mdc-text-field__input" name="name" type="text" value="$${scene.name}" required>
+			<div class="mdc-line-ripple"></div>
+		</div>
+	`, [{
+		text: "Okay",
+		type: "submit"
+	}, "Cancel"]).then(value => {
+		if(value === 0) {
+			scene.name = input.value;
+		}
+	}).form.elements.name;
 };
 let sceneDialog = null;
 const openScenes = () => {

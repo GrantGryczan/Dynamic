@@ -1,5 +1,6 @@
 "use strict";
 let subject = content;
+const focusName = prop.name.elements[0].select.bind(prop.name.elements[0]);
 const makeFullPreviewHidden = () => {
 	fullPreview.classList.add("hidden");
 	fullPreviewImage.src = "";

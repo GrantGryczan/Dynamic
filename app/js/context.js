@@ -178,7 +178,7 @@ const sortAssetsMenuItems = [{
 const renameMenuItem = {
 	label: "Rename",
 	accelerator: "F2",
-	click: prop.name.elements[0].select.bind(prop.name.elements[0])
+	click: focusName
 };
 const openAssetMenuItem = {
 	label: "Open asset",
@@ -437,6 +437,21 @@ const timelineMenuItems = [{
 	accelerator: "CmdOrCtrl+Shift+A",
 	click: selectFramesInRows
 }];
+const sceneCreationMenuItems = [{
+	label: "Create scene",
+	click: () => {
+		selectScene(new DynamicScene().element);
+	}
+}];
+const sceneMenuItems = [{
+	label: "Remove scene",
+	accelerator: "Delete",
+	click: removeSelectedScene
+}, {
+	label: "Rename",
+	accelerator: "F2",
+	click: renameScene
+}];
 const assetObjs = objElem => objElem._obj.asset && objElem._obj.asset.type === "obj";
 const openCtx = target => {
 	ctxTarget = target;
@@ -452,6 +467,8 @@ const openCtx = target => {
 			template.push(...timelineItemCreationMenuItems);
 		} else if(ctxTarget === sortObjs) {
 			template.push(...sortObjsMenuItems);
+		} else if(ctxTarget === addScene) {
+			template.push(...sceneCreationMenuItems);
 		} else {
 			if(assets.contains(ctxTarget)) {
 				const selected = assets.querySelectorAll(".asset.selected");
@@ -499,6 +516,8 @@ const openCtx = target => {
 				template.push(menuSeparator, ...timelineItemCreationMenuItems);
 			} else if(timelineArea.contains(ctxTarget)) {
 				template.push(...timelineMenuItems);
+			} else if(scenes.contains(ctxTarget)) {
+				template.push(...sceneMenuItems);
 			}
 			if(template.length) {
 				template.push(menuSeparator);

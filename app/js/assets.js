@@ -1,6 +1,6 @@
 "use strict";
 const getAsset = id => project.data.assets.find(asset => asset.id === id);
-const byObjArrays = asset => asset.objs;
+const byObjArrays = data => data.objs;
 class DynamicAsset {
 	constructor(value) {
 		if(!(value instanceof Object)) {
@@ -96,7 +96,7 @@ class DynamicAsset {
 			objs.push(...objArray);
 		}
 		return objs.filter(obj => obj.asset === this);
-		// TODO (Chrome 69): return [...project.data.objs, ...[...project.data.scenes, ...project.data.assets].flatMap(byObjArrays)].filter(obj => obj.asset === this);
+		// TODO (Chrome 69): return [...project.data.scenes, ...project.data.assets].flatMap(byObjArrays).filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {

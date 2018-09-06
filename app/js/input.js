@@ -271,7 +271,9 @@ document.addEventListener("keydown", evt => {
 		}
 	} else if(evt.keyCode === 113) { // `F2`
 		if(focused()) {
-			setTimeout(prop.name.elements[0].select.bind(prop.name.elements[0]));
+			setTimeout(focusName);
+		} else if(sceneDialog) {
+			renameScene();
 		}
 	} else if(evt.keyCode === 116) { // `F5`
 		if(focused()) {
