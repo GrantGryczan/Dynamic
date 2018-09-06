@@ -6,7 +6,7 @@ class DynamicAsset {
 		if(!(value instanceof Object)) {
 			throw new MiroError("The `value` parameter must be an object.");
 		}
-		this.id = value.id || uid(project.data.assets.map(byID));
+		this.id = typeof value.id === "string" ? value.id : uid(project.data.assets.map(byID));
 		this.type = value.type;
 		this[_name] = value.name;
 		if(this.type === "group") {
@@ -270,7 +270,7 @@ const addFiles = async files => {
 		}
 		const names = project.data.assets.map(byInsensitiveName);
 		let name = files[i].name;
-		for(let j = 2; names.includes(name.toLowerCase()); j++) {
+		for(let j = 2; names.includes(insensitiveString(name)); j++) {
 			name = `${files[i].name} ${j}`;
 		}
 		let asset;

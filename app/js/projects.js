@@ -45,7 +45,9 @@ class DynamicProject {
 			loop: false,
 			onionskin: storage.onionskin
 		});
-		this.root = this.scene = new DynamicScene(this);
+		this.root = this.scene = new DynamicScene({
+			project: this
+		});
 		tabs.appendChild((this.tab._project = this).tab);
 		this.saved = value.saved;
 		select((projects[this.id] = this).id);
@@ -288,7 +290,7 @@ const open = async location => {
 			}
 		}
 		for(const sceneData of data.scenes) {
-			const scene = new DynamicScene();
+			const scene = new DynamicScene(sceneData);
 			if(sceneData.duration > 0) {
 				scene.duration = +sceneData.duration;
 			}
@@ -316,6 +318,7 @@ const setRoot = data => {
 	project.root = data || project.scene;
 	if(project.root instanceof DynamicScene) {
 		sceneChipText.textContent = sceneChip.title = (project.scene = project.root).name;
+		sceneChip.classList.replace(sceneChip.classList[2], project.scene.element.classList[1]);
 		objChip.classList.add("hidden");
 		selectScene(project.scene.element);
 	} else if(project.root) {
@@ -325,12 +328,13 @@ const setRoot = data => {
 	for(const elem of projectPage.querySelectorAll(".layer, .timelineItem")) {
 		elem.remove();
 	}
+	project.frames = {};
 	for(const obj of project.root.objs) {
+		project.frames[obj.id] = new Array(project.root.duration).fill(0);
 		appendObj(obj);
 	}
 	updateLayers();
 	project.time = 0;
-	clearFrames();
 	updateTimeRuler();
 	updateProperties();
 };

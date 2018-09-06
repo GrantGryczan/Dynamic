@@ -779,6 +779,12 @@ label:not(.mdc-floating-label) {
 #footStart {
 	display: flex;
 }
+.mdc-chip.typeScene > .mdc-chip__icon::before {
+	content: "movie";
+}
+.mdc-chip.typeLoad > .mdc-chip__icon::before {
+	content: "hourglass_full";
+}
 #footEnd {
 	display: flex;
 	flex-grow: 1;
@@ -863,8 +869,11 @@ label:not(.mdc-floating-label) {
 	border: 1px solid #d0d0d0;
 	color: #000000;
 }
-.scene > .bar > .icon::before {
+.scene.typeScene > .bar > .icon::before {
 	content: "movie";
+}
+.scene.typeLoad > .bar > .icon::before {
+	content: "hourglass_full";
 }
 #statusBar {
 	display: flex;

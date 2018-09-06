@@ -51,7 +51,7 @@ const assetCreationMenuItems = [{
 		deselectAssets();
 		const names = project.data.assets.map(byInsensitiveName);
 		let name = "Object";
-		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+		for(let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Object ${i}`;
 		}
 		const asset = new DynamicAsset({
@@ -77,7 +77,7 @@ const assetCreationMenuItems = [{
 		}
 		const names = project.data.assets.map(byInsensitiveName);
 		let name = "Group";
-		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+		for(let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Group ${i}`;
 		}
 		const asset = new DynamicAsset({
@@ -264,7 +264,7 @@ const timelineItemCreationMenuItems = [{
 		}
 		const names = project.root.objs.map(byInsensitiveName);
 		let name = "Group";
-		for(let i = 2; names.includes(name.toLowerCase()); i++) {
+		for(let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Group ${i}`;
 		}
 		const obj = new DynamicObject({
@@ -437,12 +437,21 @@ const timelineMenuItems = [{
 	accelerator: "CmdOrCtrl+Shift+A",
 	click: selectFramesInRows
 }];
+const sceneLoadCreationMenuItem = {
+	label: "Create loading screen",
+	click: () => {
+		selectScene(new DynamicScene({
+			type: "load",
+			name: "Load"
+		}).element);
+	}
+};
 const sceneCreationMenuItems = [{
 	label: "Create scene",
 	click: () => {
 		selectScene(new DynamicScene().element);
 	}
-}];
+}, sceneLoadCreationMenuItem];
 const sceneMenuItems = [{
 	label: "Remove scene",
 	accelerator: "Delete",
@@ -451,7 +460,7 @@ const sceneMenuItems = [{
 	label: "Rename",
 	accelerator: "F2",
 	click: renameScene
-}];
+}, menuSeparator, ...sceneCreationMenuItems];
 const assetObjs = objElem => objElem._obj.asset && objElem._obj.asset.type === "obj";
 const openCtx = target => {
 	ctxTarget = target;
@@ -468,6 +477,7 @@ const openCtx = target => {
 		} else if(ctxTarget === sortObjs) {
 			template.push(...sortObjsMenuItems);
 		} else if(ctxTarget === addScene) {
+			sceneLoadCreationMenuItem.enabled = !project.sceneLoad;
 			template.push(...sceneCreationMenuItems);
 		} else {
 			if(assets.contains(ctxTarget)) {
@@ -517,6 +527,7 @@ const openCtx = target => {
 			} else if(timelineArea.contains(ctxTarget)) {
 				template.push(...timelineMenuItems);
 			} else if(scenes.contains(ctxTarget)) {
+				sceneLoadCreationMenuItem.enabled = !project.sceneLoad;
 				template.push(...sceneMenuItems);
 			}
 			if(template.length) {

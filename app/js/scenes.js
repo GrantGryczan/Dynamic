@@ -1,24 +1,38 @@
 "use strict";
 class DynamicScene {
-	constructor(proj) {
-		if(!proj) {
-			proj = project;
+	constructor(value) {
+		if(!(value instanceof Object)) {
+			value = {};
 		}
-		this.id = uid(proj.data.scenes.map(byID));
-		const names = proj.data.scenes.map(byInsensitiveName);
-		let name = "Scene";
-		for(let i = 2; names.includes(name.toLowerCase()); i++) {
-			name = `Scene ${i}`;
+		if(!(value.project instanceof DynamicProject)) {
+			value.project = project;
 		}
-		this[_name] = name;
+		if(typeof value.id !== "string") {
+			value.id = uid(value.project.data.scenes.map(byID));
+		}
+		if(value.type === "load") {
+			value.project.sceneLoad = this;
+		} else {
+			value.type = "scene";
+		}
+		if(typeof value.name !== "string") {
+			const names = value.project.data.scenes.map(byInsensitiveName);
+			value.name = "Scene";
+			for(let i = 2; names.includes(insensitiveString(value.name)); i++) {
+				value.name = `Scene ${i}`;
+			}
+		}
 		Object.assign(this, {
-			duration: proj.data.fps * 2,
+			id: value.id,
+			type: value.type,
+			[_name]: value.name,
+			duration: isFinite(value.duration) && value.duration > 0 ? +value.duration : value.project.data.fps * 2,
 			objs: [],
 			element: html`
-				<div id="scene_${this.id}" class="scene${proj.data.scenes.length ? "" : " selected"}" title="$${this.name}">
+				<div id="scene_${value.id}" class="scene type${(value.type === "scene" ? "Scene" : "Load") + (value.project.data.scenes.length ? "" : " selected")}" title="$${value.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
-						<div class="label">$${this.name}</div>
+						<div class="label">$${value.name}</div>
 						<div class="close material-icons"></div>
 					</div>
 				</div>
@@ -28,7 +42,7 @@ class DynamicScene {
 		if(sceneDialog) {
 			scenes.appendChild(this.element);
 		}
-		proj.data.scenes.push(this);
+		value.project.data.scenes.push(this);
 	}
 	get name() {
 		return this[_name];
@@ -58,6 +72,9 @@ const removeScene = sceneElem => {
 	if(sceneElem.classList.contains("selected")) {
 		sibling.classList.add("selected");
 	}
+	if(project.sceneLoad) {
+		delete project.sceneLoad;
+	}
 	if(project.root === sceneElem._scene) {
 		setRoot(sibling._scene);
 	}
@@ -65,7 +82,7 @@ const removeScene = sceneElem => {
 	storeScenes();
 };
 const confirmRemoveScene = sceneElem => {
-	if(project.data.scenes.length > 1) {
+	if(sceneElem._scene.type !== "scene" || project.data.scenes.length > (project.sceneLoad ? 2 : 1)) {
 		new Miro.Dialog("Remove Scene", html`
 			Are you sure you want to remove <span class="bold">${sceneElem._scene.name}</span>?<br>
 			Objects and other data inside the scene will also be removed.
@@ -75,7 +92,7 @@ const confirmRemoveScene = sceneElem => {
 			}
 		});
 	} else {
-		new Miro.Dialog("Error", "You must have at least one scene.");
+		new Miro.Dialog("Error", "You must have at least one normal scene.");
 	}
 };
 const removeSelectedScene = () => {
@@ -88,20 +105,27 @@ const selectScene = sceneElem => {
 		otherScene.element.classList[scene === otherScene ? "add" : "remove"]("selected");
 	}
 };
-const renameScene = () => {
+const renameScene = initialValue => {
 	const scene = scenes.querySelector(".scene.selected")._scene;
+	if(typeof initialValue !== "string") {
+		initialValue = scene.name;
+	}
 	const input = new Miro.Dialog("Rename", html`
 		Enter a new name for <span class="bold">$${scene.name}</span>.
 		<div class="mdc-text-field">
-			<input class="mdc-text-field__input" name="name" type="text" value="$${scene.name}" required>
+			<input class="mdc-text-field__input" name="name" type="text" value="$${initialValue}" required>
 			<div class="mdc-line-ripple"></div>
 		</div>
 	`, [{
 		text: "Okay",
 		type: "submit"
 	}, "Cancel"]).then(value => {
-		if(value === 0) {
-			scene.name = input.value;
+		if(value === 0 && insensitiveString(scene.name) !== insensitiveString(input.value)) {
+			if(project.data.scenes.map(byInsensitiveName).includes(insensitiveString(input.value))) {
+				new Miro.Dialog("Error", "That name is already taken.").then(renameScene.bind(null, input.value));
+			} else {
+				scene.name = input.value;
+			}
 		}
 	}).form.elements.name;
 };

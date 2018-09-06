@@ -183,8 +183,7 @@ const updateTimelines = () => {
 		obj.timelineItem.classList[highlight ? "add" : "remove"]("selected");
 		const timeline = obj.timeline;
 		if(timeline) {
-			timeline.classList.remove(timeline.classList[1]);
-			timeline.classList.add(obj.timelineItem.classList[1]);
+			timeline.classList.replace(timeline.classList[1], obj.timelineItem.classList[1]);
 			for(let i = 0; i < timeline.children.length; i++) {
 				const frame = timeline.children[i];
 				frame.id = `frame_${obj.id}_${frame._value = timeUnits.children[i]._value}`;

@@ -108,7 +108,8 @@ for(const statusElem of projectPage.querySelectorAll("#statusBar [data-key]")) {
 	status[statusElem.getAttribute("data-key")] = statusElem;
 }
 const targetIndicator = container.querySelector("#targetIndicator");
-const byInsensitiveName = obj => obj.name.trim().toLowerCase();
+const insensitiveString = string => string.trim().toLowerCase();
+const byInsensitiveName = obj => insensitiveString(obj.name);
 const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
 win.setProgressBar(-1);

@@ -29,17 +29,21 @@ const onMouseDown = evt => {
 	}
 	mouseTarget = evt.target;
 	mouseDown = evt.button;
+	let noDialogTarget = true;
 	for(const dialog of container.querySelectorAll(".mdc-dialog")) {
 		if(dialog.contains(mouseTarget)) {
-			return;
+			noDialogTarget = false;
+			break;
 		}
 	}
-	const active = projectPage.querySelector(".container.active");
-	if(!(active && active.contains(mouseTarget))) {
-		for(const panel of containers) {
-			if(panel.contains(mouseTarget)) {
-				setActive(downActive = panel);
-				break;
+	if(noDialogTarget) {
+		const active = projectPage.querySelector(".container.active");
+		if(!(active && active.contains(mouseTarget))) {
+			for(const panel of containers) {
+				if(panel.contains(mouseTarget)) {
+					setActive(downActive = panel);
+					break;
+				}
 			}
 		}
 	}
