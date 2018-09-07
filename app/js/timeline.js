@@ -318,15 +318,15 @@ const setTime = value => {
 	} else if(project.root instanceof DynamicScene && project.data.scenes.length !== 1) {
 		if(value < 0) {
 			let sceneIndex = project.data.scenes.indexOf(project.scene);
-			while(value < 0) {
+			do {
 				value += project.data.scenes[sceneIndex === 0 ? (sceneIndex = project.data.scenes.length - 1) : --sceneIndex].duration;
-			}
+			} while(value < 0);
 			setRoot(project.data.scenes[sceneIndex]);
 		} else if(value >= project.root.duration) {
 			let sceneIndex = project.data.scenes.indexOf(project.scene);
-			while(value >= project.root.duration) {
-				value -= project.data.scenes[sceneIndex === project.data.scenes.length - 1 ? (sceneIndex = 0) : ++sceneIndex].duration;
-			}
+			do {
+				value = project.data.scenes[sceneIndex === project.data.scenes.length - 1 ? (sceneIndex = 0) : ++sceneIndex].duration - value;
+			} while(value >= project.root.duration);
 			setRoot(project.data.scenes[sceneIndex]);
 		}
 	} else {
@@ -450,8 +450,7 @@ const deleteFrames = () => {
 				}
 			}
 		}
-		project.root.duration -= quantity;
-		setTime(Math.max(0, value));
+		setTime(Math.max(0, Math.min((project.root.duration -= quantity) - 1, value)));
 	}
 };
 const insertFrames = (toRight, quantity) => {
