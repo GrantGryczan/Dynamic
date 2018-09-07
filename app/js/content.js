@@ -10,9 +10,10 @@ const animate = () => {
 		const change = project.data.fps === 0 ? 1 : Math.floor(elapsed / interval);
 		if(change > 0) {
 			then = now - elapsed % interval;
-			const lastFrame = project.root.duration - 1;
 			let value = project.time + change;
-			if((project.time === lastFrame || value >= lastFrame) && !project.loop) {
+			const lastFrame = project.root.duration - 1;
+			const reachedEnd = (project.time === lastFrame || value >= lastFrame) && project.root === project.data.scenes[project.data.scenes.length - 1];
+			if(reachedEnd && !project.loop) {
 				pause();
 				value = lastFrame;
 			}
@@ -23,7 +24,11 @@ const animate = () => {
 requestAnimationFrame(animate);
 const play = () => {
 	if(!playing) {
-		if(project.time === project.root.duration - 1) {
+		const onLastScene = project.root === project.data.scenes[project.data.scenes.length - 1];
+		if(project.time === project.root.duration - 1 && (onLastScene || !(project.root instanceof DynamicScene))) {
+			if(onLastScene && project.data.scenes.length > 1) {
+				setRoot(project.data.scenes[0]);
+			}
 			setTime(0);
 		}
 		then = performance.now();

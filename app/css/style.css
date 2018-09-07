@@ -785,6 +785,9 @@ label:not(.mdc-floating-label) {
 .mdc-chip.typeLoad > .mdc-chip__icon::before {
 	content: "hourglass_full";
 }
+.mdc-chip.typeObj > .mdc-chip__icon::before {
+	content: "widgets";
+}
 #footEnd {
 	display: flex;
 	flex-grow: 1;

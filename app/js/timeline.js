@@ -315,6 +315,20 @@ const setTime = value => {
 	if(project.loop) {
 		const rangeSize = project.loop[1] - project.loop[0];
 		value = (((value - project.loop[0]) % rangeSize + rangeSize) % rangeSize) + project.loop[0];
+	} else if(project.root instanceof DynamicScene && project.data.scenes.length !== 1) {
+		if(value < 0) {
+			let sceneIndex = project.data.scenes.indexOf(project.scene);
+			while(value < 0) {
+				value += project.data.scenes[--sceneIndex].duration;
+			}
+			setRoot(project.data.scenes[sceneIndex]);
+		} else if(value >= project.root.duration) {
+			let sceneIndex = project.data.scenes.indexOf(project.scene);
+			while(value >= project.root.duration) {
+				value -= project.data.scenes[++sceneIndex].duration;
+			}
+			setRoot(project.data.scenes[sceneIndex]);
+		}
 	} else {
 		value = (value % project.root.duration + project.root.duration) % project.root.duration;
 	}
@@ -366,13 +380,13 @@ const updateTimeUnits = () => {
 	}
 };
 const endFrameJump = () => {
-	setTime((project.loop ? project.loop[1] : project.root.duration) - 1);
+	setTime(project.loop ? project.loop[1] - 1 : project.root.duration - (project.time !== project.root.duration - 1 || project.data.scenes.length === 1 || !(project.root instanceof DynamicScene)));
 	if(!project.loop) {
 		pause();
 	}
 };
 const homeFrameJump = () => {
-	setTime(project.loop ? project.loop[0] : 0);
+	setTime(project.loop ? project.loop[0] : -!(project.time || project.data.scenes.length === 1 || !(project.root instanceof DynamicScene)));
 };
 const leftFrameJump = () => {
 	setTime(project.time - 1);

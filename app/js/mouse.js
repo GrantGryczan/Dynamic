@@ -430,7 +430,7 @@ const handleMouseUp = (evt, button) => {
 				} else if(mouseTarget0.classList.contains("handle")) {
 					store();
 				} else if(evt.target === mouseTarget0) {
-					if(mouseTarget0.parentNode === timelineFoot) {
+					if(mouseTarget0.parentNode === timelineFoot.lastElementChild) {
 						if(mouseTarget0 === foot.jumpToStart) {
 							homeFrameJump();
 						} else if(mouseTarget0 === foot.jumpToPrev) {
