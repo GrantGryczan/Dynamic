@@ -13,6 +13,9 @@ class DynamicProject {
 		if(!(value instanceof Object)) {
 			value = {};
 		}
+		if(!(value.data instanceof Object)) {
+			value.data = {};
+		}
 		const validLocation = typeof value.location === "string";
 		if(typeof value.name === "string") {
 			this[_name] = value.name;
@@ -34,9 +37,9 @@ class DynamicProject {
 			location: validLocation ? value.location : null,
 			data: {
 				...baseData,
-				fps: storage.fps,
-				width: storage.canvasWidth,
-				height: storage.canvasHeight,
+				fps: value.data.fps >= 0 ? +value.data.fps : storage.fps,
+				width: value.data.width > 0 ? +value.data.width : storage.canvasWidth,
+				height: value.data.height > 0 ? +value.data.height : storage.canvasHeight,
 				assets: [],
 				scenes: []
 			},
@@ -45,9 +48,41 @@ class DynamicProject {
 			loop: false,
 			onionskin: storage.onionskin
 		});
-		this.root = this.scene = new DynamicScene({
-			project: this
-		});
+		const loadObject = this.loadObject.bind(this);
+		if(value.data.assets instanceof Array && value.data.assets.length) {
+			for(let i = 0; i < value.data.assets.length; i++) {
+				try {
+					this.root = new DynamicAsset({
+						project: this,
+						...value.data.assets[i]
+					});
+					value.data.assets[i].objs.forEach(loadObject);
+				} catch(err) {
+					console.warn(err);
+					new Miro.Dialog("Error", html`
+						<span class="bold">${value.data.assets[i].name}</span> is not a valid asset.
+					`);
+					continue;
+				}
+				
+			}
+		}
+		if(value.data.scenes instanceof Array && value.data.scenes.length) {
+			for(const sceneData of value.data.scenes) {
+				this.root = this.scene = new DynamicScene({
+					project: this,
+					...sceneData
+				});
+				sceneData.objs.forEach(loadObject);
+			}
+		} else {
+			new DynamicScene({
+				project: this
+			});
+		}
+		for(const obj of (this.root = this.scene = this.data.scenes[0]).objs) {
+			this.frames[obj.id] = new Array(this.root.duration).fill(0);
+		}
 		tabs.appendChild((this.tab._project = this).tab);
 		this.saved = value.saved;
 		select((projects[this.id] = this).id);
@@ -145,6 +180,25 @@ class DynamicProject {
 			scrollIntoView(timelineItem.querySelector(".bar"), timelineItems);
 		}
 	}
+	getAsset(id) {
+		return this.data.assets.find(asset => asset.id === id);
+	}
+	getObject(id) {
+		return this.root.objs.find(obj => obj.id === id);
+	}
+	loadObject(objData) {
+		try {
+			new DynamicObject({
+				project: this,
+				...objData
+			});
+		} catch(err) {
+			console.warn(err);
+			new Miro.Dialog("Error", html`
+				<span class="bold">${objData && objData.name}</span> is not a valid object.
+			`);
+		}
+	}
 }
 const select = id => {
 	pause();
@@ -186,7 +240,6 @@ const select = id => {
 		project.root.objs.forEach(appendObj);
 		updateLayers();
 		saveProj.disabled = project.saved;
-		updateProperties();
 		content.style.width = `${project.data.width}px`;
 		content.style.height = `${project.data.height}px`;
 		project.tab.classList.add("current");
@@ -207,6 +260,7 @@ const select = id => {
 		timelineBox.scrollLeft = project.scrollTimelinesLeft;
 		timelineBox.scrollTop = project.scrollTimelinesTop;
 		updateOnionskin();
+		updateProperties();
 	}
 };
 select("home");
@@ -257,56 +311,32 @@ const open = async location => {
 		}
 		new DynamicProject({
 			saved: true,
-			location
+			location,
+			data
 		});
-		if(data.fps >= 0) {
-			project.data.fps = +data.fps;
-		}
-		if(data.width > 0) {
-			project.data.width = +data.width;
-		}
-		if(data.height > 0) {
-			project.data.height = +data.height;
-		}
 		loadIndeterminate(false);
 		loadProgress(0);
-		for(let i = 0; i < data.assets.length; i++) {
-			loadProgress(i / data.assets.length);
+		for(let i = 0; i < project.data.assets.length; i++) {
+			loadProgress(i / project.data.assets.length);
 			try {
-				const asset = new DynamicAsset(data.assets[i]);
+				const asset = project.data.assets[i];
 				if(asset.type === "file") {
 					await new Promise((resolve, reject) => {
 						const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
-						media.src = asset.url;
 						media.addEventListener(media instanceof Image ? "load" : "canplay", resolve);
 						media.addEventListener("error", reject);
+						media.src = asset.url;
 					});
 				}
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`
-					<span class="bold">${data.assets[i].id}</span> is not a valid asset.
+					<span class="bold">${project.data.assets[i].name}</span> is not a valid asset.
 				`);
 			}
 		}
-		for(const sceneData of data.scenes) {
-			const scene = new DynamicScene(sceneData);
-			if(sceneData.duration > 0) {
-				scene.duration = +sceneData.duration;
-			}
-			for(const objData of sceneData.objs) {
-				try {
-					new DynamicObject(objData);
-				} catch(err) {
-					console.warn(err);
-					new Miro.Dialog("Error", html`
-						<span class="bold">${objData.id}</span> is not a valid object.
-					`);
-				}
-			}
-		}
-		select(selectedProject);
 		loadProgress(1);
+		select(selectedProject);
 	} else {
 		return false;
 	}

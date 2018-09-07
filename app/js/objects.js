@@ -1,49 +1,56 @@
 "use strict";
-const getObj = id => project.root.objs.find(obj => obj.id === id);
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZ = obj => obj.get("z");
 const byZIndex = (a, b) => b.get("z") - a.get("z");
 class DynamicObject {
 	constructor(value) {
-		if(!value.id) {
-			this.id = uid(project.root.objs.map(byID));
-		}
+		this.project = project;
 		if(typeof value === "string") {
+			this.id = uid(this.project.root.objs.map(byID));
 			this.date = Date.now();
-			const asset = getAsset(value);
+			const asset = this.project.getAsset(value);
 			if(asset.type === "group") {
 				this.type = "group";
-				const names = project.root.objs.map(byInsensitiveName);
+				const names = this.project.root.objs.map(byInsensitiveName);
 				this[_name] = asset.name;
 				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
 					this[_name] = `${asset.name} ${i}`;
 				}
 			} else {
+				if((this.asset = asset) === this.project.root) {
+					throw new MiroError("You cannot put an object inside of itself.");
+				}
 				if(asset.type === "obj") {
 					this.type = "obj";
 				} else {
 					this.type = asset.mime.slice(0, asset.mime.indexOf("/"));
 				}
-				this.asset = asset;
 			}
 			if(onlyGraphics(this)) {
-				const maxZ = Math.max(...project.root.objs.filter(onlyGraphics).map(byZ));
+				const maxZ = Math.max(...this.project.root.objs.filter(onlyGraphics).map(byZ));
 				this.set("z", isFinite(maxZ) ? maxZ + 1 : 1);
 			}
 		} else if(value instanceof Object) {
+			if(value.project instanceof DynamicProject) {
+				this.project = value.project;
+			}
+			delete value.project;
+			if(typeof value.id !== "string") {
+				this.id = uid(this.project.root.objs.map(byID));
+			}
 			Object.assign(this, value);
 			if(value.parent) {
-				this.parent = getObj(value.parent);
+				this.parent = this.project.getObject(value.parent);
 			}
 			if(value.type !== "group") {
-				this.asset = getAsset(value.asset);
+				this.asset = this.project.getAsset(value.asset);
 			}
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
 		}
-		project.root.objs.push(this);
-		project.frames[this.id] = new Array(project.root.duration).fill(0);
+		this.project.root.objs.push(this);
+		this.project.frames[this.id] = new Array(this.project.root.duration).fill(0);
 		if(this.type === "group") {
 			this.timelineItem = html`
 				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
@@ -109,6 +116,31 @@ class DynamicObject {
 		appendObj(this.timelineItem._obj = this);
 		this.updateName();
 	}
+	get name() {
+		return this[_name];
+	}
+	set name(value) {
+		if(this.type === "group") {
+			this[_name] = value;
+			this.updateName();
+		} else {
+			throw new MiroError("The name of an object may only be set for groups.");
+		}
+	}
+	updateName() {
+		if(this.asset) {
+			this[_name] = this.asset.name;
+			if(this.asset.presentObjects.length !== 1) {
+				this[_name] += ` [${this.asset.presentObjects.sort(byDate).indexOf(this) + 1}]`;
+			}
+		}
+		if(this.timelineItem) {
+			this.timelineItem.querySelector(".label").textContent = this.timelineItem.title = this[_name];
+		}
+		if(this.layer) {
+			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
+		}
+	}
 	toJSON() {
 		const obj = {
 			...this
@@ -125,43 +157,18 @@ class DynamicObject {
 		delete obj.timelineItem;
 		return obj;
 	}
-	get name() {
-		return this[_name];
-	}
-	set name(value) {
-		if(this.type === "group") {
-			this[_name] = value;
-			this.updateName();
-		} else {
-			throw new MiroError("The name of an object may only be set for groups.");
-		}
-	}
 	get timeline() {
 		return timelines.querySelector(`#timeline_${this.id}`);
 	}
-	updateName() {
-		if(this.asset) {
-			this[_name] = this.asset.name;
-			if(this.asset.presentObjects.length !== 1) {
-				this[_name] += ` [${this.asset.presentObjects.sort(byDate).indexOf(this) + 1}]`;
-			}
-		}
-		if(this.timelineItem) {
-			this.timelineItem.querySelector(".label").textContent = this.timelineItem.title = this[_name];
-		}
-		if(this.layer) {
-			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
-		}
-	}
 	get(key, time) {
 		if(!isFinite(time)) {
-			time = project.time;
+			time = this.project.time;
 		}
 		return this[key];
 	}
 	set(key, value, time) {
 		if(!isFinite(time)) {
-			time = project.time;
+			time = this.project.time;
 		}
 		this[key] = value;
 	}
@@ -432,23 +439,33 @@ const addToTimeline = () => {
 	}
 	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
 	for(const assetElem of assetElems) {
-		const obj = new DynamicObject(assetElem._asset.id);
-		if(assetElem[_parent]) {
-			assetElem[_parent].appendChild(obj.timelineItem);
-			delete assetElem[_parent];
-		} else {
-			timelineItemDrag.before(obj.timelineItem);
+		let obj;
+		try {
+			obj = new DynamicObject(assetElem._asset.id);
+		} catch(err) {
+			console.warn(err);
+			new Miro.Dialog("Error", err.message);
 		}
-		if(obj.type === "group") {
-			for(const child of assetElem.lastElementChild.children) {
-				child[_parent] = obj.timelineItem.lastElementChild;
+		if(obj) {
+			if(assetElem[_parent]) {
+				assetElem[_parent].appendChild(obj.timelineItem);
+				delete assetElem[_parent];
+			} else {
+				timelineItemDrag.before(obj.timelineItem);
 			}
-		}
-		project.root.objs.unshift(obj);
-		obj.timelineItem.classList.add("selected");
-		project.selectedTimelineItem = obj.timelineItem.id;
-		if(obj.type === "group") {
-			obj.timelineItem.classList.add("open");
+			if(obj.type === "group") {
+				for(const child of assetElem.lastElementChild.children) {
+					child[_parent] = obj.timelineItem.lastElementChild;
+				}
+			}
+			project.root.objs.unshift(obj);
+			obj.timelineItem.classList.add("selected");
+			project.selectedTimelineItem = obj.timelineItem.id;
+			if(obj.type === "group") {
+				obj.timelineItem.classList.add("open");
+			}
+		} else if(assetElem[_parent]) {
+			delete assetElem[_parent];
 		}
 	}
 	timelineItemDrag.remove();

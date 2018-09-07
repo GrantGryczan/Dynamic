@@ -1,12 +1,13 @@
 "use strict";
-const getAsset = id => project.data.assets.find(asset => asset.id === id);
 const byObjArrays = data => data.objs;
 class DynamicAsset {
 	constructor(value) {
 		if(!(value instanceof Object)) {
 			throw new MiroError("The `value` parameter must be an object.");
 		}
-		this.id = typeof value.id === "string" ? value.id : uid(project.data.assets.map(byID));
+		this.project = value.project instanceof DynamicProject ? value.project : project;
+		delete value.project;
+		this.id = typeof value.id === "string" ? value.id : uid(this.project.data.assets.map(byID));
 		this.type = value.type;
 		this[_name] = value.name;
 		if(this.type === "group") {
@@ -21,7 +22,7 @@ class DynamicAsset {
 				</div>
 			`;
 		} else if(this.type === "file") {
-			if(!value.mime.startsWith("image/") && !value.mime.startsWith("audio/")) {
+			if(!(value.mime.startsWith("image/") || value.mime.startsWith("audio/"))) {
 				throw new MiroError("The `mime` value is invalid.");
 			}
 			this.mime = value.mime;
@@ -50,9 +51,9 @@ class DynamicAsset {
 		} else {
 			throw new MiroError("The `type` value is invalid.");
 		}
-		project.data.assets.push(this);
+		this.project.data.assets.push(this);
 		if(value.parent) {
-			this.parent = getAsset(value.parent);
+			this.parent = this.project.getAsset(value.parent);
 		}
 		appendAsset(this.element._asset = this);
 	}
@@ -64,7 +65,7 @@ class DynamicAsset {
 		for(const obj of this.objects) {
 			obj.updateName();
 		}
-		if(this === project.root) {
+		if(this === this.project.root) {
 			objChipText.textContent = objChip.title = this.name;
 		}
 	}
@@ -85,18 +86,18 @@ class DynamicAsset {
 		}
 	}
 	get presentObjects() {
-		return project.root.objs.filter(obj => obj.asset === this);
+		return this.project.root.objs.filter(obj => obj.asset === this);
 	}
 	get objects() {
 		const objs = [];
-		for(const objArray of project.data.scenes.map(byObjArrays)) {
+		for(const objArray of this.project.data.scenes.map(byObjArrays)) {
 			objs.push(...objArray);
 		}
-		for(const objArray of project.data.assets.map(byObjArrays)) {
+		for(const objArray of this.project.data.assets.map(byObjArrays)) {
 			objs.push(...objArray);
 		}
 		return objs.filter(obj => obj.asset === this);
-		// TODO (Chrome 69): return [...project.data.scenes, ...project.data.assets].flatMap(byObjArrays).filter(obj => obj.asset === this);
+		// TODO (Chrome 69): return [...this.project.data.scenes, ...this.project.data.assets].flatMap(byObjArrays).filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {

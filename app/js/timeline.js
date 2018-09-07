@@ -325,7 +325,7 @@ const setTime = value => {
 		} else if(value >= project.root.duration) {
 			let sceneIndex = project.data.scenes.indexOf(project.scene);
 			do {
-				value = project.data.scenes[sceneIndex === project.data.scenes.length - 1 ? (sceneIndex = 0) : ++sceneIndex].duration - value;
+				value -= project.data.scenes[sceneIndex === project.data.scenes.length - 1 ? (sceneIndex = 0) : ++sceneIndex].duration;
 			} while(value >= project.root.duration);
 			setRoot(project.data.scenes[sceneIndex]);
 		}
