@@ -319,13 +319,13 @@ const setTime = value => {
 		if(value < 0) {
 			let sceneIndex = project.data.scenes.indexOf(project.scene);
 			while(value < 0) {
-				value += project.data.scenes[--sceneIndex].duration;
+				value += project.data.scenes[sceneIndex === 0 ? (sceneIndex = project.data.scenes.length - 1) : --sceneIndex].duration;
 			}
 			setRoot(project.data.scenes[sceneIndex]);
 		} else if(value >= project.root.duration) {
 			let sceneIndex = project.data.scenes.indexOf(project.scene);
 			while(value >= project.root.duration) {
-				value -= project.data.scenes[++sceneIndex].duration;
+				value -= project.data.scenes[sceneIndex === project.data.scenes.length - 1 ? (sceneIndex = 0) : ++sceneIndex].duration;
 			}
 			setRoot(project.data.scenes[sceneIndex]);
 		}
