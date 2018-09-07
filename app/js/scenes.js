@@ -10,11 +10,6 @@ class DynamicScene {
 		if(typeof value.id !== "string") {
 			value.id = uid(value.project.data.scenes.map(byID));
 		}
-		if(value.type === "load") {
-			value.project.sceneLoad = this;
-		} else {
-			value.type = "scene";
-		}
 		if(typeof value.name !== "string") {
 			const names = value.project.data.scenes.map(byInsensitiveName);
 			value.name = "Scene";
@@ -24,12 +19,11 @@ class DynamicScene {
 		}
 		Object.assign(this, {
 			id: value.id,
-			type: value.type,
 			[_name]: value.name,
 			duration: isFinite(value.duration) && value.duration > 0 ? +value.duration : value.project.data.fps * 2,
 			objs: [],
 			element: html`
-				<div id="scene_${value.id}" class="scene type${(value.type === "scene" ? "Scene" : "Load") + (value.project.data.scenes.length ? "" : " selected")}" title="$${value.name}">
+				<div id="scene_${value.id}" class="scene${value.project.data.scenes.length ? "" : " selected"}" title="$${value.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${value.name}</div>
@@ -82,7 +76,7 @@ const removeScene = sceneElem => {
 	storeScenes();
 };
 const confirmRemoveScene = sceneElem => {
-	if(sceneElem._scene.type !== "scene" || project.data.scenes.length > (project.sceneLoad ? 2 : 1)) {
+	if(project.data.scenes.length !== 1) {
 		new Miro.Dialog("Remove Scene", html`
 			Are you sure you want to remove <span class="bold">${sceneElem._scene.name}</span>?<br>
 			Objects and other data inside the scene will also be removed.
@@ -92,7 +86,7 @@ const confirmRemoveScene = sceneElem => {
 			}
 		});
 	} else {
-		new Miro.Dialog("Error", "You must have at least one normal scene.");
+		new Miro.Dialog("Error", "You must have at least one scene.");
 	}
 };
 const removeSelectedScene = () => {

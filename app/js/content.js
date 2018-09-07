@@ -26,7 +26,7 @@ const play = () => {
 	if(!playing) {
 		const onLastScene = project.root === project.data.scenes[project.data.scenes.length - 1];
 		if(project.time === project.root.duration - 1 && (onLastScene || !(project.root instanceof DynamicScene))) {
-			if(onLastScene && project.data.scenes.length > 1) {
+			if(onLastScene && project.data.scenes.length !== 1) {
 				setRoot(project.data.scenes[0]);
 			}
 			setTime(0);

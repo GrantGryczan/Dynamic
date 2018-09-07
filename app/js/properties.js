@@ -49,7 +49,7 @@ const updateProperties = () => {
 	if(assetContainer.classList.contains("activeProperties")) {
 		const assetElems = assets.querySelectorAll(".asset.selected");
 		if(assetElems.length) {
-			if(prop.name.elements[0].readOnly = assetElems.length > 1) {
+			if(prop.name.elements[0].readOnly = assetElems.length !== 1) {
 				prop.name.elements[0].value = `< ${assetElems.length} selected >`;
 			} else {
 				prop.name.elements[0].value = assetElems[0]._asset.name;

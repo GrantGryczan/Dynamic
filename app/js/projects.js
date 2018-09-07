@@ -318,7 +318,6 @@ const setRoot = data => {
 	project.root = data || project.scene;
 	if(project.root instanceof DynamicScene) {
 		sceneChipText.textContent = sceneChip.title = (project.scene = project.root).name;
-		sceneChip.classList.replace(sceneChip.classList[2], project.scene.element.classList[1]);
 		objChip.classList.add("hidden");
 		selectScene(project.scene.element);
 	} else if(project.root) {

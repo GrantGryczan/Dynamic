@@ -779,15 +779,6 @@ label:not(.mdc-floating-label) {
 #footStart {
 	display: flex;
 }
-.mdc-chip.typeScene > .mdc-chip__icon::before {
-	content: "movie";
-}
-.mdc-chip.typeLoad > .mdc-chip__icon::before {
-	content: "hourglass_full";
-}
-.mdc-chip.typeObj > .mdc-chip__icon::before {
-	content: "widgets";
-}
 #footEnd {
 	display: flex;
 	flex-grow: 1;
@@ -872,11 +863,8 @@ label:not(.mdc-floating-label) {
 	border: 1px solid #d0d0d0;
 	color: #000000;
 }
-.scene.typeScene > .bar > .icon::before {
+.scene > .bar > .icon::before {
 	content: "movie";
-}
-.scene.typeLoad > .bar > .icon::before {
-	content: "hourglass_full";
 }
 #statusBar {
 	display: flex;

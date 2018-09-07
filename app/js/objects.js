@@ -142,7 +142,7 @@ class DynamicObject {
 	updateName() {
 		if(this.asset) {
 			this[_name] = this.asset.name;
-			if(this.asset.presentObjects.length > 1) {
+			if(this.asset.presentObjects.length !== 1) {
 				this[_name] += ` [${this.asset.presentObjects.sort(byDate).indexOf(this) + 1}]`;
 			}
 		}
@@ -246,7 +246,7 @@ const confirmRemoveObjElem = objElem => {
 const confirmRemoveObjElems = objElems => {
 	if(objElems.length === 1) {
 		confirmRemoveObjElem(objElems[0]);
-	} else if(objElems.length > 1) {
+	} else if(objElems.length !== 1) {
 		new Miro.Dialog("Remove Objects", "Are you sure you want to remove all those objects?", ["Yes", "No"]).then(value => {
 			if(value === 0) {
 				objElems.forEach(removeObj);

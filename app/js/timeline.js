@@ -435,7 +435,7 @@ const changeSlider = change => {
 	}
 };
 const deleteFrames = () => {
-	if(project.root.duration > 1) {
+	if(project.root.duration !== 1) {
 		const topFrames = getTopFrames();
 		let quantity = 0;
 		let value = project.time;

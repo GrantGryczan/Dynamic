@@ -437,21 +437,12 @@ const timelineMenuItems = [{
 	accelerator: "CmdOrCtrl+Shift+A",
 	click: selectFramesInRows
 }];
-const sceneLoadCreationMenuItem = {
-	label: "Create loading screen",
-	click: () => {
-		selectScene(new DynamicScene({
-			type: "load",
-			name: "Load"
-		}).element);
-	}
-};
 const sceneCreationMenuItems = [{
 	label: "Create scene",
 	click: () => {
 		selectScene(new DynamicScene().element);
 	}
-}, sceneLoadCreationMenuItem];
+}];
 const sceneMenuItems = [{
 	label: "Remove scene",
 	accelerator: "Delete",
@@ -477,7 +468,6 @@ const openCtx = target => {
 		} else if(ctxTarget === sortObjs) {
 			template.push(...sortObjsMenuItems);
 		} else if(ctxTarget === addScene) {
-			sceneLoadCreationMenuItem.enabled = !project.sceneLoad;
 			template.push(...sceneCreationMenuItems);
 		} else {
 			if(assets.contains(ctxTarget)) {
@@ -527,7 +517,6 @@ const openCtx = target => {
 			} else if(timelineArea.contains(ctxTarget)) {
 				template.push(...timelineMenuItems);
 			} else if(scenes.contains(ctxTarget)) {
-				sceneLoadCreationMenuItem.enabled = !project.sceneLoad;
 				template.push(...sceneMenuItems);
 			}
 			if(template.length) {
