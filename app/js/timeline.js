@@ -316,18 +316,28 @@ const setTime = value => {
 		const rangeSize = project.loop[1] - project.loop[0];
 		value = (((value - project.loop[0]) % rangeSize + rangeSize) % rangeSize) + project.loop[0];
 	} else if(project.root instanceof DynamicScene && project.data.scenes.length !== 1) {
-		if(value < 0) {
-			let sceneIndex = project.data.scenes.indexOf(project.scene);
-			do {
-				value += project.data.scenes[sceneIndex === 0 ? (sceneIndex = project.data.scenes.length - 1) : --sceneIndex].duration;
-			} while(value < 0);
-			setRoot(project.data.scenes[sceneIndex]);
-		} else if(value >= project.root.duration) {
-			let sceneIndex = project.data.scenes.indexOf(project.scene);
-			do {
-				value -= project.data.scenes[sceneIndex === project.data.scenes.length - 1 ? (sceneIndex = 0) : ++sceneIndex].duration;
-			} while(value >= project.root.duration);
-			setRoot(project.data.scenes[sceneIndex]);
+		let sceneIndex = project.data.scenes.indexOf(project.scene);
+		let offset = 0;
+		let duration = 0;
+		for(let i = 0; i < project.data.scenes.length; i++) {
+			duration += project.data.scenes[i].duration;
+			if(i < sceneIndex) {
+				offset = duration;
+			}
+		}
+		value = ((offset + value) % duration + duration) % duration;
+		const firstDuration = project.data.scenes[0].duration;
+		let destination;
+		for(const scene of project.data.scenes) {
+			if(value < scene.duration) {
+				destination = scene;
+				break;
+			} else {
+				value -= scene.duration;
+			}
+		}
+		if(project.scene !== destination) {
+			setRoot(destination);
 		}
 	} else {
 		value = (value % project.root.duration + project.root.duration) % project.root.duration;

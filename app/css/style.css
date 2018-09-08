@@ -259,7 +259,7 @@ label:not(.mdc-floating-label) {
 	position: relative;
 	background-color: #d0d0d0;
 }
-.mdc-dialog, .mdc-dialog__backdrop {
+.mdc-dialog {
 	position: absolute;
 }
 .mdc-dialog__surface {
