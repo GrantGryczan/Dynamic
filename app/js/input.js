@@ -318,6 +318,7 @@ document.addEventListener("input", evt => {
 		for(let i = 0; i < timeUnits.children.length; i++) {
 			timeUnits.children[i].replaceWith(createTimeUnit(timeUnits.children[i]._value));
 		}
+		updateTimeUnits();
 		project.saved = false;
 	} else if(evt.target === prop.size.elements[0]) {
 		if(subject === content) {
