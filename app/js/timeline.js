@@ -190,6 +190,7 @@ const updateTimelines = () => {
 			objCount++;
 		}
 		obj.timelineItem.classList[highlight ? "add" : "remove"]("selected");
+		const properties = {};
 		const timeline = obj.timeline;
 		if(timeline) {
 			timeline.classList.replace(timeline.classList[1], obj.timelineItem.classList[1]);
@@ -209,8 +210,17 @@ const updateTimelines = () => {
 						}
 					}
 				}
-				if(obj.keyframes[i]) {
+				const keyframe = obj.keyframes[i];
+				if(keyframe) {
 					frame.classList.add("keyframe");
+					for(const key of Object.keys(keyframe)) {
+						const property = keyframe[key];
+						if("value" in property) {
+							properties[key] = property.value;
+						}
+					}
+				} else if(properties.visible) {
+					frame.classList.add("tween");
 				}
 			}
 		}
