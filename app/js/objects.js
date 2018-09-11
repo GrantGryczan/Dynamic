@@ -29,7 +29,7 @@ class DynamicObject {
 			}
 			this.keyframes = new Array(this.project.root.duration).fill(null);
 			if(onlyGraphics(this)) {
-				this.set("z", Math.max(0, ...this.project.root.objs.filter(onlyGraphics).map(byZ)) + 1);
+				this.set("z", Math.max(0, ...this.project.root.objs.filter(onlyGraphics).map(byZ)) + 1); // TODO: Fix max Z calculation
 			}
 		} else if(value instanceof Object) {
 			if(value.project instanceof DynamicProject) {
@@ -214,9 +214,10 @@ class DynamicObject {
 		return timelines.querySelector(`#timeline_${this.id}`);
 	}
 	get(key, time) {
-		time = time >= 0 ? +time : this.project.time;
+		time = time >= 0 ? Math.min(this.project.root.duration - 1, +time) : this.project.time;
 		let value;
-		for(const keyframe of this.keyframes) {
+		for(let i = 0; i <= time; i++) {
+			const keyframe = this.keyframes[i];
 			if(keyframe && key in keyframe) {
 				({value} = keyframe[key]);
 			}
@@ -225,7 +226,7 @@ class DynamicObject {
 	}
 	set(key, value, time) {
 		// TODO: Validate key/value
-		time = time >= 0 ? +time : this.project.time;
+		time = time >= 0 ? Math.min(this.project.root.duration - 1, +time) : this.project.time;
 		if(!this.keyframes[time]) {
 			this.keyframes[time] = {};
 		}
@@ -253,8 +254,13 @@ const appendObj = (obj, create) => {
 };
 const updateLayers = () => {
 	for(const obj of project.root.objs.filter(onlyGraphics).sort(byZIndex)) {
-		obj.layer.querySelector(".z").textContent = obj.get("z");
-		layers.appendChild(obj.layer);
+		const z = obj.get("z");
+		if(isNaN(z)) {
+			obj.layer.remove();
+		} else {
+			obj.layer.querySelector(".z").textContent = z;
+			layers.appendChild(obj.layer);
+		}
 	}
 };
 const storeObjs = () => {
