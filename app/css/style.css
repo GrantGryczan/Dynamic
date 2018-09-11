@@ -764,7 +764,7 @@ label:not(.mdc-floating-label) {
 .frame.tween::before {
 	top: 50%;
 	width: calc(100% + 2px);
-	height: 2px;
+	height: 4px;
 	background-color: #808080;
 	transform: translate(-1px, -50%);
 	content: "";
