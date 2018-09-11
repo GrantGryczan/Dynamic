@@ -173,8 +173,8 @@ const updateTimelines = () => {
 	for(const frame of timelines.querySelectorAll(".frame.tween")) {
 		frame.classList.remove("tween");
 	}
-	for(const frame of timelines.querySelectorAll(".frame.variable")) {
-		frame.classList.remove("variable");
+	for(const frame of timelines.querySelectorAll(".frame.dynamic")) {
+		frame.classList.remove("dynamic");
 	}
 	const topFrames = getTopFrames();
 	for(let i = 0; i < timelines.children.length; i++) {

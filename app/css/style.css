@@ -769,7 +769,7 @@ label:not(.mdc-floating-label) {
 	transform: translate(-1px, -50%);
 	content: "";
 }
-.frame.variable::before {
+.frame.dynamic::before {
 	background-color: #bf80ff;
 }
 #timelineContainer > .foot {
