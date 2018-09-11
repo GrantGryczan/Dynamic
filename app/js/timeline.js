@@ -167,10 +167,19 @@ const updateTimelines = () => {
 	for(const frame of timelines.querySelectorAll(".frame.highlight")) {
 		frame.classList.remove("highlight");
 	}
+	for(const frame of timelines.querySelectorAll(".frame.keyframe")) {
+		frame.classList.remove("keyframe");
+	}
+	for(const frame of timelines.querySelectorAll(".frame.tween")) {
+		frame.classList.remove("tween");
+	}
+	for(const frame of timelines.querySelectorAll(".frame.variable")) {
+		frame.classList.remove("variable");
+	}
 	const topFrames = getTopFrames();
 	for(let i = 0; i < timelines.children.length; i++) {
 		const timeline = timelines.children[i];
-		timeline.id = `timeline_$${(timeline._obj = objs[start + i]).id}`;
+		timeline.id = `timeline_${(timeline._obj = objs[start + i]).id}`;
 	}
 	let objCount = 0;
 	let frameCount = 0;
@@ -186,7 +195,7 @@ const updateTimelines = () => {
 			timeline.classList.replace(timeline.classList[1], obj.timelineItem.classList[1]);
 			for(let i = 0; i < timeline.children.length; i++) {
 				const frame = timeline.children[i];
-				frame.id = `frame_$${obj.id}_${frame._value = timeUnits.children[i]._value}`;
+				frame.id = `frame_${obj.id}_${frame._value = timeUnits.children[i]._value}`;
 				if(highlight || topFrames[frame._value]) {
 					frame.classList.add("highlight");
 					if(highlight && project.frames[obj.id][frame._value]) {
@@ -199,6 +208,9 @@ const updateTimelines = () => {
 							frame.classList.add("focus");
 						}
 					}
+				}
+				if(obj.keyframes[i]) {
+					frame.classList.add("keyframe");
 				}
 			}
 		}

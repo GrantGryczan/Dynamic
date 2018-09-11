@@ -211,15 +211,27 @@ class DynamicObject {
 		return obj;
 	}
 	get timeline() {
-		return timelines.querySelector(`#timeline_$${this.id}`);
+		return timelines.querySelector(`#timeline_${this.id}`);
 	}
 	get(key, time) {
 		time = time >= 0 ? +time : this.project.time;
-		
+		let value;
+		for(const keyframe of this.keyframes) {
+			if(keyframe && key in keyframe) {
+				({value} = keyframe[key]);
+			}
+		}
+		return value;
 	}
 	set(key, value, time) {
+		// TODO: Validate key/value
 		time = time >= 0 ? +time : this.project.time;
-		
+		if(!this.keyframes[time]) {
+			this.keyframes[time] = {};
+		}
+		this.keyframes[time][key] = {
+			value
+		};
 		this.project.saved = false;
 	}
 	add(parent, key, value, time) {
@@ -264,10 +276,10 @@ const storeObjs = () => {
 	project.saved = false;
 };
 const removeObj = objElem => {
-	if(project.selectedTimelineItem === `timelineItem_$${objElem._obj.id}`) {
+	if(project.selectedTimelineItem === `timelineItem_${objElem._obj.id}`) {
 		project.selectedTimelineItem = null;
 	}
-	if(project.selectedLayer === `layer_$${objElem._obj.id}`) {
+	if(project.selectedLayer === `layer_${objElem._obj.id}`) {
 		project.selectedLayer = null;
 	}
 	while(objElem._obj.timelineItem.lastElementChild.firstElementChild) {
