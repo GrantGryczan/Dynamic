@@ -462,7 +462,7 @@ const deleteFrames = () => {
 	if(project.root.duration !== 1) {
 		const topFrames = getTopFrames();
 		let quantity = 0;
-		let value = project.time;
+		let value = -1;
 		for(let i = topFrames.length - 1; i >= 0; i--) {
 			if(topFrames[i]) {
 				value = i;
