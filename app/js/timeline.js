@@ -465,10 +465,8 @@ const deleteFrames = () => {
 		let value = project.time;
 		for(let i = topFrames.length - 1; i >= 0; i--) {
 			if(topFrames[i]) {
+				value = i;
 				quantity++;
-				if(i > project.time) {
-					value--;
-				}
 				for(const obj of project.root.objs) {
 					obj.keyframes.splice(i, 1);
 					project.frames[obj.id].splice(i, 1);
