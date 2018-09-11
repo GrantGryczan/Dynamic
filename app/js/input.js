@@ -333,16 +333,19 @@ document.addEventListener("input", evt => {
 			project.saved = false;
 		}
 	} else if(evt.target === prop.name.elements[0]) {
-		if(assetContainer.classList.contains("activeProperties")) {
-			if(!project.data.assets.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
-				assets.querySelector(".asset.selected")._asset.name = evt.target.value;
+		const trimmedValue = evt.target.value.trim();
+		if(trimmedValue) {
+			if(assetContainer.classList.contains("activeProperties")) {
+				if(!project.data.assets.map(byInsensitiveName).includes(trimmedValue.toLowerCase())) {
+					assets.querySelector(".asset.selected")._asset.name = trimmedValue;
+				}
+			} else if(timelineContainer.classList.contains("activeProperties")) {
+				if(!project.root.objs.map(byInsensitiveName).includes(trimmedValue.toLowerCase())) {
+					timelineItems.querySelector(".timelineItem.selected")._obj.name = trimmedValue;
+				}
 			}
-		} else if(timelineContainer.classList.contains("activeProperties")) {
-			if(!project.root.objs.map(byInsensitiveName).includes(evt.target.value.trim().toLowerCase())) {
-				timelineItems.querySelector(".timelineItem.selected")._obj.name = evt.target.value;
-			}
+			project.saved = false;
 		}
-		project.saved = false;
 	}
 }, capturePassive);
 document.addEventListener("change", evt => {

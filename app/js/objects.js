@@ -27,24 +27,62 @@ class DynamicObject {
 					this.type = asset.mime.slice(0, asset.mime.indexOf("/"));
 				}
 			}
+			this.keyframes = new Array(this.project.root.duration).fill(null);
 			if(onlyGraphics(this)) {
-				const maxZ = Math.max(...this.project.root.objs.filter(onlyGraphics).map(byZ));
-				this.set("z", isFinite(maxZ) ? maxZ + 1 : 1);
+				this.set("z", Math.max(0, ...this.project.root.objs.filter(onlyGraphics).map(byZ)) + 1);
 			}
 		} else if(value instanceof Object) {
 			if(value.project instanceof DynamicProject) {
 				this.project = value.project;
 			}
 			delete value.project;
-			if(typeof value.id !== "string") {
-				this.id = uid(this.project.root.objs.map(byID));
-			}
-			Object.assign(this, value);
+			this.id = typeof value.id === "string" ? value.id : uid(this.project.root.objs.map(byID));
+			this.date = isFinite(value.date) ? +value.date : Date.now();
 			if(value.parent) {
 				this.parent = this.project.getObject(value.parent);
 			}
-			if(value.type !== "group") {
-				this.asset = this.project.getAsset(value.asset);
+			if((this.type = value.type) === "group") {
+				this.name = String(value.name);
+			} else {
+				if(value.type !== "obj" && value.type !== "image" && value.type !== "audio") {
+					throw new MiroError("The `type` value must be a valid object type.");
+				}
+				if(!(this.asset = this.project.getAsset(value.asset))) {
+					throw new MiroError("The `asset` value must be a string of an asset ID.");
+				}
+			}
+			this.keyframes = new Array(this.project.root.duration).fill(null);
+			if(value.keyframes instanceof Array) {
+				for(const keyframe of value.keyframes) {
+					if(keyframe instanceof Object && keyframe.time >= 0 && keyframe.time < this.project.root.duration && keyframe.set instanceof Object) {
+						const keys = Object.keys(keyframe.set);
+						if(keys.length) {
+							const thisProperty = this.keyframes[keyframe.time] = {};
+							for(const key of keys) {
+								// TODO: Validate property data
+								const property = keyframe.set[key];
+								if(property.values instanceof Array) {
+									const values = [];
+									for(const value of property.values) {
+										if(typeof value.name === "string") {
+											values.push({
+												name: value.name,
+												value: value.value
+											});
+										}
+									}
+									thisProperty[key] = {
+										values
+									};
+								} else {
+									thisProperty[key] = {
+										value: property.value
+									};
+								}
+							}
+						}
+					}
+				}
 			}
 		} else {
 			throw new MiroError("The `value` parameter must be an object or a string of an asset ID.");
@@ -114,7 +152,11 @@ class DynamicObject {
 			}
 		}
 		appendObj(this.timelineItem._obj = this);
-		this.updateName();
+		if(this.asset) {
+			for(const obj of this.asset.presentObjects) {
+				obj.updateName();
+			}
+		}
 	}
 	get name() {
 		return this[_name];
@@ -145,6 +187,7 @@ class DynamicObject {
 		const obj = {
 			...this
 		};
+		delete obj.project;
 		if(this.parent) {
 			obj.parent = this.parent.id;
 		}
@@ -155,22 +198,32 @@ class DynamicObject {
 		}
 		delete obj.layer;
 		delete obj.timelineItem;
+		obj.keyframes = [];
+		for(let i = 0; i < this.keyframes.length; i++) {
+			const keyframe = this.keyframes[i];
+			if(keyframe) {
+				obj.keyframes.push({
+					time: i,
+					set: keyframe
+				});
+			}
+		}
 		return obj;
 	}
 	get timeline() {
 		return timelines.querySelector(`#timeline_${this.id}`);
 	}
 	get(key, time) {
-		if(!isFinite(time)) {
-			time = this.project.time;
-		}
-		return this[key];
+		time = time >= 0 ? +time : this.project.time;
+		
 	}
 	set(key, value, time) {
-		if(!isFinite(time)) {
-			time = this.project.time;
-		}
-		this[key] = value;
+		time = time >= 0 ? +time : this.project.time;
+		
+		this.project.saved = false;
+	}
+	add(parent, key, value, time) {
+		
 	}
 }
 const appendObj = (obj, create) => {
@@ -464,6 +517,7 @@ const addToTimeline = () => {
 			if(obj.type === "group") {
 				obj.timelineItem.classList.add("open");
 			}
+			obj.set("visible", true);
 		} else if(assetElem[_parent]) {
 			delete assetElem[_parent];
 		}

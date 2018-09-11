@@ -347,14 +347,6 @@ const setTime = value => {
 	scrollFrameIntoView();
 	updateSlider();
 };
-const addDuration = quantity => {
-	const moreFrames = new Array(quantity).fill(0);
-	for(const obj of project.root.objs) {
-		project.frames[obj.id].push(...moreFrames);
-	}
-	project.root.duration += quantity;
-	updateTimeRuler();
-};
 const scrollFrameIntoView = value => {
 	if(value === undefined) {
 		value = project.time;
@@ -456,6 +448,7 @@ const deleteFrames = () => {
 					value--;
 				}
 				for(const obj of project.root.objs) {
+					obj.keyframes.splice(i, 1);
 					project.frames[obj.id].splice(i, 1);
 				}
 			}
@@ -484,12 +477,16 @@ const insertFrames = (toRight, quantity) => {
 		value++;
 	}
 	project.root.duration += quantity;
+	const end = value + quantity;
 	for(const obj of project.root.objs) {
+		for(let i = value; i < end; i++) {
+			obj.keyframes.splice(value, 0, null);
+		}
 		const focus = project.frames[obj.id].includes(2);
 		const selected = focus || project.frames[obj.id].includes(1);
 		const frames = project.frames[obj.id] = new Array(project.root.duration).fill(0);
 		if(selected) {
-			for(let i = value; i < value + quantity; i++) {
+			for(let i = value; i < end; i++) {
 				frames[i] = 1;
 			}
 			if(focus) {

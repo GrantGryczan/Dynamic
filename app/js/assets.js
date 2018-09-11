@@ -74,6 +74,7 @@ class DynamicAsset {
 			...this,
 			name: this.name
 		};
+		delete obj.project;
 		if(this.parent) {
 			obj.parent = this.parent.id;
 		}
@@ -93,11 +94,11 @@ class DynamicAsset {
 		for(const objArray of this.project.data.scenes.map(byObjArrays)) {
 			objs.push(...objArray);
 		}
-		for(const objArray of this.project.data.assets.map(byObjArrays)) {
+		for(const objArray of this.project.data.assets.filter(byObjArrays).map(byObjArrays)) {
 			objs.push(...objArray);
 		}
 		return objs.filter(obj => obj.asset === this);
-		// TODO (Chrome 69): return [...this.project.data.scenes, ...this.project.data.assets].flatMap(byObjArrays).filter(obj => obj.asset === this);
+		// TODO (Chrome 69): return [...this.project.data.scenes, ...this.project.data.assets.filter(byObjArrays)].flatMap(byObjArrays).filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {

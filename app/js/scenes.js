@@ -10,7 +10,9 @@ class DynamicScene {
 		if(typeof value.id !== "string") {
 			value.id = uid(value.project.data.scenes.map(byID));
 		}
-		if(typeof value.name !== "string") {
+		if(typeof value.name === "string") {
+			value.name = value.name.trim();
+		} else {
 			const names = value.project.data.scenes.map(byInsensitiveName);
 			value.name = "Scene";
 			for(let i = 2; names.includes(insensitiveString(value.name)); i++) {
@@ -114,11 +116,15 @@ const renameScene = initialValue => {
 		text: "Okay",
 		type: "submit"
 	}, "Cancel"]).then(value => {
-		if(value === 0 && insensitiveString(scene.name) !== insensitiveString(input.value)) {
-			if(project.data.scenes.map(byInsensitiveName).includes(insensitiveString(input.value))) {
-				new Miro.Dialog("Error", "That name is already taken.").then(renameScene.bind(null, input.value));
-			} else {
-				scene.name = input.value;
+		if(value === 0) {
+			const trimmedValue = input.value.trim();
+			const insensitiveValue = trimmedValue.toLowerCase();
+			if(insensitiveString(scene.name) !== insensitiveValue) {
+				if(project.data.scenes.map(byInsensitiveName).includes(insensitiveValue)) {
+					new Miro.Dialog("Error", "That name is already taken.").then(renameScene.bind(null, input.value));
+				} else {
+					scene.name = trimmedValue;
+				}
 			}
 		}
 	}).form.elements.name;

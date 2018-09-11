@@ -48,37 +48,53 @@ class DynamicProject {
 			loop: false,
 			onionskin: storage.onionskin
 		});
-		const loadObject = this.loadObject.bind(this);
+		const loadObjs = [];
 		if(value.data.assets instanceof Array && value.data.assets.length) {
-			for(let i = 0; i < value.data.assets.length; i++) {
+			for(const assetData of value.data.assets) {
 				try {
-					this.root = new DynamicAsset({
+					const asset = new DynamicAsset({
 						project: this,
-						...value.data.assets[i]
+						...assetData
 					});
-					value.data.assets[i].objs.forEach(loadObject);
+					if(asset.objs) {
+						loadObjs.push([asset, assetData.objs]);
+					}
 				} catch(err) {
 					console.warn(err);
 					new Miro.Dialog("Error", html`
-						<span class="bold">${value.data.assets[i].name}</span> is not a valid asset.
+						<span class="bold">${assetData.name}</span> is not a valid asset.
 					`);
 					continue;
 				}
-				
 			}
 		}
 		if(value.data.scenes instanceof Array && value.data.scenes.length) {
 			for(const sceneData of value.data.scenes) {
-				this.root = this.scene = new DynamicScene({
+				loadObjs.push([new DynamicScene({
 					project: this,
 					...sceneData
-				});
-				sceneData.objs.forEach(loadObject);
+				}), sceneData.objs]);
 			}
 		} else {
 			new DynamicScene({
 				project: this
 			});
+		}
+		for(const [parent, objs] of loadObjs) {
+			this.root = parent;
+			for(const objData of objs) {
+				try {
+					new DynamicObject({
+						project: this,
+						...objData
+					});
+				} catch(err) {
+					console.warn(err);
+					new Miro.Dialog("Error", html`
+						<span class="bold">${objData && objData.name}</span> is not a valid object.
+					`);
+				}
+			}
 		}
 		for(const obj of (this.root = this.scene = this.data.scenes[0]).objs) {
 			this.frames[obj.id] = new Array(this.root.duration).fill(0);
@@ -185,19 +201,6 @@ class DynamicProject {
 	}
 	getObject(id) {
 		return this.root.objs.find(obj => obj.id === id);
-	}
-	loadObject(objData) {
-		try {
-			new DynamicObject({
-				project: this,
-				...objData
-			});
-		} catch(err) {
-			console.warn(err);
-			new Miro.Dialog("Error", html`
-				<span class="bold">${objData && objData.name}</span> is not a valid object.
-			`);
-		}
 	}
 }
 const select = id => {
