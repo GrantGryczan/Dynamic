@@ -91,7 +91,7 @@ class DynamicObject {
 		this.project.frames[this.id] = new Array(this.project.root.duration).fill(0);
 		if(this.type === "group") {
 			this.timelineItem = html`
-				<div id="timelineItem_${this.id}" class="timelineItem typeGroup" title="$${this.name}">
+				<div id="timelineItem_$${this.id}" class="timelineItem typeGroup" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
@@ -102,7 +102,7 @@ class DynamicObject {
 			`;
 		} else if(this.type === "audio") {
 			this.timelineItem = html`
-				<div id="timelineItem_${this.id}" class="timelineItem typeAudio" title="$${this.name}">
+				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
@@ -114,7 +114,7 @@ class DynamicObject {
 			this.layer = html`
 				<table>
 					<tbody>
-						<tr id="layer_${this.id}" class="layer" title="$${this.name}">
+						<tr id="layer_$${this.id}" class="layer" title="$${this.name}">
 							<td class="z">${this.get("z")}</td>
 							<td class="barCell">
 								<div class="bar">
@@ -129,7 +129,7 @@ class DynamicObject {
 			this.layer._obj = this;
 			if(this.type === "obj") {
 				this.timelineItem = html`
-					<div id="timelineItem_${this.id}" class="timelineItem typeObj" title="$${this.name}">
+					<div id="timelineItem_$${this.id}" class="timelineItem typeObj" title="$${this.name}">
 						<div class="bar">
 							<div class="icon material-icons"></div>
 							<div class="label">$${this.name}</div>
@@ -140,7 +140,7 @@ class DynamicObject {
 				`;
 			} else if(this.type === "image") {
 				this.timelineItem = html`
-					<div id="timelineItem_${this.id}" class="timelineItem typeImage" title="$${this.name}">
+					<div id="timelineItem_$${this.id}" class="timelineItem typeImage" title="$${this.name}">
 						<div class="bar">
 							<div class="icon material-icons"></div>
 							<div class="label">$${this.name}</div>
@@ -211,7 +211,7 @@ class DynamicObject {
 		return obj;
 	}
 	get timeline() {
-		return timelines.querySelector(`#timeline_${this.id}`);
+		return timelines.querySelector(`#timeline_$${this.id}`);
 	}
 	get(key, time) {
 		time = time >= 0 ? +time : this.project.time;
@@ -264,10 +264,10 @@ const storeObjs = () => {
 	project.saved = false;
 };
 const removeObj = objElem => {
-	if(project.selectedTimelineItem === `timelineItem_${objElem._obj.id}`) {
+	if(project.selectedTimelineItem === `timelineItem_$${objElem._obj.id}`) {
 		project.selectedTimelineItem = null;
 	}
-	if(project.selectedLayer === `layer_${objElem._obj.id}`) {
+	if(project.selectedLayer === `layer_$${objElem._obj.id}`) {
 		project.selectedLayer = null;
 	}
 	while(objElem._obj.timelineItem.lastElementChild.firstElementChild) {
@@ -516,8 +516,9 @@ const addToTimeline = () => {
 			project.selectedTimelineItem = obj.timelineItem.id;
 			if(obj.type === "group") {
 				obj.timelineItem.classList.add("open");
+			} else {
+				obj.set("visible", true);
 			}
-			obj.set("visible", true);
 		} else if(assetElem[_parent]) {
 			delete assetElem[_parent];
 		}

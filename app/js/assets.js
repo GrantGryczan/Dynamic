@@ -12,7 +12,7 @@ class DynamicAsset {
 		this[_name] = value.name;
 		if(this.type === "group") {
 			this.element = html`
-				<div id="asset_${this.id}" class="asset typeGroup" title="$${this.name}">
+				<div id="asset_$${this.id}" class="asset typeGroup" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
@@ -28,7 +28,7 @@ class DynamicAsset {
 			this.mime = value.mime;
 			this.data = value.data;
 			this.element = html`
-				<div id="asset_${this.id}" class="asset typeFile" title="$${this.name}" data-mime="$${this.mime}">
+				<div id="asset_$${this.id}" class="asset typeFile" title="$${this.name}" data-mime="$${this.mime}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
@@ -40,7 +40,7 @@ class DynamicAsset {
 			this.objs = [];
 			this.duration = 1;
 			this.element = html`
-				<div id="asset_${this.id}" class="asset typeObj" title="$${this.name}">
+				<div id="asset_$${this.id}" class="asset typeObj" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
