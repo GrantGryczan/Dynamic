@@ -6,7 +6,6 @@ class DynamicAsset {
 			throw new MiroError("The `value` parameter must be an object.");
 		}
 		this.project = value.project instanceof DynamicProject ? value.project : project;
-		delete value.project;
 		this.id = typeof value.id === "string" ? value.id : uid(this.project.data.assets.map(byID));
 		this.type = value.type;
 		this[_name] = value.name;
@@ -146,12 +145,12 @@ const confirmRemoveAsset = assetElem => {
 	};
 	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
 		new Miro.Dialog("Remove Asset", html`
-			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
+			Are you sure you want to remove <b>${assetElem._asset.name}</b>?<br>
 			Objects using the asset will also be removed.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	} else if(assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${assetElem._asset.name}</span>?<br>
+			Are you sure you want to remove <b>${assetElem._asset.name}</b>?<br>
 			All assets inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	}
@@ -266,11 +265,11 @@ const addFiles = async files => {
 		} catch(err) {
 			console.warn(err);
 			new Miro.Dialog("Error", html`
-				An error occurred while encoding <span class="bold">${files[i].name}</span>.
+				An error occurred while encoding <b>${files[i].name}</b>.
 			`);
 			continue;
 		}
-		const names = project.data.assets.map(byInsensitiveName);
+		const names = project.data.assets.map(byName).map(insensitiveString);
 		let name = files[i].name;
 		for(let j = 2; names.includes(insensitiveString(name)); j++) {
 			name = `${files[i].name} ${j}`;
@@ -292,7 +291,7 @@ const addFiles = async files => {
 		} catch(err) {
 			console.warn(err);
 			new Miro.Dialog("Error", html`
-				<span class="bold">${files[i].name}</span> is not a valid asset.
+				<b>${files[i].name}</b> is not a valid asset.
 			`);
 			continue;
 		}
@@ -321,7 +320,7 @@ const addFileFromURI = uri => {
 	const error = () => {
 		loadIndeterminate(false);
 		new Miro.Dialog("Error", html`
-			An error occurred while fetching <span class="bold">${uri}</span>.
+			An error occurred while fetching <b>${uri}</b>.
 		`);
 	};
 	try {

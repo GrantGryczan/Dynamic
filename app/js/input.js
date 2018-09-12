@@ -336,11 +336,11 @@ document.addEventListener("input", evt => {
 		const trimmedValue = evt.target.value.trim();
 		if(trimmedValue) {
 			if(assetContainer.classList.contains("activeProperties")) {
-				if(!project.data.assets.map(byInsensitiveName).includes(trimmedValue.toLowerCase())) {
+				if(!project.data.assets.map(byName).map(insensitiveString).includes(trimmedValue.toLowerCase())) {
 					assets.querySelector(".asset.selected")._asset.name = trimmedValue;
 				}
 			} else if(timelineContainer.classList.contains("activeProperties")) {
-				if(!project.root.objs.map(byInsensitiveName).includes(trimmedValue.toLowerCase())) {
+				if(!project.root.objs.map(byName).map(insensitiveString).includes(trimmedValue.toLowerCase())) {
 					timelineItems.querySelector(".timelineItem.selected")._obj.name = trimmedValue;
 				}
 			}

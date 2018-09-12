@@ -12,7 +12,7 @@ class DynamicObject {
 			const asset = this.project.getAsset(value);
 			if(asset.type === "group") {
 				this.type = "group";
-				const names = this.project.root.objs.map(byInsensitiveName);
+				const names = this.project.root.objs.map(byName).map(insensitiveString);
 				this[_name] = asset.name;
 				for(let i = 2; names.includes(this[_name].toLowerCase()); i++) {
 					this[_name] = `${asset.name} ${i}`;
@@ -26,8 +26,8 @@ class DynamicObject {
 				} else {
 					this.type = asset.mime.slice(0, asset.mime.indexOf("/"));
 				}
+				this.keyframes = new Array(this.project.root.duration).fill(null);
 			}
-			this.keyframes = new Array(this.project.root.duration).fill(null);
 			if(onlyGraphics(this)) {
 				this.set("z", Math.max(0, ...this.project.root.objs.filter(onlyGraphics).map(byZ)) + 1); // TODO: Fix max Z calculation
 			}
@@ -35,7 +35,6 @@ class DynamicObject {
 			if(value.project instanceof DynamicProject) {
 				this.project = value.project;
 			}
-			delete value.project;
 			this.id = typeof value.id === "string" ? value.id : uid(this.project.root.objs.map(byID));
 			this.date = isFinite(value.date) ? +value.date : Date.now();
 			if(value.parent) {
@@ -50,34 +49,34 @@ class DynamicObject {
 				if(!(this.asset = this.project.getAsset(value.asset))) {
 					throw new MiroError("The `asset` value must be a string of an asset ID.");
 				}
-			}
-			this.keyframes = new Array(this.project.root.duration).fill(null);
-			if(value.keyframes instanceof Array) {
-				for(const keyframe of value.keyframes) {
-					if(keyframe instanceof Object && keyframe.time >= 0 && keyframe.time < this.project.root.duration && keyframe.set instanceof Object) {
-						const keys = Object.keys(keyframe.set);
-						if(keys.length) {
-							const thisProperty = this.keyframes[keyframe.time] = {};
-							for(const key of keys) {
-								// TODO: Validate property data
-								const property = keyframe.set[key];
-								if(property.values instanceof Array) {
-									const values = [];
-									for(const value of property.values) {
-										if(typeof value.name === "string") {
-											values.push({
-												name: value.name,
-												value: value.value
-											});
+				this.keyframes = new Array(this.project.root.duration).fill(null);
+				if(value.keyframes instanceof Array) {
+					for(const keyframe of value.keyframes) {
+						if(keyframe instanceof Object && keyframe.time >= 0 && keyframe.time < this.project.root.duration && keyframe.set instanceof Object) {
+							const keys = Object.keys(keyframe.set);
+							if(keys.length) {
+								const thisProperty = this.keyframes[keyframe.time] = {};
+								for(const key of keys) {
+									// TODO: Validate property data
+									const property = keyframe.set[key];
+									if(property.values instanceof Array) {
+										const values = [];
+										for(const value of property.values) {
+											if(typeof value.name === "string") {
+												values.push({
+													name: value.name,
+													value: value.value
+												});
+											}
 										}
+										thisProperty[key] = {
+											values
+										};
+									} else {
+										thisProperty[key] = {
+											value: property.value
+										};
 									}
-									thisProperty[key] = {
-										values
-									};
-								} else {
-									thisProperty[key] = {
-										value: property.value
-									};
 								}
 							}
 						}
@@ -198,14 +197,16 @@ class DynamicObject {
 		}
 		delete obj.layer;
 		delete obj.timelineItem;
-		obj.keyframes = [];
-		for(let i = 0; i < this.keyframes.length; i++) {
-			const keyframe = this.keyframes[i];
-			if(keyframe) {
-				obj.keyframes.push({
-					time: i,
-					set: keyframe
-				});
+		if(this.keyframes) {
+			obj.keyframes = [];
+			for(let i = 0; i < this.keyframes.length; i++) {
+				const keyframe = this.keyframes[i];
+				if(keyframe) {
+					obj.keyframes.push({
+						time: i,
+						set: keyframe
+					});
+				}
 			}
 		}
 		return obj;
@@ -312,12 +313,12 @@ const confirmRemoveObjElem = objElem => {
 	};
 	if(objElem._obj.type === "group") {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?<br>
+			Are you sure you want to remove <b>${objElem._obj.name}</b>?<br>
 			All objects inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	} else {
 		new Miro.Dialog("Remove Object", html`
-			Are you sure you want to remove <span class="bold">${objElem._obj.name}</span>?
+			Are you sure you want to remove <b>${objElem._obj.name}</b>?
 		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	}
 };

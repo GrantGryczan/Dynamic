@@ -49,7 +49,7 @@ const assetCreationMenuItems = [{
 			}
 		}
 		deselectAssets();
-		const names = project.data.assets.map(byInsensitiveName);
+		const names = project.data.assets.map(byName).map(insensitiveString);
 		let name = "Object";
 		for(let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Object ${i}`;
@@ -75,7 +75,7 @@ const assetCreationMenuItems = [{
 		for(const assetElem of assetElems) {
 			assetElem.classList.remove("selected");
 		}
-		const names = project.data.assets.map(byInsensitiveName);
+		const names = project.data.assets.map(byName).map(insensitiveString);
 		let name = "Group";
 		for(let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Group ${i}`;
@@ -262,7 +262,7 @@ const timelineItemCreationMenuItems = [{
 		for(const timelineItem of timelineItemArray) {
 			timelineItem.classList.remove("selected");
 		}
-		const names = project.root.objs.map(byInsensitiveName);
+		const names = project.root.objs.map(byName).map(insensitiveString);
 		let name = "Group";
 		for(let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Group ${i}`;

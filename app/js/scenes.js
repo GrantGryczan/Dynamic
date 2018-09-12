@@ -13,7 +13,7 @@ class DynamicScene {
 		if(typeof value.name === "string") {
 			value.name = value.name.trim();
 		} else {
-			const names = value.project.data.scenes.map(byInsensitiveName);
+			const names = value.project.data.scenes.map(byName).map(insensitiveString);
 			value.name = "Scene";
 			for(let i = 2; names.includes(insensitiveString(value.name)); i++) {
 				value.name = `Scene ${i}`;
@@ -80,7 +80,7 @@ const removeScene = sceneElem => {
 const confirmRemoveScene = sceneElem => {
 	if(project.data.scenes.length !== 1) {
 		new Miro.Dialog("Remove Scene", html`
-			Are you sure you want to remove <span class="bold">${sceneElem._scene.name}</span>?<br>
+			Are you sure you want to remove <b>${sceneElem._scene.name}</b>?<br>
 			Objects and other data inside the scene will also be removed.
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {
@@ -107,7 +107,7 @@ const renameScene = initialValue => {
 		initialValue = scene.name;
 	}
 	const input = new Miro.Dialog("Rename", html`
-		Enter a new name for <span class="bold">$${scene.name}</span>.
+		Enter a new name for <b>$${scene.name}</b>.
 		<div class="mdc-text-field">
 			<input class="mdc-text-field__input" name="name" type="text" value="$${initialValue}" required>
 			<div class="mdc-line-ripple"></div>
@@ -120,7 +120,7 @@ const renameScene = initialValue => {
 			const trimmedValue = input.value.trim();
 			const insensitiveValue = trimmedValue.toLowerCase();
 			if(insensitiveString(scene.name) !== insensitiveValue) {
-				if(project.data.scenes.map(byInsensitiveName).includes(insensitiveValue)) {
+				if(project.data.scenes.map(byName).map(insensitiveString).includes(insensitiveValue)) {
 					new Miro.Dialog("Error", "That name is already taken.").then(renameScene.bind(null, input.value));
 				} else {
 					scene.name = trimmedValue;

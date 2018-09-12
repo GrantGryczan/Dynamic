@@ -62,7 +62,7 @@ class DynamicProject {
 				} catch(err) {
 					console.warn(err);
 					new Miro.Dialog("Error", html`
-						<span class="bold">${assetData.name}</span> is not a valid asset.
+						<b>${assetData.name}</b> is not a valid asset.
 					`);
 					continue;
 				}
@@ -91,7 +91,7 @@ class DynamicProject {
 				} catch(err) {
 					console.warn(err);
 					new Miro.Dialog("Error", html`
-						<span class="bold">${objData && objData.name}</span> is not a valid object.
+						<b>${objData && objData.name}</b> is not a valid object.
 					`);
 				}
 			}
@@ -127,7 +127,7 @@ class DynamicProject {
 	}
 	async close() {
 		if(!this.saved && await new Miro.Dialog("Confirm", html`
-			Are you sure you want to close <span class="bold">${this.name}</span>?<br>
+			Are you sure you want to close <b>${this.name}</b>?<br>
 			All unsaved changes will be lost.
 		`, ["Yes", "No"]) !== 0) {
 			return;
@@ -334,7 +334,7 @@ const open = async location => {
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`
-					<span class="bold">${project.data.assets[i].name}</span> is not a valid asset.
+					<b>${project.data.assets[i].name}</b> is not a valid asset.
 				`);
 			}
 		}

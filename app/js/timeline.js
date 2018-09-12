@@ -210,17 +210,19 @@ const updateTimelines = () => {
 						}
 					}
 				}
-				const keyframe = obj.keyframes[i];
-				if(keyframe) {
-					frame.classList.add("keyframe");
-					for(const key of Object.keys(keyframe)) {
-						const property = keyframe[key];
-						if("value" in property) {
-							properties[key] = property.value;
+				if(obj.keyframes) {
+					const keyframe = obj.keyframes[i];
+					if(keyframe) {
+						frame.classList.add("keyframe");
+						for(const key of Object.keys(keyframe)) {
+							const property = keyframe[key];
+							if("value" in property) {
+								properties[key] = property.value;
+							}
 						}
+					} else if(properties.visible) {
+						frame.classList.add("tween");
 					}
-				} else if(properties.visible) {
-					frame.classList.add("tween");
 				}
 			}
 		}
@@ -459,9 +461,44 @@ const changeSlider = change => {
 		setTime(Math.min(project.root.duration - 1, Math.round((project.root.duration - 1) * Math.max(0, initialTargetPos))));
 	}
 };
-const deleteFrames = () => {
+const deleteFrames = async () => {
 	if(project.root.duration !== 1) {
 		const topFrames = getTopFrames();
+		const unsafeObjs = [];
+		for(const obj of project.root.objs) {
+			if(obj.keyframes) {
+				const safeFrames = obj.keyframes.map(Boolean);
+				for(let i = 0; i < topFrames.length; i++) {
+					if(topFrames[i]) {
+						safeFrames[i] = false;
+					}
+				}
+				if(!safeFrames.includes(true)) {
+					unsafeObjs.push(obj);
+				}
+			}
+		}
+		if(unsafeObjs.length) {
+			let unsafeObjNames = unsafeObjs.map(byName).map(bTag);
+			if(unsafeObjNames.length > 1) {
+				const lastIndex = unsafeObjNames.length - 1;
+				unsafeObjNames[lastIndex] = `and ${unsafeObjNames[lastIndex]}`;
+				unsafeObjNames = unsafeObjNames.join(unsafeObjNames.length > 2 ? ", " : " ");
+			} else {
+				unsafeObjNames = unsafeObjNames[0];
+			}
+			if(await new Miro.Dialog("Delete Frames", html`
+				Deleting the selected frame(s) would cause ${unsafeObjNames} to be deleted.<br>
+				Are you sure?
+			`, ["Yes", "No"])) {
+				return;
+			} else {
+				for(const obj of unsafeObjs) {
+					removeObj(obj.timelineItem);
+				}
+				storeObjs();
+			}
+		}
 		let quantity = 0;
 		let value = -1;
 		for(let i = topFrames.length - 1; i >= 0; i--) {
@@ -469,12 +506,15 @@ const deleteFrames = () => {
 				value = i;
 				quantity++;
 				for(const obj of project.root.objs) {
-					obj.keyframes.splice(i, 1);
+					if(obj.keyframes) {
+						obj.keyframes.splice(i, 1);
+					}
 					project.frames[obj.id].splice(i, 1);
 				}
 			}
 		}
 		setTime(Math.max(0, Math.min((project.root.duration -= quantity) - 1, value)));
+		project.saved = false;
 	}
 };
 const insertFrames = (toRight, quantity) => {
@@ -500,8 +540,10 @@ const insertFrames = (toRight, quantity) => {
 	project.root.duration += quantity;
 	const end = value + quantity;
 	for(const obj of project.root.objs) {
-		for(let i = value; i < end; i++) {
-			obj.keyframes.splice(value, 0, null);
+		if(obj.keyframes) {
+			for(let i = value; i < end; i++) {
+				obj.keyframes.splice(value, 0, null);
+			}
 		}
 		const focus = project.frames[obj.id].includes(2);
 		const selected = focus || project.frames[obj.id].includes(1);
@@ -517,6 +559,7 @@ const insertFrames = (toRight, quantity) => {
 	}
 	project.time = value;
 	updateTimeRuler();
+	project.saved = false;
 };
 const promptInsertFrames = toRight => {
 	const topFrames = getTopFrames();

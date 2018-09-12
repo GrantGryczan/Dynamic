@@ -1,5 +1,5 @@
 "use strict";
-global.Miro = {};
+const Miro = global.Miro = {};
 Miro.magic = {};
 Miro.magic.magic = Miro.magic;
 console.log(Miro.magic);
@@ -37,18 +37,14 @@ Miro.prepare = node => {
 		elem._mdc = new mdc.formField.MDCFormField(elem);
 	}
 };
-const htmlExps = ["$", "&"];
 const htmlReplacements = [[/&/g, "&amp;"], [/</g, "&lt;"], [/>/g, "&gt;"], [/"/g, "&quot;"], [/'/g, "&#39;"], [/`/g, "&#96;"]];
-global.html = (strs, ...exps) => {
+const html = global.html = (strs, ...exps) => {
 	let str = strs[0];
 	for(let i = 0; i < exps.length; i++) {
 		let code = String(exps[i]);
-		const expIndex = htmlExps.indexOf(strs[i].slice(-1));
-		if(expIndex !== -1) {
+		if(strs[i].slice(-1) === "$") {
 			str = str.slice(0, -1);
-			for(let j = expIndex; j < htmlReplacements.length; j++) {
-				code = code.replace(...htmlReplacements[j]);
-			}
+			code = html.escape(code);
 		}
 		str += code + strs[i + 1];
 	}
@@ -56,6 +52,15 @@ global.html = (strs, ...exps) => {
 	elem.innerHTML = str.trim() || str;
 	Miro.prepare(elem);
 	return elem.childNodes.length === 1 ? elem.firstChild : elem;
+};
+html.escape = code => {
+	if(typeof code !== "string") {
+		throw new MiroError("The `code` parameter must be a string.");
+	}
+	for(const htmlReplacement of htmlReplacements) {
+		code = code.replace(...htmlReplacement);
+	}
+	return code;
 };
 const mdcTypes = ["checkbox", "radio", "select", "slider", "text-field"];
 Miro.formState = (form, state) => {
