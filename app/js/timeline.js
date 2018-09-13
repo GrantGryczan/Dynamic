@@ -513,6 +513,7 @@ const deleteFrames = async () => {
 				}
 			}
 		}
+		updateLayers(true);
 		setTime(Math.max(0, Math.min((project.root.duration -= quantity) - 1, value)));
 		project.saved = false;
 	}

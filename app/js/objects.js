@@ -30,7 +30,7 @@ class DynamicObject {
 			if(onlyGraphics(this)) {
 				const zs = [];
 				for(const obj of project.root.objs) {
-					if(obj.keyframes) {
+					if(onlyGraphics(obj)) {
 						for(const keyframe of obj.keyframes) {
 							if(keyframe && keyframe.z && !zs.includes(keyframe.z.value)) {
 								zs.push(keyframe.z.value);
@@ -232,8 +232,11 @@ class DynamicObject {
 		let value;
 		for(let i = 0; i <= time; i++) {
 			const keyframe = this.keyframes[i];
-			if(keyframe && key in keyframe) {
-				({value} = keyframe[key]);
+			if(keyframe) {
+				const property = keyframe[key];
+				if(property) {
+					({value} = property);
+				}
 			}
 		}
 		return value;
@@ -248,6 +251,17 @@ class DynamicObject {
 			value
 		};
 		this.project.saved = false;
+	}
+	delete(key, time) {
+		time = time >= 0 ? Math.min(this.project.root.duration - 1, +time) : this.project.time;
+		const keyframe = this.keyframes[time];
+		if(keyframe && keyframe[key]) {
+			delete keyframe[key];
+			if(Object.keys(keyframe).length === 0) {
+				this.keyframes[time] = null;
+			}
+			this.project.saved = false;
+		}
 	}
 	add(parent, key, value, time) {
 		
@@ -266,8 +280,24 @@ const appendObj = (obj, create) => {
 	}
 	(obj.parent ? obj.parent.timelineItem.lastElementChild : timelineItems).appendChild(obj.timelineItem);
 };
-const updateLayers = () => {
-	for(const obj of project.root.objs.filter(onlyGraphics).sort(byZIndex)) {
+const updateLayers = keyframesChanged => {
+	const objs = project.root.objs.filter(onlyGraphics);
+	if(keyframesChanged) {
+		for(const obj of objs) {
+			let value;
+			for(let i = 0; i < project.root.duration; i++) {
+				const keyframe = obj.keyframes[i];
+				if(keyframe && keyframe.z) {
+					if(value === keyframe.z.value) {
+						obj.delete("z", i);
+					} else {
+						({value} = keyframe.z);
+					}
+				}
+			}
+		}
+	}
+	for(const obj of objs.sort(byZIndex)) {
 		const z = obj.get("z");
 		if(isNaN(z)) {
 			obj.layer.remove();
