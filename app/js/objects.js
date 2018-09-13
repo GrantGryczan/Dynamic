@@ -522,7 +522,7 @@ const addToTimeline = () => {
 	for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected")) {
 		timelineItem.classList.remove("selected");
 	}
-	const assetElems = assets.querySelectorAll(".asset.selected, .asset.selected .asset");
+	const assetElems = [...assets.querySelectorAll(".asset.selected, .asset.selected .asset")].reverse();
 	for(const assetElem of assetElems) {
 		let obj;
 		try {
@@ -536,7 +536,7 @@ const addToTimeline = () => {
 				assetElem[_parent].appendChild(obj.timelineItem);
 				delete assetElem[_parent];
 			} else {
-				timelineItemDrag.before(obj.timelineItem);
+				timelineItemDrag.after(obj.timelineItem);
 			}
 			if(obj.type === "group") {
 				for(const child of assetElem.lastElementChild.children) {
