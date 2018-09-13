@@ -1,7 +1,6 @@
 "use strict";
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
-const byZ = obj => obj.get("z");
 const byZIndex = (a, b) => b.get("z") - a.get("z");
 class DynamicObject {
 	constructor(value) {
@@ -29,7 +28,21 @@ class DynamicObject {
 				this.keyframes = new Array(this.project.root.duration).fill(null);
 			}
 			if(onlyGraphics(this)) {
-				this.set("z", Math.max(0, ...this.project.root.objs.filter(onlyGraphics).map(byZ)) + 1); // TODO: Fix max Z calculation
+				const zs = [];
+				for(const obj of project.root.objs) {
+					if(obj.keyframes) {
+						for(const keyframe of obj.keyframes) {
+							if(keyframe && keyframe.z && !zs.includes(keyframe.z.value)) {
+								zs.push(keyframe.z.value);
+							}
+						}
+					}
+				}
+				let z = 1;
+				while(zs.includes(z)) {
+					z++;
+				}
+				this.set("z", z);
 			}
 		} else if(value instanceof Object) {
 			if(value.project instanceof DynamicProject) {
@@ -536,7 +549,7 @@ const addToTimeline = () => {
 			if(obj.type === "group") {
 				obj.timelineItem.classList.add("open");
 			} else {
-				obj.set("visible", true);
+				obj.set("present", true);
 			}
 		} else if(assetElem[_parent]) {
 			delete assetElem[_parent];

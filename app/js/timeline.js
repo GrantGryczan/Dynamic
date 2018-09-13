@@ -220,7 +220,7 @@ const updateTimelines = () => {
 								properties[key] = property.value;
 							}
 						}
-					} else if(properties.visible) {
+					} else if(properties.present) {
 						frame.classList.add("tween");
 					}
 				}

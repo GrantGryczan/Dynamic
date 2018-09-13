@@ -334,7 +334,9 @@ const handleMouseUp = (evt, button) => {
 							layerDrag.remove();
 							const layerElems = layers.querySelectorAll(".layer");
 							for(let i = 0; i < layerElems.length; i++) {
-								layerElems[i]._obj.set("z", zs[i]);
+								if(layerElems[i]._obj.get("z") !== zs[i]) {
+									layerElems[i]._obj.set("z", zs[i]);
+								}
 							}
 							updateLayers();
 							updateTimelines();
