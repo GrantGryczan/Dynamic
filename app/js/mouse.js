@@ -334,8 +334,28 @@ const handleMouseUp = (evt, button) => {
 							layerDrag.remove();
 							const layerElems = layers.querySelectorAll(".layer");
 							for(let i = 0; i < layerElems.length; i++) {
-								if(layerElems[i]._obj.get("z") !== zs[i]) {
-									layerElems[i]._obj.set("z", zs[i]);
+								const layerElem = layerElems[i];
+								const currentKeyframe = layerElem._obj.keyframes[project.time];
+								if(currentKeyframe && currentKeyframe.z) {
+									delete currentKeyframe.z;
+									if(Object.keys(currentKeyframe).length === 0) {
+										delete layerElem._obj.keyframes[project.time];
+									}
+								}
+								const currentZ = layerElem._obj.get("z");
+								if(currentZ !== zs[i]) {
+									objs: for(const obj of project.root.objs) {
+										if(obj.keyframes && obj !== layerElem._obj) {
+											for(let j = project.time + 1; j < obj.keyframes.length; j++) {
+												const keyframe = obj.keyframes[j];
+												if(keyframe && keyframe.z && keyframe.z.value === zs[i]) {
+													layerElem._obj.set("z", layerElem._obj.get("z", j), j);
+													break objs;
+												}
+											}
+										}
+									}
+									layerElem._obj.set("z", zs[i]);
 								}
 							}
 							updateLayers();
