@@ -190,10 +190,22 @@ const updateTimelines = () => {
 			objCount++;
 		}
 		obj.timelineItem.classList[highlight ? "add" : "remove"]("selected");
-		const properties = {};
 		const timeline = obj.timeline;
 		if(timeline) {
 			timeline.classList.replace(timeline.classList[1], obj.timelineItem.classList[1]);
+			const properties = {};
+			const firstValue = timeUnits.children[0]._value;
+			for(let i = 0; i < firstValue; i++) {
+				const keyframe = obj.keyframes[i];
+				if(keyframe) {
+					for(const key of Object.keys(keyframe)) {
+						const property = keyframe[key];
+						if("value" in property) {
+							properties[key] = property.value;
+						}
+					}
+				}
+			}
 			for(let i = 0; i < timeline.children.length; i++) {
 				const frame = timeline.children[i];
 				frame.id = `frame_${obj.id}_${frame._value = timeUnits.children[i]._value}`;
