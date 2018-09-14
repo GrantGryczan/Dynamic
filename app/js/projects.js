@@ -126,7 +126,7 @@ class DynamicProject {
 		this.tab.classList[(saveProj.disabled = this[_saved] = !!value) ? "add" : "remove"]("saved");
 	}
 	async close() {
-		if(!this.saved && await new Miro.Dialog("Confirm", html`
+		if(!this.saved && await new Miro.Dialog("Close Project", html`
 			Are you sure you want to close <b>${this.name}</b>?<br>
 			All unsaved changes will be lost.
 		`, ["Yes", "No"]) !== 0) {

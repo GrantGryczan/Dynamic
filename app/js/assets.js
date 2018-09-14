@@ -131,6 +131,7 @@ const removeAsset = assetElem => {
 			removeObj(obj.timelineItem);
 		}
 		updateTimelines();
+		updateLayers(true);
 	}
 	assetElem.remove();
 };

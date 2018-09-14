@@ -108,6 +108,7 @@ for(const statusElem of projectPage.querySelectorAll("#statusBar [data-key]")) {
 	status[statusElem.getAttribute("data-key")] = statusElem;
 }
 const targetIndicator = container.querySelector("#targetIndicator");
+const numerically = (a, b) => a - b;
 const insensitiveString = string => string.trim().toLowerCase();
 const byName = obj => obj.name;
 const bTag = string => `<b>${html.escape(string)}</b>`;
@@ -314,7 +315,7 @@ const unsaved = project => !project.saved;
 window.onbeforeunload = () => {
 	if(shouldNotClose && notConfirmingClose && Object.values(projects).some(unsaved)) {
 		notConfirmingClose = false;
-		new Miro.Dialog("Confirm", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
+		new Miro.Dialog("Exit", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
 		return true;
 	} else {
 		win.removeAllListeners();

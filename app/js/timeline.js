@@ -211,7 +211,7 @@ const updateTimelines = () => {
 					}
 				}
 				if(obj.keyframes) {
-					const keyframe = obj.keyframes[i];
+					const keyframe = obj.keyframes[frame._value];
 					if(keyframe) {
 						frame.classList.add("keyframe");
 						for(const key of Object.keys(keyframe)) {

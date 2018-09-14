@@ -356,8 +356,8 @@ const handleMouseUp = (evt, button) => {
 									layerElem._obj.set("z", newZ);
 								}
 							}
-							updateLayers(true);
 							updateTimelines();
+							updateLayers(true);
 						}
 					} else {
 						selectLayer(mouseTarget.parentNode, downActive === layerContainer ? 2 : button);

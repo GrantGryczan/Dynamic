@@ -285,7 +285,7 @@ const updateLayers = keyframesChanged => {
 	if(keyframesChanged) {
 		for(const obj of objs) {
 			let value;
-			for(let i = 0; i < project.root.duration; i++) {
+			for(let i = 0; i < obj.keyframes.length; i++) {
 				const keyframe = obj.keyframes[i];
 				if(keyframe && keyframe.z) {
 					if(value === keyframe.z.value) {
@@ -351,6 +351,7 @@ const confirmRemoveObjElem = objElem => {
 				}
 			}
 			updateTimelines();
+			updateLayers(true);
 			updateProperties();
 		}
 	};
@@ -381,6 +382,7 @@ const confirmRemoveObjElems = objElems => {
 					}
 				}
 				updateTimelines();
+				updateLayers(true);
 				updateProperties();
 			}
 		});
