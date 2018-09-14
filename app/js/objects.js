@@ -357,7 +357,7 @@ const confirmRemoveObjElem = objElem => {
 	if(objElem._obj.type === "group") {
 		new Miro.Dialog("Remove Group", html`
 			Are you sure you want to remove <b>${objElem._obj.name}</b>?<br>
-			All objects inside the group will be taken out.
+			All items inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveObjElem);
 	} else {
 		new Miro.Dialog("Remove Object", html`

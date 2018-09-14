@@ -151,7 +151,7 @@ const confirmRemoveAsset = assetElem => {
 	} else if(assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
 			Are you sure you want to remove <b>${assetElem._asset.name}</b>?<br>
-			All assets inside the group will be taken out.
+			All items inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	}
 };
