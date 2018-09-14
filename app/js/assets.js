@@ -157,20 +157,22 @@ const confirmRemoveAsset = assetElem => {
 	}
 };
 const confirmRemoveAssets = assetElems => {
-	if(assetElems.length === 1) {
-		confirmRemoveAsset(assetElems[0]);
-	} else if(assetElems.length !== 1) {
-		new Miro.Dialog("Remove Assets", html`
-			Are you sure you want to remove all those assets?<br>
-			Objects using the assets will also be removed.
-		`, ["Yes", "No"]).then(value => {
-			if(value === 0) {
-				assetElems.forEach(removeAsset);
-				storeAssets();
-				storeObjs();
-				updateProperties();
-			}
-		});
+	if(assetElems.length) {
+		if(assetElems.length === 1) {
+			confirmRemoveAsset(assetElems[0]);
+		} else if(assetElems.length !== 1) {
+			new Miro.Dialog("Remove Assets", html`
+				Are you sure you want to remove all those assets?<br>
+				Objects using the assets will also be removed.
+			`, ["Yes", "No"]).then(value => {
+				if(value === 0) {
+					assetElems.forEach(removeAsset);
+					storeAssets();
+					storeObjs();
+					updateProperties();
+				}
+			});
+		}
 	}
 };
 const removeSelectedAssets = () => {

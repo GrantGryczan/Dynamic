@@ -367,25 +367,27 @@ const confirmRemoveObjElem = objElem => {
 	}
 };
 const confirmRemoveObjElems = objElems => {
-	if(objElems.length === 1) {
-		confirmRemoveObjElem(objElems[0]);
-	} else if(objElems.length !== 1) {
-		new Miro.Dialog("Remove Objects", "Are you sure you want to remove all those objects?", ["Yes", "No"]).then(value => {
-			if(value === 0) {
-				objElems.forEach(removeObj);
-				storeObjs();
-				for(const objElem of objElems) {
-					if(objElem._obj.asset) {
-						for(const obj of objElem._obj.asset.presentObjects) {
-							obj.updateName();
+	if(objElems.length) {
+		if(objElems.length === 1) {
+			confirmRemoveObjElem(objElems[0]);
+		} else if(objElems.length !== 1) {
+			new Miro.Dialog("Remove Objects", "Are you sure you want to remove all those objects?", ["Yes", "No"]).then(value => {
+				if(value === 0) {
+					objElems.forEach(removeObj);
+					storeObjs();
+					for(const objElem of objElems) {
+						if(objElem._obj.asset) {
+							for(const obj of objElem._obj.asset.presentObjects) {
+								obj.updateName();
+							}
 						}
 					}
+					updateTimelines();
+					updateLayers(true);
+					updateProperties();
 				}
-				updateTimelines();
-				updateLayers(true);
-				updateProperties();
-			}
-		});
+			});
+		}
 	}
 };
 const removeSelectedLayers = () => {
