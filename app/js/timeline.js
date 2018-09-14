@@ -336,8 +336,7 @@ const selectFrame = (timeline, value, button, shift) => {
 		}
 		focusFrame(timeline, value);
 	}
-	scrollFrameIntoView(value);
-	updateSlider();
+	setTime(project.time);
 	setActive(timelineContainer);
 };
 const moveFrameStates = change => {

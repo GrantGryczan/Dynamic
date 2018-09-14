@@ -255,12 +255,20 @@ class DynamicObject {
 	delete(key, time) {
 		time = time >= 0 ? Math.min(this.project.root.duration - 1, +time) : this.project.time;
 		const keyframe = this.keyframes[time];
-		if(keyframe && keyframe[key]) {
-			delete keyframe[key];
-			if(Object.keys(keyframe).length === 0) {
-				this.keyframes[time] = null;
+		if(keyframe) {
+			const property = keyframe[key];
+			if(property) {
+				if(key === "z") {
+					for(const obj of project.root.objs.filter(onlyGraphics)) {
+						// TODO: Offset other layers to accommodate this layer's nonexistence
+					}
+				}
+				delete keyframe[key];
+				if(Object.keys(keyframe).length === 0) {
+					this.keyframes[time] = null;
+				}
+				this.project.saved = false;
 			}
-			this.project.saved = false;
 		}
 	}
 	add(parent, key, value, time) {
@@ -283,6 +291,7 @@ const appendObj = (obj, create) => {
 const updateLayers = keyframesChanged => {
 	const objs = project.root.objs.filter(onlyGraphics);
 	if(keyframesChanged) {
+		const zs = [];
 		for(const obj of objs) {
 			let value;
 			for(let i = 0; i < obj.keyframes.length; i++) {
@@ -290,8 +299,20 @@ const updateLayers = keyframesChanged => {
 				if(keyframe && keyframe.z) {
 					if(value === keyframe.z.value) {
 						obj.delete("z", i);
-					} else {
-						({value} = keyframe.z);
+					} else if(!zs.includes(value = keyframe.z.value)) {
+						zs.push(value);
+					}
+				}
+			}
+		}
+		zs.sort(numerically);
+		for(const obj of objs) {
+			for(let i = 0; i < obj.keyframes.length; i++) {
+				const keyframe = obj.keyframes[i];
+				if(keyframe && keyframe.z) {
+					const newValue = zs.indexOf(keyframe.z.value) + 1;
+					if(keyframe.z.value !== newValue) {
+						obj.set("z", newValue, i);
 					}
 				}
 			}
@@ -332,8 +353,19 @@ const removeObj = objElem => {
 	if(project.selectedLayer === `layer_${objElem._obj.id}`) {
 		project.selectedLayer = null;
 	}
-	while(objElem._obj.timelineItem.lastElementChild.firstElementChild) {
-		objElem._obj.timelineItem.before(objElem._obj.timelineItem.lastElementChild.firstElementChild);
+	if(objElem._obj.type === "group") {
+		while(objElem._obj.timelineItem.lastElementChild.firstElementChild) {
+			objElem._obj.timelineItem.before(objElem._obj.timelineItem.lastElementChild.firstElementChild);
+		}
+	} else {
+		for(let i = 0; i < objElem._obj.keyframes.length; i++) {
+			const keyframe = objElem._obj.keyframes[i];
+			if(keyframe) {
+				for(const key of Object.keys(keyframe)) {
+					objElem._obj.delete(key, i);
+				}
+			}
+		}
 	}
 	if(onlyGraphics(objElem._obj)) {
 		objElem._obj.layer.remove();
