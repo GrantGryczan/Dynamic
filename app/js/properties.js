@@ -29,8 +29,9 @@ fullPreview.addEventListener("mousemove", evt => {
 });
 const canvasProperties = () => {
 	subject = content;
-	prop.name.elements[0].value = "< Canvas >";
-	prop.name.elements[0].readOnly = true;
+	const nameElement = prop.name.elements[0];
+	nameElement.value = "< Canvas >";
+	nameElement.readOnly = true;
 	prop.name.classList.remove("hidden");
 	prop.fps.elements[0].value = project.data.fps;
 	prop.fps.classList.remove("hidden");
