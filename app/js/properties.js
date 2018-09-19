@@ -49,8 +49,8 @@ const updateProperties = () => {
 	if(assetContainer.classList.contains("activeProperties")) {
 		const assetElems = assets.querySelectorAll(".asset.selected");
 		if(assetElems.length) {
-			const nameElement = prop.name.elements[0];
 			const singleSelected = assetElems.length === 1;
+			const nameElement = prop.name.elements[0];
 			if(nameElement.readOnly = !singleSelected) {
 				nameElement.value = `< ${assetElems.length} selected >`;
 			} else {
@@ -96,20 +96,38 @@ const updateProperties = () => {
 	} else {
 		const objElems = layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : (timelineContainer.classList.contains("activeProperties") ? timelineItems.querySelectorAll(".timelineItem.selected") : []);
 		if(objElems.length) {
+			const singleSelected = objElems.length === 1;
 			const nameElement = prop.name.elements[0];
 			nameElement.readOnly = true;
-			if(objElems.length === 1) {
-				const objElem = objElems[0];
-				if(objElem._obj.type === "group") {
+			if(singleSelected) {
+				const obj = objElems[0]._obj;
+				nameElement.value = obj.name;
+				if(obj.type === "group") {
 					nameElement.readOnly = false;
 				}
-				nameElement.value = objElem._obj.name;
-				nameElement.labels[0].classList.add("mdc-floating-label--float-above");
 			} else {
 				nameElement.value = `< ${objElems.length} selected >`;
 			}
+			nameElement.labels[0].classList.add("mdc-floating-label--float-above");
 			prop.name.classList.remove("hidden");
-			// TODO: Object properties
+			let typeGroup = false;
+			let typeObj = false;
+			let typeImage = false;
+			let typeAudio = false;
+			for(const objElem of objElems) {
+				if(objElem._obj.type === "group") {
+					typeGroup = true;
+				} else if(objElem._obj.type === "obj") {
+					typeObj = true;
+				} else if(objElem._obj.type === "image") {
+					typeImage = true;
+				} else if(objElem._obj.type === "audio") {
+					typeAudio = true;
+				}
+			}
+			if(!typeGroup && !typeObj && !typeImage && typeAudio) {
+				
+			}
 		} else {
 			canvasProperties();
 		}
