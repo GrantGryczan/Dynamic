@@ -21,11 +21,14 @@ class DynamicAsset {
 				</div>
 			`;
 		} else if(this.type === "file") {
-			if(!(value.mime.startsWith("image/") || value.mime.startsWith("audio/"))) {
+			const typeImage = value.mime.startsWith("image/");
+			if(!(typeImage || value.mime.startsWith("audio/"))) {
 				throw new MiroError("The `mime` value is invalid.");
 			}
 			this.mime = value.mime;
 			this.data = value.data;
+			this.media = new (typeImage ? Image : Audio)();
+			this.media.src = this.url;
 			this.element = html`
 				<div id="asset_$${this.id}" class="asset typeFile" title="$${this.name}" data-mime="$${this.mime}">
 					<div class="bar">
@@ -78,6 +81,9 @@ class DynamicAsset {
 			obj.parent = this.parent.id;
 		}
 		delete obj.element;
+		if(this.type === "file") {
+			delete obj.media;
+		}
 		return obj;
 	}
 	get url() {
@@ -286,10 +292,8 @@ const addFiles = async files => {
 				data
 			});
 			await new Promise((resolve, reject) => {
-				const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
-				media.src = asset.url;
-				media.addEventListener(media instanceof Image ? "load" : "canplay", resolve);
-				media.addEventListener("error", reject);
+				asset.media.addEventListener(asset.media instanceof Image ? "load" : "canplay", resolve);
+				asset.media.addEventListener("error", reject);
 			});
 		} catch(err) {
 			console.warn(err);

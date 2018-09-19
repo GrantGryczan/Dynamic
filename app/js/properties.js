@@ -126,7 +126,21 @@ const updateProperties = () => {
 				}
 			}
 			if(!typeGroup && !typeObj && !typeImage && typeAudio) {
-				
+				const firstObj = objElems[0]._obj;
+				let timeValue = firstObj.get("time");
+				const durations = [firstObj.asset.media.duration];
+				for(let i = 1; i < objElems.length; i++) {
+					const obj = objElems[i]._obj;
+					if(obj.get("time") !== timeValue) {
+						timeValue = undefined;
+					}
+					durations.push(obj.asset.media.duration);
+				}
+				const timeElement = prop.time.elements[0];
+				timeElement.step = 1 / project.data.fps;
+				timeElement.max = Math.max(...durations);
+				timeElement.value = timeValue;
+				prop.time.classList.remove("hidden");
 			}
 		} else {
 			canvasProperties();
