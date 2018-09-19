@@ -382,6 +382,7 @@ const setTime = value => {
 	scrollFrameIntoView();
 	updateSlider();
 	updateLayers();
+	updateProperties();
 };
 const scrollFrameIntoView = value => {
 	if(value === undefined) {

@@ -128,14 +128,22 @@ const updateProperties = () => {
 			}
 			if(!typeGroup && !typeObj && !typeImage && typeAudio) {
 				const firstObj = objElems[0]._obj;
-				let timeValue = firstObj.get("time");
-				const durations = [firstObj.asset.media.duration];
-				for(let i = 1; i < objElems.length; i++) {
-					const obj = objElems[i]._obj;
-					if(obj.get("time") !== timeValue) {
-						timeValue = undefined;
-					}
+				let timeValue = null;
+				const durations = [];
+				for(const obj of project.root.objs) {
 					durations.push(obj.asset.media.duration);
+					if(timeValue !== "") {
+						for(let i = 0; i < project.root.duration; i++) {
+							if(project.frames[obj.id][i]) {
+								const currentTime = obj.get("time", i);
+								if(timeValue === null) {
+									timeValue = currentTime;
+								} else if(currentTime !== timeValue) {
+									timeValue = "";
+								}
+							}
+						}
+					}
 				}
 				const timeElement = prop.time.elements[0];
 				timeElement.step = 1 / project.data.fps;

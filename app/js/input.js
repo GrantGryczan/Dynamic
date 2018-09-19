@@ -347,8 +347,15 @@ document.addEventListener("input", evt => {
 		updateTimeUnits();
 		project.saved = false;
 	} else if(evt.target === prop.time.elements[0]) {
-		for(const objElem of timelineItems.querySelectorAll(".timelineItem.typeAudio.selected")) {
-			objElem._obj.set("time", +evt.target.value);
+		const value = +evt.target.value;
+		for(const obj of project.root.objs) {
+			if(obj.type === "audio") {
+				for(let i = 0; i < project.root.duration; i++) {
+					if(project.frames[obj.id][i]) {
+						obj.set("time", value, i);
+					}
+				}
+			}
 		}
 		updateTimelines();
 	}
