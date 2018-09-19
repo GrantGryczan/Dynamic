@@ -49,12 +49,14 @@ const updateProperties = () => {
 	if(assetContainer.classList.contains("activeProperties")) {
 		const assetElems = assets.querySelectorAll(".asset.selected");
 		if(assetElems.length) {
-			if(prop.name.elements[0].readOnly = assetElems.length !== 1) {
-				prop.name.elements[0].value = `< ${assetElems.length} selected >`;
+			const nameElement = prop.name.elements[0];
+			const singleSelected = assetElems.length === 1;
+			if(nameElement.readOnly = !singleSelected) {
+				nameElement.value = `< ${assetElems.length} selected >`;
 			} else {
-				prop.name.elements[0].value = assetElems[0]._asset.name;
-				prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
+				nameElement.value = assetElems[0]._asset.name;
 			}
+			nameElement.labels[0].classList.add("mdc-floating-label--float-above");
 			prop.name.classList.remove("hidden");
 			let typeGroup = false;
 			let typeObj = false;
@@ -69,7 +71,8 @@ const updateProperties = () => {
 				}
 			}
 			if(!typeGroup && !typeObj && typeFile) {
-				let mimeType = assetElems[0]._asset.mime;
+				const firstAsset = assetElems[0]._asset;
+				let mimeType = firstAsset.mime;
 				for(let i = 1; i < assetElems.length; i++) {
 					if(assetElems[i]._asset.mime !== mimeType) {
 						mimeType = false;
@@ -79,9 +82,9 @@ const updateProperties = () => {
 				if(mimeType) {
 					prop.mime.classList.remove("hidden");
 					prop.mime.elements[0].value = mimeType;
-					if(assetElems.length === 1) {
+					if(singleSelected) {
 						const previewMedia = mimeType.startsWith("image/") ? previewImage : previewAudio;
-						previewMedia.src = assetElems[0]._asset.url;
+						previewMedia.src = firstAsset.url;
 						previewMedia.classList.remove("hidden");
 						prop.preview.classList.remove("hidden");
 					}
@@ -93,15 +96,21 @@ const updateProperties = () => {
 	} else {
 		const objElems = layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : (timelineContainer.classList.contains("activeProperties") ? timelineItems.querySelectorAll(".timelineItem.selected") : []);
 		if(objElems.length) {
-			prop.name.elements[0].readOnly = true;
+			const nameElement = prop.name.elements[0];
+			nameElement.readOnly = true;
 			if(objElems.length === 1) {
-				if(objElems[0]._obj.type === "group") {
-					prop.name.elements[0].readOnly = false;
+				const objElem = objElems[0];
+				if(objElem._obj.type === "group") {
+					nameElement.readOnly = false;
+				} else if(objElem._obj.type === "audio") {
+					const timeElement = prop.time.elements[0];
+					timeElement.classList.remove("hidden");
+					
 				}
-				prop.name.elements[0].value = objElems[0]._obj.name;
-				prop.name.elements[0].labels[0].classList.add("mdc-floating-label--float-above");
+				nameElement.value = objElem._obj.name;
+				nameElement.labels[0].classList.add("mdc-floating-label--float-above");
 			} else {
-				prop.name.elements[0].value = `< ${objElems.length} selected >`;
+				nameElement.value = `< ${objElems.length} selected >`;
 			}
 			prop.name.classList.remove("hidden");
 			// TODO: Object properties
