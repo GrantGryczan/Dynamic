@@ -102,10 +102,6 @@ const updateProperties = () => {
 				const objElem = objElems[0];
 				if(objElem._obj.type === "group") {
 					nameElement.readOnly = false;
-				} else if(objElem._obj.type === "audio") {
-					const timeElement = prop.time.elements[0];
-					timeElement.classList.remove("hidden");
-					
 				}
 				nameElement.value = objElem._obj.name;
 				nameElement.labels[0].classList.add("mdc-floating-label--float-above");
