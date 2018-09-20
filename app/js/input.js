@@ -361,8 +361,11 @@ document.addEventListener("input", evt => {
 			updateTimelines();
 		}
 	} else if(evt.target === prop.speed.elements[0]) {
-		const value = +evt.target.value;
+		let value = +evt.target.value;
 		if(isFinite(value)) {
+			if(Math.abs(value) < 0.25) {
+				value = Math.sign(value) * 0.25;
+			}
 			for(const obj of project.root.objs) {
 				if(obj.type === "audio") {
 					for(let i = 0; i < project.root.duration; i++) {
@@ -391,6 +394,14 @@ document.addEventListener("change", evt => {
 			}
 		}
 		updateTimelines();
+	} else if(evt.target === prop.speed.elements[0]) {
+		let value = +evt.target.value;
+		if(isFinite(value)) {
+			if(Math.abs(value) < 0.25) {
+				value = Math.sign(value) * 0.25;
+			}
+			evt.target.value = value;
+		}
 	} else if(evt.target === foot.currentFrame) {
 		foot.currentFrame.value = project.time;
 	}
