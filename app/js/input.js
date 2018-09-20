@@ -363,8 +363,11 @@ document.addEventListener("input", evt => {
 	} else if(evt.target === prop.speed.elements[0]) {
 		let value = +evt.target.value;
 		if(isFinite(value)) {
-			if(Math.abs(value) < 0.25) {
+			const absValue = Math.abs(value);
+			if(absValue < 0.25) {
 				value = Math.sign(value) * 0.25;
+			} else if(absValue > 5) {
+				value = Math.sign(value) * 5;
 			}
 			for(const obj of project.root.objs) {
 				if(obj.type === "audio") {
@@ -380,7 +383,19 @@ document.addEventListener("input", evt => {
 	}
 }, capturePassive);
 document.addEventListener("change", evt => {
-	if(!(evt.target.checkValidity && evt.target.checkValidity())) {
+	if(evt.target === prop.speed.elements[0]) {
+		let value = +evt.target.value;
+		if(isFinite(value)) {
+			const absValue = Math.abs(value);
+			if(absValue < 0.25) {
+				evt.target.value = (Math.sign(value) || 1) * 0.25;
+			} else if(absValue > 5) {
+				evt.target.value = Math.sign(value) * 5;
+			}
+		}
+	} else if(evt.target === foot.currentFrame) {
+		foot.currentFrame.value = project.time;
+	} else if(!(evt.target.checkValidity && evt.target.checkValidity())) {
 		return;
 	}
 	if(evt.target === prop.play.elements[0]) {
@@ -394,16 +409,6 @@ document.addEventListener("change", evt => {
 			}
 		}
 		updateTimelines();
-	} else if(evt.target === prop.speed.elements[0]) {
-		let value = +evt.target.value;
-		if(isFinite(value)) {
-			if(Math.abs(value) < 0.25) {
-				value = Math.sign(value) * 0.25;
-			}
-			evt.target.value = value;
-		}
-	} else if(evt.target === foot.currentFrame) {
-		foot.currentFrame.value = project.time;
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {
