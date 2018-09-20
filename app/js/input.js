@@ -379,10 +379,10 @@ document.addEventListener("input", evt => {
 		let value = +evt.target.value;
 		if(isFinite(value)) {
 			const absValue = Math.abs(value);
-			if(absValue < 0.25) {
-				value = Math.sign(value) * 0.25;
-			} else if(absValue > 5) {
-				value = Math.sign(value) * 5;
+			if(absValue < 0.5) {
+				value = Math.sign(value) * 0.5;
+			} else if(absValue > 4) {
+				value = Math.sign(value) * 4;
 			}
 			for(const obj of project.root.objs) {
 				if(obj.type === "audio") {
@@ -407,10 +407,10 @@ document.addEventListener("change", evt => {
 		let value = +evt.target.value;
 		if(isFinite(value)) {
 			const absValue = Math.abs(value);
-			if(absValue < 0.25) {
-				evt.target.value = (Math.sign(value) || 1) * 0.25;
-			} else if(absValue > 5) {
-				evt.target.value = Math.sign(value) * 5;
+			if(absValue < 0.5) {
+				evt.target.value = (Math.sign(value) || 1) * 0.5;
+			} else if(absValue > 4) {
+				evt.target.value = Math.sign(value) * 4;
 			}
 		}
 	} else if(evt.target === foot.currentFrame) {

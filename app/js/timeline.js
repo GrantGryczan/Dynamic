@@ -350,9 +350,13 @@ const moveFrameStates = change => {
 		frames.push(...frames.splice(0, change));
 	}
 };
-const setTime = value => {
+const setTime = (value, natural) => {
+	let shouldUpdateAudio = !natural;
 	if(project.loop) {
 		const rangeSize = project.loop[1] - project.loop[0];
+		if(value >= project.loop[1]) {
+			shouldUpdateAudio = true;
+		}
 		value = (((value - project.loop[0]) % rangeSize + rangeSize) % rangeSize) + project.loop[0];
 	} else if(project.root instanceof DynamicScene && project.data.scenes.length !== 1) {
 		let sceneIndex = project.data.scenes.indexOf(project.scene);
@@ -387,6 +391,9 @@ const setTime = value => {
 	updateSlider();
 	updateLayers();
 	updateProperties();
+	if(playing && shouldUpdateAudio) {
+		updateLiveAudio();
+	}
 };
 const scrollFrameIntoView = value => {
 	if(value === undefined) {

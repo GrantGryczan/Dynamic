@@ -50,6 +50,7 @@ const computeDynamicAudio = (obj, time) => {
 	time = time >= 0 ? Math.min(project.root.duration - 1, +time) : project.time;
 	let playValue = defaultProperties.present;
 	let timeValue = defaultProperties.time;
+	let volumeValue = defaultProperties.volume;
 	let loopValue = defaultProperties.loop;
 	let speedValue = defaultProperties.speed;
 	for(let i = 0; i <= time; i++) {
@@ -58,6 +59,9 @@ const computeDynamicAudio = (obj, time) => {
 		if(keyframe) {
 			if(keyframe.present) {
 				playValue = keyframe.present.value;
+			}
+			if(keyframe.volume) {
+				volumeValue = keyframe.volume.value;
 			}
 			if(keyframe.loop) {
 				loopValue = keyframe.loop.value;
@@ -84,7 +88,10 @@ const computeDynamicAudio = (obj, time) => {
 	}
 	return {
 		play: playValue,
-		time: timeValue
+		time: timeValue,
+		volume: volumeValue,
+		loop: loopValue,
+		speed: speedValue
 	};
 };
 const updateProperties = () => {
