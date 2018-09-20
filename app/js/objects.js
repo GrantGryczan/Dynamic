@@ -1,11 +1,4 @@
 "use strict";
-const defaultProperties = {
-	present: false,
-	time: 0,
-	volume: 1,
-	loop: false,
-	speed: 1
-};
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZIndex = (a, b) => b.get("z") - a.get("z");
@@ -121,6 +114,7 @@ class DynamicObject {
 				</div>
 			`;
 		} else if(this.type === "audio") {
+			this.media = this.asset.media.cloneNode();
 			this.timelineItem = html`
 				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
@@ -215,6 +209,9 @@ class DynamicObject {
 			obj.name = this.name;
 		} else {
 			obj.asset = this.asset.id;
+			if(this.type === "audio") {
+				delete obj.media;
+			}
 		}
 		delete obj.layer;
 		delete obj.timelineItem;

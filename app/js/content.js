@@ -1,4 +1,5 @@
 "use strict";
+const playingAudio = [];
 let playing = false;
 let then;
 const animate = () => {
@@ -42,6 +43,9 @@ const pause = () => {
 		playing = false;
 		foot.pause.classList.add("hidden");
 		foot.play.classList.remove("hidden");
+		while(playingAudio.length) {
+			playingAudio.pop().pause();
+		}
 	}
 };
 const updateOnionskin = () => {

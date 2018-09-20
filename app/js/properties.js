@@ -1,4 +1,11 @@
 "use strict";
+const defaultProperties = {
+	present: false,
+	time: 0,
+	volume: 1,
+	loop: false,
+	speed: 1
+};
 let subject = content;
 const focusName = prop.name.elements[0].select.bind(prop.name.elements[0]);
 const makeFullPreviewHidden = () => {
@@ -38,6 +45,47 @@ const canvasProperties = () => {
 	prop.size.elements[0].value = project.data.width;
 	prop.size.elements[1].value = project.data.height;
 	prop.size.classList.remove("hidden");
+};
+const computeDynamicAudio = (obj, time) => {
+	time = time >= 0 ? Math.min(project.root.duration - 1, +time) : project.time;
+	let playValue = defaultProperties.present;
+	let timeValue = defaultProperties.time;
+	let loopValue = defaultProperties.loop;
+	let speedValue = defaultProperties.speed;
+	for(let i = 0; i <= time; i++) {
+		const keyframe = obj.keyframes[i];
+		const prevLoopValue = loopValue;
+		if(keyframe) {
+			if(keyframe.present) {
+				playValue = keyframe.present.value;
+			}
+			if(keyframe.loop) {
+				loopValue = keyframe.loop.value;
+			}
+			if(keyframe.speed) {
+				speedValue = keyframe.speed.value;
+			}
+		}
+		if(keyframe && keyframe.time) {
+			timeValue = keyframe.time.value;
+		} else if(playValue && !(keyframe && keyframe.present)) {
+			timeValue += speedValue / project.data.fps;
+			if(timeValue >= obj.asset.media.duration) {
+				if(!prevLoopValue) {
+					playValue = false;
+				}
+				if(loopValue) {
+					timeValue = timeValue % obj.asset.media.duration;
+				} else {
+					timeValue = obj.asset.media.duration;
+				}
+			}
+		}
+	}
+	return {
+		play: playValue,
+		time: timeValue
+	};
 };
 const updateProperties = () => {
 	subject = null;
@@ -137,20 +185,23 @@ const updateProperties = () => {
 						durations.push(obj.asset.media.duration);
 						for(let i = 0; i < project.root.duration; i++) {
 							if(project.frames[obj.id][i]) {
-								if(playValue !== "") {
-									const currentPlay = obj.get("present", i);
-									if(playValue === null) {
-										playValue = currentPlay;
-									} else if(currentPlay !== playValue) {
-										playValue = "";
+								const playAvailable = playValue !== "";
+								const timeAvailable = timeValue !== "";
+								if(playAvailable || timeAvailable) {
+									const computed = computeDynamicAudio(obj, i);
+									if(playAvailable) {
+										if(playValue === null) {
+											playValue = computed.play;
+										} else if(computed.play !== playValue) {
+											playValue = "";
+										}
 									}
-								}
-								if(timeValue !== "") {
-									const currentTime = obj.get("time", i);
-									if(timeValue === null) {
-										timeValue = currentTime;
-									} else if(currentTime !== timeValue) {
-										timeValue = "";
+									if(timeAvailable) {
+										if(timeValue === null) {
+											timeValue = computed.time;
+										} else if(computed.time !== timeValue) {
+											timeValue = "";
+										}
 									}
 								}
 								if(volumeValue !== "") {

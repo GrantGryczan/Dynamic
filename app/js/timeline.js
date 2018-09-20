@@ -4,7 +4,7 @@ const appendFrames = timeline => {
 		timeline.lastElementChild.remove();
 	}
 	for(let i = 0; i < timeUnits.children.length; i++) {
-		timeline.appendChild(baseFrame.cloneNode(true));
+		timeline.appendChild(baseFrame.cloneNode());
 	}
 };
 const createTimeUnit = value => {
@@ -111,7 +111,7 @@ const updateTimeRuler = () => {
 	} else if(sum > 0) {
 		for(const timeline of timelines.children) {
 			for(let i = 0; i < sum; i++) {
-				timeline.appendChild(baseFrame.cloneNode(true));
+				timeline.appendChild(baseFrame.cloneNode());
 			}
 		}
 	}
@@ -136,7 +136,7 @@ const updateTimelines = () => {
 		if(timelineCount < count) {
 			const length = count - timelineCount;
 			for(let i = 0; i < length; i++) {
-				const timeline = baseTimeline.cloneNode(true);
+				const timeline = baseTimeline.cloneNode();
 				appendFrames(timeline);
 				timelines.appendChild(timeline);
 			}
