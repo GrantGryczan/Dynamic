@@ -146,10 +146,26 @@
 											<i class="material-icons mdc-button__icon">file_download</i> Save
 										</button>
 									</form>
+									<form class="property mdc-form-field hidden" data-key="play">
+										<div class="mdc-checkbox">
+											<input id="playInput" class="mdc-checkbox__native-control" type="checkbox">
+											<div class="mdc-checkbox__background">
+												<div class="mdc-checkbox__mixedmark"></div>
+											</div>
+										</div>
+										<label for="playInput">Playing</label>
+									</form>
 									<form class="property hidden" data-key="time">
 										<div class="mdc-text-field mdc-text-field--upgraded">
-											<input id="timeInput" class="mdc-text-field__input" type="number">
+											<input id="timeInput" class="mdc-text-field__input" type="number" min="0" value="0">
 											<label class="mdc-floating-label alwaysFloat" for="timeInput">Current time (seconds)</label>
+											<div class="mdc-line-ripple"></div>
+										</div>
+									</form>
+									<form class="property hidden" data-key="speed">
+										<div class="mdc-text-field mdc-text-field--upgraded">
+											<input id="speedInput" class="mdc-text-field__input" type="number" step="0.01" min="0.25" max="5" value="1">
+											<label class="mdc-floating-label alwaysFloat" for="speedInput">Speed</label>
 											<div class="mdc-line-ripple"></div>
 										</div>
 									</form>

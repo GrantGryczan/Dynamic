@@ -348,23 +348,50 @@ document.addEventListener("input", evt => {
 		project.saved = false;
 	} else if(evt.target === prop.time.elements[0]) {
 		const value = +evt.target.value;
-		for(const obj of project.root.objs) {
-			if(obj.type === "audio") {
-				for(let i = 0; i < project.root.duration; i++) {
-					if(project.frames[obj.id][i]) {
-						obj.set("time", value, i);
+		if(isFinite(value)) {
+			for(const obj of project.root.objs) {
+				if(obj.type === "audio") {
+					for(let i = 0; i < project.root.duration; i++) {
+						if(project.frames[obj.id][i]) {
+							obj.set("time", value, i);
+						}
 					}
 				}
 			}
+			updateTimelines();
 		}
-		updateTimelines();
+	} else if(evt.target === prop.speed.elements[0]) {
+		const value = +evt.target.value;
+		if(isFinite(value)) {
+			for(const obj of project.root.objs) {
+				if(obj.type === "audio") {
+					for(let i = 0; i < project.root.duration; i++) {
+						if(project.frames[obj.id][i]) {
+							obj.set("speed", value, i);
+						}
+					}
+				}
+			}
+			updateTimelines();
+		}
 	}
 }, capturePassive);
 document.addEventListener("change", evt => {
 	if(!(evt.target.checkValidity && evt.target.checkValidity())) {
 		return;
 	}
-	if(evt.target === foot.currentFrame) {
+	if(evt.target === prop.play.elements[0]) {
+		for(const obj of project.root.objs) {
+			if(obj.type === "audio") {
+				for(let i = 0; i < project.root.duration; i++) {
+					if(project.frames[obj.id][i]) {
+						obj.set("present", evt.target.checked, i);
+					}
+				}
+			}
+		}
+		updateTimelines();
+	} else if(evt.target === foot.currentFrame) {
 		foot.currentFrame.value = project.time;
 	}
 }, capturePassive);

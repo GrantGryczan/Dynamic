@@ -110,6 +110,31 @@ button.filled::before, button.filled::after {
 .mdc-text-field__input:read-only ~ .mdc-line-ripple {
 	display: none;
 }
+.mdc-checkbox::before, .mdc-checkbox::after {
+	background-color: #6200ee;
+}
+.mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background, .mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
+	border-color: #6200ee;
+	background-color: #6200ee;
+}
+@keyframes mdc-checkbox-fade-in-background-0 {
+	0% {
+		background-color: transparent
+	}
+	50% {
+		border-color: #6200ee;
+		background-color: #6200ee;
+	}
+}
+@keyframes mdc-checkbox-fade-out-background-0 {
+	0%, 80% {
+		border-color: #6200ee;
+		background-color: #6200ee;
+	}
+	to {
+		background-color: transparent
+	}
+}
 label {
 	pointer-events: none;
 }
@@ -767,6 +792,9 @@ label:not(.mdc-floating-label) {
 	content: "";
 }
 .frame.dynamic::before {
+	background-color: #8000ff;
+}
+.frame.tween.dynamic::before {
 	background-color: #bf80ff;
 }
 #timelineContainer > .foot {

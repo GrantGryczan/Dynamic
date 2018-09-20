@@ -1,4 +1,9 @@
 "use strict";
+const defaultProperties = {
+	present: false,
+	time: 0,
+	speed: 1
+};
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZIndex = (a, b) => b.get("z") - a.get("z");
@@ -43,8 +48,6 @@ class DynamicObject {
 						z++;
 					}
 					this.set("z", z);
-				} else if(this.type === "audio") {
-					this.set("time", 0);
 				}
 			}
 		} else if(value instanceof Object) {
@@ -242,8 +245,8 @@ class DynamicObject {
 				}
 			}
 		}
-		if(value === undefined && key === "time") {
-			value = 0;
+		if(value === undefined) {
+			value = defaultProperties[key];
 		}
 		return value;
 	}
@@ -256,6 +259,19 @@ class DynamicObject {
 		this.keyframes[time][key] = {
 			value
 		};
+		if(key === "present") {
+			let value = false;
+			for(let i = 0; i < this.keyframes.length; i++) {
+				const keyframe = this.keyframes[i];
+				if(keyframe && keyframe.present) {
+					if(value === keyframe.present.value) {
+						this.delete("present", i);
+					} else {
+						({value} = keyframe.present);
+					}
+				}
+			}
+		}
 		this.project.saved = false;
 	}
 	delete(key, time) {

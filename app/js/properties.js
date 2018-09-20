@@ -128,28 +128,60 @@ const updateProperties = () => {
 			}
 			if(!typeGroup && !typeObj && !typeImage && typeAudio) {
 				const firstObj = objElems[0]._obj;
+				let playValue = null;
 				let timeValue = null;
+				let speedValue = null;
 				const durations = [];
 				for(const obj of project.root.objs) {
-					durations.push(obj.asset.media.duration);
-					if(timeValue !== "") {
+					if(obj.type === "audio") {
+						durations.push(obj.asset.media.duration);
 						for(let i = 0; i < project.root.duration; i++) {
 							if(project.frames[obj.id][i]) {
-								const currentTime = obj.get("time", i);
-								if(timeValue === null) {
-									timeValue = currentTime;
-								} else if(currentTime !== timeValue) {
-									timeValue = "";
+								if(playValue !== "") {
+									const currentPlay = obj.get("present", i);
+									if(playValue === null) {
+										playValue = currentPlay;
+									} else if(currentPlay !== playValue) {
+										playValue = "";
+									}
+								}
+								if(timeValue !== "") {
+									const currentTime = obj.get("time", i);
+									if(timeValue === null) {
+										timeValue = currentTime;
+									} else if(currentTime !== timeValue) {
+										timeValue = "";
+									}
+								}
+								if(speedValue !== "") {
+									const currentSpeed = obj.get("speed", i);
+									if(speedValue === null) {
+										speedValue = currentSpeed;
+									} else if(currentSpeed !== speedValue) {
+										speedValue = "";
+									}
 								}
 							}
 						}
 					}
 				}
+				const playCheckbox = prop.play.firstElementChild._mdc;
+				if(playValue === "") {
+					playCheckbox.indeterminate = true;
+				} else {
+					if(playCheckbox.indeterminate) {
+						playCheckbox.indeterminate = false;
+					}
+					playCheckbox.checked = playValue;
+				}
+				prop.play.classList.remove("hidden");
 				const timeElement = prop.time.elements[0];
 				timeElement.step = 1 / project.data.fps;
 				timeElement.max = Math.max(...durations);
 				timeElement.value = timeValue;
 				prop.time.classList.remove("hidden");
+				prop.speed.elements[0].value = speedValue;
+				prop.speed.classList.remove("hidden");
 			}
 		} else {
 			canvasProperties();
