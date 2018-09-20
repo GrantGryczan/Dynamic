@@ -3,6 +3,7 @@ const defaultProperties = {
 	present: false,
 	time: 0,
 	volume: 1,
+	loop: false,
 	speed: 1
 };
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";

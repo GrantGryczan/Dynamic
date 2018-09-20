@@ -429,6 +429,17 @@ document.addEventListener("change", evt => {
 			}
 		}
 		updateTimelines();
+	} else if(evt.target === prop.play.elements[0]) {
+		for(const obj of project.root.objs) {
+			if(obj.type === "audio") {
+				for(let i = 0; i < project.root.duration; i++) {
+					if(project.frames[obj.id][i]) {
+						obj.set("loop", evt.target.checked, i);
+					}
+				}
+			}
+		}
+		updateTimelines();
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {

@@ -129,6 +129,7 @@ const updateProperties = () => {
 				let playValue = null;
 				let timeValue = null;
 				let volumeValue = null;
+				let loopValue = null;
 				let speedValue = null;
 				const durations = [];
 				for(const obj of project.root.objs) {
@@ -160,6 +161,14 @@ const updateProperties = () => {
 										volumeValue = "";
 									}
 								}
+								if(loopValue !== "") {
+									const currentLoop = obj.get("loop", i);
+									if(loopValue === null) {
+										loopValue = currentLoop;
+									} else if(currentLoop !== loopValue) {
+										loopValue = "";
+									}
+								}
 								if(speedValue !== "") {
 									const currentSpeed = obj.get("speed", i);
 									if(speedValue === null) {
@@ -174,7 +183,9 @@ const updateProperties = () => {
 				}
 				const playCheckbox = prop.play.firstElementChild._mdc;
 				if(playValue === "") {
-					playCheckbox.indeterminate = true;
+					if(!playCheckbox.indeterminate) {
+						playCheckbox.indeterminate = true;
+					}
 				} else {
 					if(playCheckbox.indeterminate) {
 						playCheckbox.indeterminate = false;
@@ -189,6 +200,18 @@ const updateProperties = () => {
 				prop.time.classList.remove("hidden");
 				prop.volume.elements[0].value = volumeValue;
 				prop.volume.classList.remove("hidden");
+				const loopCheckbox = prop.loop.firstElementChild._mdc;
+				if(loopValue === "") {
+					if(!loopCheckbox.indeterminate) {
+						loopCheckbox.indeterminate = true;
+					}
+				} else {
+					if(loopCheckbox.indeterminate) {
+						loopCheckbox.indeterminate = false;
+					}
+					loopCheckbox.checked = loopValue;
+				}
+				prop.loop.classList.remove("hidden");
 				prop.speed.elements[0].value = speedValue;
 				prop.speed.classList.remove("hidden");
 			}
