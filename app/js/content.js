@@ -1,10 +1,9 @@
 "use strict";
 let playing = false;
 let then;
-const animate = () => {
+const animate = now => {
 	requestAnimationFrame(animate);
 	if(playing) {
-		const now = performance.now();
 		const elapsed = now - then;
 		const interval = 1000 / project.data.fps;
 		const change = project.data.fps === 0 ? 1 : Math.floor(elapsed / interval);
