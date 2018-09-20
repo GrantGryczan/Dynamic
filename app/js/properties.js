@@ -57,7 +57,6 @@ const updateProperties = () => {
 			} else {
 				nameElement.value = assetElems[0]._asset.name;
 			}
-			nameElement.labels[0].classList.add("mdc-floating-label--float-above");
 			prop.name.classList.remove("hidden");
 			let typeGroup = false;
 			let typeObj = false;
@@ -109,7 +108,6 @@ const updateProperties = () => {
 			} else {
 				nameElement.value = `< ${objElems.length} selected >`;
 			}
-			nameElement.labels[0].classList.add("mdc-floating-label--float-above");
 			prop.name.classList.remove("hidden");
 			let typeGroup = false;
 			let typeObj = false;
