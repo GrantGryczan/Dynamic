@@ -429,7 +429,7 @@ document.addEventListener("change", evt => {
 			}
 		}
 		updateTimelines();
-	} else if(evt.target === prop.play.elements[0]) {
+	} else if(evt.target === prop.loop.elements[0]) {
 		for(const obj of project.root.objs) {
 			if(obj.type === "audio") {
 				for(let i = 0; i < project.root.duration; i++) {
