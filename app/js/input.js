@@ -359,7 +359,9 @@ document.addEventListener("input", evt => {
 				}
 			}
 			updateTimelines();
-			updateLiveAudio();
+			if(playing) {
+				updateLiveAudio();
+			}
 		}
 	} else if(evt.target === prop.volume.elements[0]) {
 		let value = +evt.target.value;
@@ -375,7 +377,9 @@ document.addEventListener("input", evt => {
 				}
 			}
 			updateTimelines();
-			updateLiveAudio();
+			if(playing) {
+				updateLiveAudio();
+			}
 		}
 	} else if(evt.target === prop.speed.elements[0]) {
 		let value = +evt.target.value;
@@ -396,7 +400,9 @@ document.addEventListener("input", evt => {
 				}
 			}
 			updateTimelines();
-			updateLiveAudio();
+			if(playing) {
+				updateLiveAudio();
+			}
 		}
 	}
 }, capturePassive);
@@ -432,7 +438,9 @@ document.addEventListener("change", evt => {
 			}
 		}
 		updateTimelines();
-		updateLiveAudio();
+		if(playing) {
+			updateLiveAudio();
+		}
 	} else if(evt.target === prop.loop.elements[0]) {
 		for(const obj of project.root.objs) {
 			if(obj.type === "audio") {
@@ -444,7 +452,9 @@ document.addEventListener("change", evt => {
 			}
 		}
 		updateTimelines();
-		updateLiveAudio();
+		if(playing) {
+			updateLiveAudio();
+		}
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {
