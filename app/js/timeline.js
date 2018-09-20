@@ -184,8 +184,9 @@ const updateTimelines = () => {
 	let objCount = 0;
 	let frameCount = 0;
 	for(const obj of project.root.objs) {
-		const focusHighlight = project.frames[obj.id].includes(2);
-		const highlight = focusHighlight || project.frames[obj.id].includes(1);
+		const frames = project.frames[obj.id];
+		const focusHighlight = frames.includes(2);
+		const highlight = focusHighlight || frames.includes(1);
 		if(highlight) {
 			objCount++;
 		}
@@ -211,13 +212,13 @@ const updateTimelines = () => {
 				frame.id = `frame_${obj.id}_${frame._value = timeUnits.children[i]._value}`;
 				if(highlight || topFrames[frame._value]) {
 					frame.classList.add("highlight");
-					if(highlight && project.frames[obj.id][frame._value]) {
+					if(highlight && frames[frame._value]) {
 						frame.classList.add("selected");
 						frameCount++;
 					}
 					if(focusHighlight || topFrames[frame._value] === 2) {
 						frame.classList.add("focusHighlight");
-						if(focusHighlight && project.frames[obj.id][frame._value] === 2) {
+						if(focusHighlight && frames[frame._value] === 2) {
 							frame.classList.add("focus");
 						}
 					}
@@ -256,10 +257,7 @@ const clearFrames = () => {
 };
 const blurFrames = () => {
 	for(const obj of project.root.objs) {
-		const frames = project.frames[obj.id];
-		for(let i = 0; i < frames.length; i++) {
-			frames[i] = +!!frames[i];
-		}
+		project.frames[obj.id] = project.frames[obj.id].map(Math.sign);
 	}
 };
 const getTopFrames = () => {
@@ -325,11 +323,14 @@ const selectFrame = (timeline, value, button, shift) => {
 			}
 		}
 	} else if(superKey) {
-		if(project.frames[timeline][value]) {
-			project.frames[timeline][value] = 0;
-		} else {
-			blurFrames();
-			focusFrame(timeline, value);
+		const frameValue = project.frames[timeline][value];
+		if(frameValue !== 2) {
+			if(frameValue) {
+				project.frames[timeline][value] = 0;
+			} else {
+				blurFrames();
+				focusFrame(timeline, value);
+			}
 		}
 	} else {
 		if(!project.frames[timeline][value]) {
