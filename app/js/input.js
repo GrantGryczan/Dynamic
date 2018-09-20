@@ -386,7 +386,7 @@ document.addEventListener("input", evt => {
 		if(isFinite(value)) {
 			const absValue = Math.abs(value);
 			if(absValue < 0.5) {
-				value = Math.sign(value) * 0.5;
+				value = (Math.sign(value) || 1) * 0.5;
 			} else if(absValue > 4) {
 				value = Math.sign(value) * 4;
 			}
