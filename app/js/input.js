@@ -360,6 +360,21 @@ document.addEventListener("input", evt => {
 			}
 			updateTimelines();
 		}
+	} else if(evt.target === prop.volume.elements[0]) {
+		let value = +evt.target.value;
+		if(isFinite(value)) {
+			value = Math.max(0, Math.min(1, value));
+			for(const obj of project.root.objs) {
+				if(obj.type === "audio") {
+					for(let i = 0; i < project.root.duration; i++) {
+						if(project.frames[obj.id][i]) {
+							obj.set("volume", value, i);
+						}
+					}
+				}
+			}
+			updateTimelines();
+		}
 	} else if(evt.target === prop.speed.elements[0]) {
 		let value = +evt.target.value;
 		if(isFinite(value)) {
@@ -383,7 +398,12 @@ document.addEventListener("input", evt => {
 	}
 }, capturePassive);
 document.addEventListener("change", evt => {
-	if(evt.target === prop.speed.elements[0]) {
+	if(evt.target === prop.volume.elements[0]) {
+		let value = +evt.target.value;
+		if(isFinite(value)) {
+			evt.target.value = Math.max(0, Math.min(1, value));
+		}
+	} else if(evt.target === prop.speed.elements[0]) {
 		let value = +evt.target.value;
 		if(isFinite(value)) {
 			const absValue = Math.abs(value);

@@ -128,6 +128,7 @@ const updateProperties = () => {
 				const firstObj = objElems[0]._obj;
 				let playValue = null;
 				let timeValue = null;
+				let volumeValue = null;
 				let speedValue = null;
 				const durations = [];
 				for(const obj of project.root.objs) {
@@ -149,6 +150,14 @@ const updateProperties = () => {
 										timeValue = currentTime;
 									} else if(currentTime !== timeValue) {
 										timeValue = "";
+									}
+								}
+								if(volumeValue !== "") {
+									const currentVolume = obj.get("volume", i);
+									if(volumeValue === null) {
+										volumeValue = currentVolume;
+									} else if(currentVolume !== volumeValue) {
+										volumeValue = "";
 									}
 								}
 								if(speedValue !== "") {
@@ -178,6 +187,8 @@ const updateProperties = () => {
 				timeElement.max = Math.max(...durations);
 				timeElement.value = timeValue;
 				prop.time.classList.remove("hidden");
+				prop.volume.elements[0].value = volumeValue;
+				prop.volume.classList.remove("hidden");
 				prop.speed.elements[0].value = speedValue;
 				prop.speed.classList.remove("hidden");
 			}
