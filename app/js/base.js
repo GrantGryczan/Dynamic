@@ -253,7 +253,7 @@ const setActive = elem => {
 	}
 	if(elem) {
 		elem.classList.add("active");
-		if(elem.classList.contains("panel") && elem !== propertyContainer) {
+		if(elem.classList.contains("container") && elem !== propertyContainer) {
 			setProperties(elem);
 		}
 	}

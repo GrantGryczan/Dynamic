@@ -94,7 +94,7 @@ const updateProperties = () => {
 			canvasProperties();
 		}
 	} else {
-		const objElems = layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : (timelineContainer.classList.contains("activeProperties") ? timelineItems.querySelectorAll(".timelineItem.selected") : []);
+		const objElems = timelineContainer.classList.contains("activeProperties") || contentContainer.classList.contains("activeProperties") ? timelineItems.querySelectorAll(".timelineItem.selected") : (layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : []);
 		if(objElems.length) {
 			const singleSelected = objElems.length === 1;
 			const nameElement = prop.name.elements[0];
