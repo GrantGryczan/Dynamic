@@ -22,9 +22,6 @@ const animate = now => {
 									console.warn(err);
 								}
 							}
-							if(keyframe.time) {
-								obj.media.currentTime = keyframe.time.value + elapsed / 1000;
-							}
 							if(keyframe.volume) {
 								obj.media.volume = keyframe.volume.value;
 							}
@@ -33,6 +30,9 @@ const animate = now => {
 							}
 							if(keyframe.speed) {
 								obj.media.playbackRate = keyframe.speed.value;
+							}
+							if(keyframe.time) {
+								obj.media.currentTime = keyframe.time.value + obj.media.playbackRate * elapsed / 1000; // TODO: Make accurate
 							}
 						}
 					}

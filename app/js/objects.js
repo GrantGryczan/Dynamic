@@ -258,19 +258,6 @@ class DynamicObject {
 		this.keyframes[time][key] = {
 			value
 		};
-		if(key === "present") {
-			let value = false;
-			for(let i = 0; i < this.keyframes.length; i++) {
-				const keyframe = this.keyframes[i];
-				if(keyframe && keyframe.present) {
-					if(value === keyframe.present.value) {
-						this.delete("present", i);
-					} else {
-						({value} = keyframe.present);
-					}
-				}
-			}
-		}
 		this.project.saved = false;
 	}
 	delete(key, time) {
