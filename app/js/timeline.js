@@ -487,41 +487,6 @@ const changeSlider = change => {
 const deleteFrames = async () => {
 	if(project.root.duration !== 1) {
 		const topFrames = getTopFrames();
-		const unsafeObjs = [];
-		for(const obj of project.root.objs) {
-			if(obj.keyframes) {
-				const safeFrames = obj.keyframes.map(Boolean);
-				for(let i = 0; i < topFrames.length; i++) {
-					if(topFrames[i]) {
-						safeFrames[i] = false;
-					}
-				}
-				if(!safeFrames.includes(true)) {
-					unsafeObjs.push(obj);
-				}
-			}
-		}
-		if(unsafeObjs.length) {
-			let unsafeObjNames = unsafeObjs.map(byName).map(bTag);
-			if(unsafeObjNames.length > 1) {
-				const lastIndex = unsafeObjNames.length - 1;
-				unsafeObjNames[lastIndex] = `and ${unsafeObjNames[lastIndex]}`;
-				unsafeObjNames = unsafeObjNames.join(unsafeObjNames.length > 2 ? ", " : " ");
-			} else {
-				unsafeObjNames = unsafeObjNames[0];
-			}
-			if(await new Miro.Dialog("Delete Frames", html`
-				Deleting the selected frame(s) would cause ${unsafeObjNames} to be deleted.<br>
-				Are you sure?
-			`, ["Yes", "No"])) {
-				return;
-			} else {
-				for(const obj of unsafeObjs) {
-					removeObj(obj.timelineItem);
-				}
-				storeObjs();
-			}
-		}
 		let quantity = 0;
 		let value = -1;
 		for(let i = topFrames.length - 1; i >= 0; i--) {
