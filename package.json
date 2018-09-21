@@ -1,6 +1,6 @@
 {
 	"name": "Dynamic",
-	"version": "0.20.37",
+	"version": "0.21.0",
 	"description": "Create HTML5 animations with ease!",
 	"main": "app/main.js",
 	"scripts": {
@@ -42,7 +42,7 @@
 		}
 	},
 	"devDependencies": {
-		"electron": "^2.0.7",
+		"electron": "^2.0.10",
 		"electron-builder": "^19.45.5"
 	},
 	"dependencies": {
