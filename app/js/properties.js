@@ -81,7 +81,7 @@ const computeDynamicAudio = (obj, time) => {
 				if(loopValue) {
 					timeValue = timeValue % obj.asset.media.duration;
 				} else {
-					timeValue = obj.asset.media.duration; // TODO: Apparently `obj.asset.media.duration !== obj.media.duration`?
+					timeValue = obj.asset.media.duration; // BUG: Apparently `obj.asset.media.duration !== obj.media.duration`?
 				}
 			}
 		}
