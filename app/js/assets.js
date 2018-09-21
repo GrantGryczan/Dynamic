@@ -1,5 +1,4 @@
 "use strict";
-const byObjArrays = data => data.objs;
 class DynamicAsset {
 	constructor(value) {
 		if(!(value instanceof Object)) {
@@ -95,15 +94,7 @@ class DynamicAsset {
 		return this.project.root.objs.filter(obj => obj.asset === this);
 	}
 	get objects() {
-		const objs = [];
-		for(const objArray of this.project.data.scenes.map(byObjArrays)) {
-			objs.push(...objArray);
-		}
-		for(const objArray of this.project.data.assets.filter(byObjArrays).map(byObjArrays)) {
-			objs.push(...objArray);
-		}
-		return objs.filter(obj => obj.asset === this);
-		// TODO (Chrome 69): return [...this.project.data.scenes, ...this.project.data.assets.filter(byObjArrays)].flatMap(byObjArrays).filter(obj => obj.asset === this);
+		return this.project.objects.filter(obj => obj.asset === this);
 	}
 }
 const appendAsset = asset => {
@@ -252,6 +243,7 @@ const selectAsset = (target, button) => {
 };
 const byID = asset => asset.id;
 const addFiles = async files => {
+	loadProgress(0);
 	let assetParent = assets;
 	if(ctxTarget && ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset")) {
 		if(ctxTarget.parentNode._asset.type === "group") {
@@ -260,10 +252,9 @@ const addFiles = async files => {
 			assetParent = ctxTarget.parentNode._asset.parent.element.lastElementChild;
 		}
 	}
-	loadProgress(0);
 	deselectAssets();
 	for(let i = 0; i < files.length; i++) {
-		loadProgress(i / files.length);
+		loadProgress((i + 1) / files.length);
 		let data;
 		try {
 			data = files[i].data || Buffer.from((await new Promise(resolve => {
@@ -292,8 +283,12 @@ const addFiles = async files => {
 				data
 			});
 			await new Promise((resolve, reject) => {
-				asset.media.addEventListener(asset.media instanceof Image ? "load" : "canplay", resolve);
-				asset.media.addEventListener("error", reject);
+				if(asset.media instanceof Audio && asset.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+					resolve();
+				} else {
+					asset.media.addEventListener(asset.media instanceof Image ? "load" : "canplaythrough", resolve);
+					asset.media.addEventListener("error", reject);
+				}
 			});
 		} catch(err) {
 			console.warn(err);

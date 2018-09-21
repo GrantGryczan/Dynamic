@@ -115,6 +115,11 @@ class DynamicObject {
 			`;
 		} else if(this.type === "audio") {
 			this.media = this.asset.media.cloneNode();
+			const playTest = () => {
+				this.media.removeEventListener("canplaythrough", playTest);
+				this.media.currentTime = this.media.duration;
+			};
+			this.media.addEventListener("canplaythrough", playTest);
 			this.timelineItem = html`
 				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
@@ -586,7 +591,9 @@ const selectTimelineItem = (target, button) => {
 	updateSelectedTimelineItems();
 	setActive(timelineContainer);
 };
-const addToTimeline = () => {
+const addToTimeline = async () => {
+	loadProgress(0);
+	pause();
 	const _parent = Symbol("parent");
 	if(timelineItems.firstElementChild) {
 		timelineItems.firstElementChild.before(timelineItemDrag);
@@ -597,10 +604,22 @@ const addToTimeline = () => {
 		timelineItem.classList.remove("selected");
 	}
 	const assetElems = [...assets.querySelectorAll(".asset.selected, .asset.selected .asset")].reverse();
-	for(const assetElem of assetElems) {
+	for(let i = 0; i < assetElems.length; i++) {
+		loadProgress((i + 1) / assetElems.length);
+		const assetElem = assetElems[i];
 		let obj;
 		try {
 			obj = new DynamicObject(assetElem._asset.id);
+			if(obj.media) {
+				await new Promise((resolve, reject) => {
+					if(obj.media instanceof Audio && obj.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+						resolve();
+					} else {
+						obj.media.addEventListener(obj.media instanceof Image ? "load" : "canplaythrough", resolve);
+						obj.media.addEventListener("error", reject);
+					}
+				});
+			}
 		} catch(err) {
 			console.warn(err);
 			new Miro.Dialog("Error", err.message);
@@ -637,4 +656,5 @@ const addToTimeline = () => {
 	updateSelectedTimelineItems();
 	updateTimelines();
 	setActive(contentContainer);
+	loadProgress(1);
 };

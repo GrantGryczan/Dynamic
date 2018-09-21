@@ -16,10 +16,9 @@ const animate = now => {
 						const keyframe = obj.keyframes[i];
 						if(keyframe) {
 							if(keyframe.present) {
-								try {
-									obj.media[keyframe.present.value ? "play" : "pause"]();
-								} catch(err) {
-									console.warn(err);
+								const promise = obj.media[keyframe.present.value ? "play" : "pause"]();
+								if(promise) {
+									promise.catch(console.warn);
 								}
 							}
 							if(keyframe.volume) {
@@ -83,10 +82,9 @@ const updateLiveAudio = () => {
 				playingAudio.push(obj.media);
 			}
 			const computed = computeDynamicAudio(obj);
-			try {
-				obj.media[computed.play ? "play" : "pause"]();
-			} catch(err) {
-				console.warn(err);
+			const promise = obj.media[computed.play ? "play" : "pause"]();
+			if(promise) {
+				promise.catch(console.warn);
 			}
 			obj.media.currentTime = computed.time;
 			obj.media.volume = computed.volume;

@@ -8,6 +8,7 @@ const baseData = {
 	service: "Miroware Dynamic",
 	version: 0
 };
+const byObjArrays = data => data.objs;
 class DynamicProject {
 	constructor(value) {
 		if(!(value instanceof Object)) {
@@ -196,6 +197,17 @@ class DynamicProject {
 			scrollIntoView(timelineItem.querySelector(".bar"), timelineItems);
 		}
 	}
+	get objects() {
+		const objs = [];
+		for(const objArray of this.data.scenes.map(byObjArrays)) {
+			objs.push(...objArray);
+		}
+		for(const objArray of this.data.assets.filter(byObjArrays).map(byObjArrays)) {
+			objs.push(...objArray);
+		}
+		return objs;
+		// TODO (Chrome 69): return [...this.data.scenes, ...this.data.assets.filter(byObjArrays)].flatMap(byObjArrays);
+	}
 	getAsset(id) {
 		return this.data.assets.find(asset => asset.id === id);
 	}
@@ -319,27 +331,50 @@ const open = async location => {
 		});
 		loadIndeterminate(false);
 		loadProgress(0);
-		for(let i = 0; i < project.data.assets.length; i++) {
-			loadProgress(i / project.data.assets.length);
+		let loaded = 0;
+		let totalLoad = project.data.assets.length + project.objects.length;
+		for(const asset of project.data.assets) {
+			loadProgress(++loaded / totalLoad);
 			try {
-				const asset = project.data.assets[i];
-				if(asset.type === "file") {
+				if(asset.media) {
 					await new Promise((resolve, reject) => {
-						const media = new (asset.mime.startsWith("image/") ? Image : Audio)();
-						media.addEventListener(media instanceof Image ? "load" : "canplay", resolve);
-						media.addEventListener("error", reject);
-						media.src = asset.url;
+						if(asset.media instanceof Audio && asset.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+							resolve();
+						} else {
+							asset.media.addEventListener(asset.media instanceof Image ? "load" : "canplaythrough", resolve);
+							asset.media.addEventListener("error", reject);
+						}
 					});
 				}
 			} catch(err) {
 				console.warn(err);
 				new Miro.Dialog("Error", html`
-					<b>${project.data.assets[i].name}</b> is not a valid asset.
+					<b>${asset.name}</b> is not a valid asset.
 				`);
 			}
 		}
-		loadProgress(1);
+		for(const obj of project.objects) {
+			loadProgress(++loaded / totalLoad);
+			try {
+				if(obj.media) {
+					await new Promise((resolve, reject) => {
+						if(obj.media instanceof Audio && obj.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+							resolve();
+						} else {
+							obj.media.addEventListener(obj.media instanceof Image ? "load" : "canplaythrough", resolve);
+							obj.media.addEventListener("error", reject);
+						}
+					});
+				}
+			} catch(err) {
+				console.warn(err);
+				new Miro.Dialog("Error", html`
+					<b>${obj.name}</b> is not a valid object.
+				`);
+			}
+		}
 		select(selectedProject);
+		loadProgress(1);
 	} else {
 		return false;
 	}
