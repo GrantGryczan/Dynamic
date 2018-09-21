@@ -57,8 +57,8 @@ const computeDynamicAudio = (obj, time) => {
 		const keyframe = obj.keyframes[i];
 		const prevLoopValue = loopValue;
 		if(keyframe) {
-			if(keyframe.present) {
-				playValue = keyframe.present.value;
+			if(keyframe.present && (playValue = keyframe.present.value) && timeValue >= obj.asset.media.duration) {
+				timeValue = 0;
 			}
 			if(keyframe.volume) {
 				volumeValue = keyframe.volume.value;
@@ -81,7 +81,7 @@ const computeDynamicAudio = (obj, time) => {
 				if(loopValue) {
 					timeValue = timeValue % obj.asset.media.duration;
 				} else {
-					timeValue = obj.asset.media.duration;
+					timeValue = obj.asset.media.duration; // TODO: Apparently `obj.asset.media.duration !== obj.media.duration`?
 				}
 			}
 		}
