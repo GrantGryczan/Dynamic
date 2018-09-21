@@ -12,27 +12,47 @@ const animate = now => {
 			let value = project.time + change;
 			for(const obj of project.root.objs) {
 				if(obj.type === "audio") {
+					let playTimeSet = false;
+					let volumeSet = false;
+					let loopSet = false;
+					let speedSet = false;
 					for(let i = project.time + 1; i <= value; i++) {
 						const keyframe = obj.keyframes[i];
 						if(keyframe) {
-							if(keyframe.present) {
-								const promise = obj.media[keyframe.present.value ? "play" : "pause"]();
+							if(keyframe.present || keyframe.time) {
+								playTimeSet = true;
+							}
+							if(keyframe.volume) {
+								volumeSet = true;
+							}
+							if(keyframe.loop) {
+								loopSet = true;
+							}
+							if(keyframe.speed) {
+								speedSet = true;
+							}
+						}
+					}
+					const playTimeSpeedLoopSet = playTimeSet || speedSet || loopSet;
+					if(playTimeSpeedLoopSet || volumeSet) {
+						const computed = computeDynamicAudio(obj, value);
+						if(playTimeSpeedLoopSet) {
+							if(playTimeSet) {
+								const promise = obj.media[computed.play ? "play" : "pause"]();
 								if(promise) {
 									promise.catch(console.warn);
 								}
 							}
-							if(keyframe.volume) {
-								obj.media.volume = keyframe.volume.value;
+							obj.media.currentTime = computed.time;
+							if(loopSet) {
+								obj.media.loop = computed.loop;
 							}
-							if(keyframe.loop) {
-								obj.media.loop = keyframe.loop.value;
+							if(speedSet) {
+								obj.media.playbackRate = computed.speed;
 							}
-							if(keyframe.speed) {
-								obj.media.playbackRate = keyframe.speed.value;
-							}
-							if(keyframe.time) {
-								obj.media.currentTime = keyframe.time.value + obj.media.playbackRate * elapsed / 1000; // TODO: Make accurate
-							}
+						}
+						if(volumeSet) {
+							obj.media.volume = computed.volume;
 						}
 					}
 				}
