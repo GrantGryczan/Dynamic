@@ -2,8 +2,8 @@
 let playing = false;
 let then;
 const animate = now => {
-	requestAnimationFrame(animate);
 	if(playing) {
+		requestAnimationFrame(animate);
 		const elapsed = now - then;
 		const interval = 1000 / project.data.fps;
 		const change = project.data.fps === 0 ? 1 : Math.floor(elapsed / interval);
@@ -67,7 +67,6 @@ const animate = now => {
 		}
 	}
 };
-requestAnimationFrame(animate);
 const play = () => {
 	if(!playing) {
 		const onLastScene = project.root === project.data.scenes[project.data.scenes.length - 1];
@@ -82,6 +81,7 @@ const play = () => {
 		foot.play.classList.add("hidden");
 		foot.pause.classList.remove("hidden");
 		updateLiveAudio();
+		requestAnimationFrame(animate);
 	}
 };
 const pause = () => {
@@ -89,9 +89,7 @@ const pause = () => {
 		playing = false;
 		foot.pause.classList.add("hidden");
 		foot.play.classList.remove("hidden");
-		while(playingAudio.length) {
-			playingAudio.pop().pause();
-		}
+		killAudio();
 	}
 };
 const playingAudio = [];
@@ -111,6 +109,11 @@ const updateLiveAudio = () => {
 			obj.media.loop = computed.loop;
 			obj.media.playbackRate = computed.speed;
 		}
+	}
+};
+const killAudio = () => {
+	while(playingAudio.length) {
+		playingAudio.pop().pause();
 	}
 };
 const updateOnionskin = () => {

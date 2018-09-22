@@ -403,5 +403,9 @@ const setRoot = data => {
 	updateLayers();
 	project.time = 0;
 	updateTimeRuler();
+	killAudio();
+	if(playing) {
+		updateLiveAudio();
+	}
 	updateProperties();
 };
