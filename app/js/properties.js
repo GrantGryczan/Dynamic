@@ -49,15 +49,15 @@ const canvasProperties = () => {
 const computeDynamicAudio = (obj, time) => {
 	time = time >= 0 ? Math.min(project.root.duration - 1, +time) : project.time;
 	let playValue = defaultProperties.present;
-	const playValues = [playValue];
 	let timeValue = defaultProperties.time;
-	const timeValues = [timeValue];
 	let volumeValue = defaultProperties.volume;
-	const volumeValues = [volumeValue];
 	let loopValue = defaultProperties.loop;
-	const loopValues = [loopValue];
 	let speedValue = defaultProperties.speed;
-	const speedValues = [speedValue];
+	const playValues = [];
+	const timeValues = [];
+	const volumeValues = [];
+	const loopValues = [];
+	const speedValues = [];
 	for(let i = 0; i <= time; i++) {
 		const keyframe = obj.keyframes[i];
 		const prevPlayValue = playValue;
