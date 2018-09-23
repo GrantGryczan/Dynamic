@@ -427,7 +427,7 @@ const timelineMenuItems = [{
 	click: promptInsertFrames.bind(null, true)
 }, {
 	label: "Delete frame(s)",
-	accelerator: "CmdOrCtrl+Delete",
+	accelerator: "Shift+F5",
 	click: deleteFrames
 }, {
 	label: "Remove object(s)",

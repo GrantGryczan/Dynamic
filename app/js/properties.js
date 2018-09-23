@@ -55,6 +55,7 @@ const computeDynamicAudio = (obj, time) => {
 	let speedValue = defaultProperties.speed;
 	for(let i = 0; i <= time; i++) {
 		const keyframe = obj.keyframes[i];
+		const prevPlayValue = playValue;
 		const prevLoopValue = loopValue;
 		if(keyframe) {
 			if(keyframe.present && (playValue = keyframe.present.value) && timeValue >= obj.media.duration) {
@@ -72,7 +73,7 @@ const computeDynamicAudio = (obj, time) => {
 		}
 		if(keyframe && keyframe.time) {
 			timeValue = keyframe.time.value;
-		} else if(playValue && !(keyframe && keyframe.present)) {
+		} else if(prevPlayValue) {
 			timeValue += speedValue / project.data.fps;
 			if(timeValue >= obj.media.duration) {
 				if(!prevLoopValue) {
