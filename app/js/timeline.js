@@ -236,9 +236,6 @@ const updateTimelines = () => {
 					} else if(properties.present) {
 						frame.classList.add("tween");
 					}
-					if(obj.type === "audio" && properties.present) {
-						frame.classList.add("dynamic");
-					}
 				}
 			}
 		}
