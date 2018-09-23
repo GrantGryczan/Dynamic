@@ -206,31 +206,31 @@ const updateProperties = () => {
 				for(const obj of project.root.objs) {
 					if(obj.type === "audio") {
 						durations.push(obj.media.duration);
-						const {playValues, timeValues} = computeDynamicAudio(obj, project.root.duration - 1);
+						const computed = computeDynamicAudio(obj, project.root.duration - 1);
 						for(let i = 0; i < project.root.duration; i++) {
 							if(project.frames[obj.id][i]) {
 								const playAvailable = playValue !== "";
 								const timeAvailable = timeValue !== "";
 								if(playAvailable || timeAvailable) {
 									if(playAvailable) {
-										const computedPlayValue = playValues[i];
+										const currentPlayValue = computed.playValues[i];
 										if(playValue === null) {
-											playValue = computedPlayValue;
-										} else if(computedPlayValue !== playValue) {
+											playValue = currentPlayValue;
+										} else if(currentPlayValue !== playValue) {
 											playValue = "";
 										}
 									}
 									if(timeAvailable) {
-										const computedTimeValue = timeValues[i];
+										const currentTimeValue = computed.timeValues[i];
 										if(timeValue === null) {
-											timeValue = computedTimeValue;
-										} else if(computedTimeValue !== timeValue) {
+											timeValue = currentTimeValue;
+										} else if(currentTimeValue !== timeValue) {
 											timeValue = "";
 										}
 									}
 								}
 								if(volumeValue !== "") {
-									const currentVolume = obj.get("volume", i);
+									const currentVolume = computed.volumeValues[i];
 									if(volumeValue === null) {
 										volumeValue = currentVolume;
 									} else if(currentVolume !== volumeValue) {
@@ -238,7 +238,7 @@ const updateProperties = () => {
 									}
 								}
 								if(loopValue !== "") {
-									const currentLoop = obj.get("loop", i);
+									const currentLoop = computed.loopValues[i];
 									if(loopValue === null) {
 										loopValue = currentLoop;
 									} else if(currentLoop !== loopValue) {
@@ -246,7 +246,7 @@ const updateProperties = () => {
 									}
 								}
 								if(speedValue !== "") {
-									const currentSpeed = obj.get("speed", i);
+									const currentSpeed = computed.speedValues[i];
 									if(speedValue === null) {
 										speedValue = currentSpeed;
 									} else if(currentSpeed !== speedValue) {
