@@ -427,7 +427,7 @@ const updateTimeUnits = () => {
 	}
 	scrubber.style.transform = `translateX(${storage.frameWidth * project.time + storage.frameWidth / 2 - timeRuler.scrollLeft}px)`;
 	foot.currentFrame.size = String(project.root.duration - 1).length;
-	if(canChangeCurrentFrameValue) {
+	if(document.activeElement !== foot.currentFrame) {
 		foot.currentFrame.value = project.time;
 	}
 };

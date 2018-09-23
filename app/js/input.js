@@ -297,7 +297,6 @@ document.addEventListener("keyup", evt => {
 	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
 	altKey = evt.keyCode !== 18 && evt.altKey;
 }, capturePassive);
-let canChangeCurrentFrameValue = true;
 document.addEventListener("input", evt => {
 	if(!(evt.target.checkValidity && evt.target.checkValidity())) {
 		return;
@@ -330,8 +329,8 @@ document.addEventListener("input", evt => {
 		}
 	} else if(evt.target === foot.currentFrame) {
 		let value;
-		if(mathTest.test(value = foot.currentFrame.value.replace(whitespace, ""))) {
-			if(!startNumberTest.test(value)) {
+		if(mathTest.test(value = foot.currentFrame.value.replace(whitespace, "").replace(timestampTest, `(${60 * project.data.fps}*$1+${project.data.fps}*$2)`))) {
+			if(startOperationTest.test(value)) {
 				value = project.time + value;
 			}
 			try {
@@ -343,9 +342,7 @@ document.addEventListener("input", evt => {
 			value = NaN;
 		}
 		if(isFinite(value)) {
-			canChangeCurrentFrameValue = false;
 			setTime(Math.round(value));
-			canChangeCurrentFrameValue = true;
 		}
 	} else if(evt.target === prop.fps.elements[0]) {
 		project.data.fps = +evt.target.value;

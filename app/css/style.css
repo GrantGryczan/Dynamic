@@ -64,9 +64,6 @@ button:disabled {
 	opacity: 0.5;
 	pointer-events: none;
 }
-button:focus {
-	outline: none;
-}
 button * {
 	pointer-events: none;
 }
