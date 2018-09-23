@@ -46,7 +46,7 @@ const canvasProperties = () => {
 	prop.size.elements[1].value = project.data.height;
 	prop.size.classList.remove("hidden");
 };
-const computeDynamicAudio = (obj, time) => { // TODO: Make this function unnecessary
+const computeDynamicAudio = (obj, time) => {
 	time = time >= 0 ? Math.min(project.root.duration - 1, +time) : project.time;
 	let playValue = defaultProperties.present;
 	const playValues = [playValue];

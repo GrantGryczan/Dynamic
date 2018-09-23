@@ -35,7 +35,7 @@ const animate = now => {
 					}
 					const playTimeSpeedLoopSet = playTimeSet || speedSet || loopSet;
 					if(playTimeSpeedLoopSet || volumeSet) {
-						const computed = computeDynamicAudio(obj, value);
+						const computed = computeDynamicAudio(obj, value); // TODO: Make this call unnecessary
 						if(playTimeSpeedLoopSet) {
 							if(playTimeSet) {
 								const promise = obj.media[computed.play ? "play" : "pause"]();
