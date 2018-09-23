@@ -347,7 +347,9 @@ const moveFrameStates = change => {
 	change = ((-change % project.root.duration) + project.root.duration) % project.root.duration;
 	for(const obj of project.root.objs) {
 		const frames = project.frames[obj.id];
-		frames.push(...frames.splice(0, change));
+		for(const frameValue of frames.splice(0, change)) {
+			frames.push(frameValue);
+		}
 	}
 };
 const setTime = (value, natural) => {

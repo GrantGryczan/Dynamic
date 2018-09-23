@@ -46,13 +46,18 @@ const canvasProperties = () => {
 	prop.size.elements[1].value = project.data.height;
 	prop.size.classList.remove("hidden");
 };
-const computeDynamicAudio = (obj, time) => {
+const computeDynamicAudio = (obj, time) => { // TODO: Make this function unnecessary
 	time = time >= 0 ? Math.min(project.root.duration - 1, +time) : project.time;
 	let playValue = defaultProperties.present;
+	const playValues = [playValue];
 	let timeValue = defaultProperties.time;
+	const timeValues = [timeValue];
 	let volumeValue = defaultProperties.volume;
+	const volumeValues = [volumeValue];
 	let loopValue = defaultProperties.loop;
+	const loopValues = [loopValue];
 	let speedValue = defaultProperties.speed;
+	const speedValues = [speedValue];
 	for(let i = 0; i <= time; i++) {
 		const keyframe = obj.keyframes[i];
 		const prevPlayValue = playValue;
@@ -86,13 +91,23 @@ const computeDynamicAudio = (obj, time) => {
 				}
 			}
 		}
+		playValues.push(playValue);
+		timeValues.push(timeValue);
+		volumeValues.push(volumeValue);
+		loopValues.push(loopValue);
+		speedValues.push(speedValue);
 	}
 	return {
 		play: playValue,
 		time: timeValue,
 		volume: volumeValue,
 		loop: loopValue,
-		speed: speedValue
+		speed: speedValue,
+		playValues,
+		timeValues,
+		volumeValues,
+		loopValues,
+		speedValues
 	};
 };
 const updateProperties = () => {
@@ -191,23 +206,25 @@ const updateProperties = () => {
 				for(const obj of project.root.objs) {
 					if(obj.type === "audio") {
 						durations.push(obj.media.duration);
+						const {playValues, timeValues} = computeDynamicAudio(obj, project.root.duration - 1);
 						for(let i = 0; i < project.root.duration; i++) {
 							if(project.frames[obj.id][i]) {
 								const playAvailable = playValue !== "";
 								const timeAvailable = timeValue !== "";
 								if(playAvailable || timeAvailable) {
-									const computed = computeDynamicAudio(obj, i);
 									if(playAvailable) {
+										const computedPlayValue = playValues[i];
 										if(playValue === null) {
-											playValue = computed.play;
-										} else if(computed.play !== playValue) {
+											playValue = computedPlayValue;
+										} else if(computedPlayValue !== playValue) {
 											playValue = "";
 										}
 									}
 									if(timeAvailable) {
+										const computedTimeValue = timeValues[i];
 										if(timeValue === null) {
-											timeValue = computed.time;
-										} else if(computed.time !== timeValue) {
+											timeValue = computedTimeValue;
+										} else if(computedTimeValue !== timeValue) {
 											timeValue = "";
 										}
 									}
@@ -254,7 +271,7 @@ const updateProperties = () => {
 				prop.play.classList.remove("hidden");
 				const timeElement = prop.time.elements[0];
 				timeElement.step = 1 / project.data.fps;
-				timeElement.max = Math.max(...durations);
+				timeElement.max = Math.min(...durations);
 				timeElement.value = timeValue;
 				prop.time.classList.remove("hidden");
 				prop.volume.elements[0].value = volumeValue;
