@@ -322,4 +322,4 @@ window.onbeforeunload = () => {
 	}
 };
 const focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
-const notTyping = () => !container.querySelector("input:not([type='button']):not([type='submit']):not([type='reset']):focus, textarea:focus");
+const typing = () => container.querySelector("input:not([type='button']):not([type='submit']):not([type='reset']):focus, textarea:focus");

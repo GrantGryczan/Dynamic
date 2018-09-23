@@ -40,22 +40,22 @@ const setKeys = evt => {
 document.addEventListener("keydown", evt => {
 	setKeys(evt);
 	if(evt.keyCode === 35) { // `end`
-		if(focused() && notTyping()) {
+		if(focused() && !typing()) {
 			evt.preventDefault();
 			endFrameJump();
 		}
 	} else if(evt.keyCode === 36) { // `home`
-		if(focused() && notTyping()) {
+		if(focused() && !typing()) {
 			evt.preventDefault();
 			homeFrameJump();
 		}
 	} else if(evt.keyCode === 37) { // `left`
-		if(focused() && notTyping()) {
+		if(focused() && !typing()) {
 			evt.preventDefault();
 			leftFrameJump();
 		}
 	} else if(evt.keyCode === 38) { // `up`
-		if(notTyping()) {
+		if(!typing()) {
 			if(focused()) {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
@@ -93,12 +93,12 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 39) { // `right`
-		if(focused() && notTyping()) {
+		if(focused() && !typing()) {
 			evt.preventDefault();
 			rightFrameJump();
 		}
 	} else if(evt.keyCode === 40) { // `down`
-		if(notTyping()) {
+		if(!typing()) {
 			if(focused()) {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
@@ -155,7 +155,7 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(shiftKey) {
 			if(evt.keyCode === 65) { // ^`shift`+`A`
-				if(focused() && notTyping()) {
+				if(focused() && !typing()) {
 					selectFramesInRows();
 				}
 			} else if(evt.keyCode === 73) { // ^`shift`+`I`
@@ -184,7 +184,7 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
-			if(focused() && notTyping()) {
+			if(focused() && !typing()) {
 				if(assetContainer.classList.contains("active")) {
 					selectAllAssets();
 				} else if(layerContainer.classList.contains("active")) {
@@ -229,7 +229,7 @@ document.addEventListener("keydown", evt => {
 			select("home");
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
-		if(notTyping()) {
+		if(!typing()) {
 			if(focused()) {
 				if(assetContainer.classList.contains("active")) {
 					removeSelectedAssets();
@@ -251,22 +251,30 @@ document.addEventListener("keydown", evt => {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		if(!document.querySelector(":focus") && focused()) {
+		const input = document.querySelector(":focus");
+		if(!input && focused()) {
 			(playing ? pause : play)();
+		} else if(typing()) {
+			input.blur();
 		}
 	} else if(evt.keyCode === 27) { // `esc`
-		if(focused() && notTyping()) {
-			if(assetContainer.classList.contains("active")) {
-				deselectAssets();
-				updateProperties();
-			} else if(layerContainer.classList.contains("active")) {
-				deselectLayers();
-				updateProperties();
-			} else if(timelineContainer.classList.contains("active")) {
-				deselectTimelineItems();
-				updateProperties();
-			} else if(fullPreview.classList.contains("active")) {
-				hideFullPreview();
+		if(focused()) {
+			const input = typing();
+			if(input) {
+				input.blur();
+			} else {
+				if(assetContainer.classList.contains("active")) {
+					deselectAssets();
+					updateProperties();
+				} else if(layerContainer.classList.contains("active")) {
+					deselectLayers();
+					updateProperties();
+				} else if(timelineContainer.classList.contains("active")) {
+					deselectTimelineItems();
+					updateProperties();
+				} else if(fullPreview.classList.contains("active")) {
+					hideFullPreview();
+				}
 			}
 		}
 	} else if(evt.keyCode === 113) { // `F2`
@@ -458,7 +466,7 @@ document.addEventListener("change", evt => {
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {
-	if(project && focused() && notTyping()) {
+	if(project && focused() && !typing()) {
 		if(evt.clipboardData.items.length) {
 			let file;
 			let string;
