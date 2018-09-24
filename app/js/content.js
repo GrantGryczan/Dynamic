@@ -116,6 +116,11 @@ const killAudio = () => {
 		playingAudio.pop().pause();
 	}
 };
+window.addEventListener("visibilitychange", () => {
+	if(document.hidden) {
+		pause();
+	}
+});
 const updateOnionskin = () => {
 	if(project.onionskin) {
 		foot.enableOnionskin.classList.add("hidden");
