@@ -28,6 +28,9 @@ if(typeof storage.fps !== "number") {
 if(typeof storage.frameWidth !== "number") {
 	storage.frameWidth = 10;
 }
+if(typeof storage.clipCanvas !== "boolean") {
+	storage.clipCanvas = false;
+}
 if(typeof storage.onionskin !== "boolean") {
 	storage.onionskin = true;
 }

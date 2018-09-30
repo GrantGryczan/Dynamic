@@ -116,7 +116,6 @@ const updateTimeRuler = () => {
 		}
 	}
 	updateTimelines();
-	updateLoop();
 	updateSlider();
 };
 let timelineCount = 0;
@@ -445,14 +444,12 @@ const rightFrameJump = () => {
 };
 const updateLoop = () => {
 	if(project.loop) {
-		foot.enableLoop.classList.add("hidden");
-		foot.disableLoop.classList.remove("hidden");
+		foot.loop.classList.remove("translucent");
 		loopRangeStart.style.width = `${project.loop[0] === 0 ? 0 : storage.frameWidth * project.loop[0] + 1}px`;
 		loopRangeStart.style.marginRight = `${storage.frameWidth * (project.loop[1] - project.loop[0]) - (project.loop[0] === 0 ? 2 : 1)}px`;
 		loopField.classList.remove("hidden");
 	} else {
-		foot.enableLoop.classList.remove("hidden");
-		foot.disableLoop.classList.add("hidden");
+		foot.loop.classList.add("translucent");
 		loopField.classList.add("hidden");
 	}
 	updateSlider();

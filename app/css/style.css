@@ -54,6 +54,9 @@ div {
 .spaced + .spaced {
 	margin-left: 6px;
 }
+.clip {
+	overflow: hidden !important;
+}
 hr {
 	pointer-events: none;
 	border-top-color: rgba(0, 0, 0, 0.1);

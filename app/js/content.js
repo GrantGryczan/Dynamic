@@ -121,12 +121,15 @@ window.addEventListener("visibilitychange", () => {
 		pause();
 	}
 });
-const updateOnionskin = () => {
-	if(project.onionskin) {
-		foot.enableOnionskin.classList.add("hidden");
-		foot.disableOnionskin.classList.remove("hidden");
+const updateClipCanvas = () => {
+	if(project.clipCanvas) {
+		foot.clipCanvas.classList.remove("translucent");
+		instances.classList.add("clip");
 	} else {
-		foot.disableOnionskin.classList.add("hidden");
-		foot.enableOnionskin.classList.remove("hidden");
+		foot.clipCanvas.classList.add("translucent");
+		instances.classList.remove("clip");
 	}
+};
+const updateOnionskin = () => {
+	foot.onionskin.classList[project.onionskin ? "remove" : "add"]("translucent");
 };

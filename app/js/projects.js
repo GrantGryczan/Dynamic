@@ -47,6 +47,7 @@ class DynamicProject {
 			time: 0,
 			frames: {},
 			loop: false,
+			clipCanvas: storage.clipCanvas,
 			onionskin: storage.onionskin
 		});
 		const loadObjs = [];
@@ -274,6 +275,8 @@ const select = id => {
 		layers.scrollTop = project.scrollLayers;
 		timelineBox.scrollLeft = project.scrollTimelinesLeft;
 		timelineBox.scrollTop = project.scrollTimelinesTop;
+		updateLoop();
+		updateClipCanvas();
 		updateOnionskin();
 		updateProperties();
 	}

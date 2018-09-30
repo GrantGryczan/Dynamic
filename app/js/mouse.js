@@ -472,18 +472,17 @@ const handleMouseUp = (evt, button) => {
 						} else if(mouseTarget0 === foot.alignScrubberRight) {
 							timeRuler.scrollLeft = timelineBox.scrollLeft = project.time * storage.frameWidth - timeRuler.offsetWidth + 2 + storage.frameWidth + SCROLLBAR_SIZE;
 							scrollTimeRuler = scrollTimelines = true;
-						} else if(mouseTarget0 === foot.enableLoop) {
-							project.loop = [Math.max(0, project.time - 1), Math.min(project.root.duration, project.time + 2)];
+						} else if(mouseTarget0 === foot.loop) {
+							project.loop = project.loop ? false : [Math.max(0, project.time - 1), Math.min(project.root.duration, project.time + 2)];
 							updateLoop();
-						} else if(mouseTarget0 === foot.disableLoop) {
-							project.loop = false;
-							updateLoop();
-						} else if(mouseTarget0 === foot.enableOnionskin) {
-							storage.onionskin = project.onionskin = true;
+						} else if(mouseTarget0 === foot.clipCanvas) {
+							storage.clipCanvas = project.clipCanvas = !project.clipCanvas;
+							updateClipCanvas();
+							store();
+						} else if(mouseTarget0 === foot.onionskin) {
+							storage.onionskin = project.onionskin = !project.onionskin;
 							updateOnionskin();
-						} else if(mouseTarget0 === foot.disableOnionskin) {
-							storage.onionskin = project.onionskin = false;
-							updateOnionskin();
+							store();
 						}
 					} else if(mouseTarget0.parentNode === toolbar) {
 						if(mouseTarget0 === newProj) {
