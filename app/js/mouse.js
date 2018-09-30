@@ -577,9 +577,7 @@ document.addEventListener("dragover", evt => {
 	}
 }, true);
 document.addEventListener("dragleave", evt => {
-	if(evt.target === targetIndicator) {
-		indicateTarget();
-	}
+	indicateTarget();
 }, capturePassive);
 document.addEventListener("drop", evt => {
 	evt.preventDefault();
