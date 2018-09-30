@@ -507,10 +507,6 @@ label:not(.mdc-floating-label) {
 	box-shadow: 3px 0 1px -2px rgba(0, 0, 0, 0.2);
 	z-index: 2;
 }
-#contentContainer {
-	min-width: 150px;
-	min-height: 150px;
-}
 #assetContainer > .contents, #layerContainer > .contents, #sceneContainer > .contents {
 	display: flex;
 	flex-direction: column;
@@ -565,11 +561,33 @@ label:not(.mdc-floating-label) {
 #contentContainer {
 	flex-grow: 1;
 	position: relative;
+	min-width: 150px;
+	min-height: 150px;
 	overflow: auto;
+}
+#contentContainer * {
+	overflow: visible;
 }
 #content {
 	position: absolute;
+	padding: 1px;
+	box-sizing: content-box;
 	background-color: #ffffff;
+}
+#contentBorder {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	margin: -1px;
+	border: 1px solid #808080;
+	z-index: 1;
+	pointer-events: none;
+}
+#instances {
+	position: absolute;
+	width: calc(100% - 2px);
+	height: calc(100% - 2px);
+	z-index: 0;
 }
 #timelineContainer {
 	height: 300px;
