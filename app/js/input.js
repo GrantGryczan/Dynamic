@@ -146,7 +146,7 @@ document.addEventListener("keydown", evt => {
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
 			if(Miro.focused()) {
-				if(selectedProject === "home") {
+				if(!project) {
 					if(Object.keys(projects).length) {
 						select(tabs.lastElementChild._project.id);
 					}
@@ -170,7 +170,7 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(evt.keyCode === 9 || evt.keyCode === 34) { // ^`tab` || ^`page down`
 			if(Miro.focused()) {
-				if(selectedProject === "home") {
+				if(!project) {
 					if(Object.keys(projects).length) {
 						select(homeTab.nextElementSibling._project.id);
 					}

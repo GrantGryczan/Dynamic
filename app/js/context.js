@@ -458,7 +458,7 @@ const openCtx = target => {
 	const template = [];
 	if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		template.push(...textMenuItems);
-	} else if(selectedProject !== "home") {
+	} else if(project) {
 		if(ctxTarget === addAsset) {
 			template.push(...assetCreationMenuItems);
 		} else if(ctxTarget === sortAssets) {

@@ -292,7 +292,7 @@ const updatePanels = () => {
 	timelineFoot.firstElementChild.style.width = `${timelineItemContainer.offsetWidth - 12}px`;
 };
 window.addEventListener("resize", () => {
-	if(selectedProject !== "home") {
+	if(project) {
 		if(!fullPreview.classList.contains("hidden")) {
 			absoluteCenter(fullPreviewImage);
 		}
