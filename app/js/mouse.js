@@ -103,7 +103,10 @@ const onMouseDown = evt => {
 		}
 	}
 };
-document.addEventListener("mousedown", onMouseDown, capturePassive);
+document.addEventListener("mousedown", onMouseDown, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("mousemove", evt => {
 	if(evt.clientX === mouseX && evt.clientY === mouseY) {
 		return;
@@ -267,7 +270,10 @@ document.addEventListener("mousemove", evt => {
 		}
 	}
 	mouseMoved = true;
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 const makeTabRough = () => {
 	originalMouseTarget.classList.remove("smooth");
 };
@@ -550,13 +556,19 @@ const onMouseUp = evt => {
 	mouseUp = evt.timeStamp;
 	indicateTarget();
 };
-document.addEventListener("mouseup", onMouseUp, capturePassive);
+document.addEventListener("mouseup", onMouseUp, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("click", evt => {
 	if(evt.timeStamp !== mouseUp) {
 		onMouseDown(evt);
 		onMouseUp(evt);
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 let allowDrag = true;
 document.addEventListener("dragstart", () => {
 	if(mouseDown !== -1) {
@@ -564,10 +576,16 @@ document.addEventListener("dragstart", () => {
 		mouseDown = -1;
 	}
 	allowDrag = false;
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("dragend", () => {
 	allowDrag = true;
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("dragover", evt => {
 	evt.preventDefault();
 	if(allowDrag && Miro.focused()) {
@@ -578,7 +596,10 @@ document.addEventListener("dragover", evt => {
 }, true);
 document.addEventListener("dragleave", evt => {
 	indicateTarget();
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("drop", evt => {
 	evt.preventDefault();
 	if(allowDrag && Miro.focused()) {
@@ -644,7 +665,10 @@ document.addEventListener("dblclick", evt => {
 			updateLoop();
 		}
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 let scrollTimelineItems = true;
 let scrollTimeRuler = true;
 let scrollTimelines = true;
@@ -695,4 +719,7 @@ document.addEventListener("scroll", evt => {
 			scrollTimelines = true;
 		}
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});

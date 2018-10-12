@@ -31,7 +31,10 @@ document.addEventListener("focus", evt => {
 	if(evt.target === foot.currentFrame) {
 		evt.target.select();
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 const setKeys = evt => {
 	shiftKey = evt.shiftKey;
 	superKey = evt.metaKey || evt.ctrlKey;
@@ -296,7 +299,10 @@ document.addEventListener("keyup", evt => {
 	shiftKey = evt.keyCode !== 16 && evt.shiftKey;
 	superKey = !(evt.keyCode === 17 || evt.keyCode === 91) && (evt.ctrlKey || evt.metaKey);
 	altKey = evt.keyCode !== 18 && evt.altKey;
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("input", evt => {
 	if(!(evt.target.checkValidity && evt.target.checkValidity())) {
 		return;
@@ -410,7 +416,10 @@ document.addEventListener("input", evt => {
 			}
 		}
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("change", evt => {
 	if(evt.target === prop.volume.elements[0]) {
 		let value = +evt.target.value;
@@ -461,7 +470,10 @@ document.addEventListener("change", evt => {
 			updateLiveAudio();
 		}
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
 document.addEventListener("paste", async evt => {
 	if(project && Miro.focused() && !Miro.typing()) {
 		if(evt.clipboardData.items.length) {
@@ -484,4 +496,7 @@ document.addEventListener("paste", async evt => {
 			}
 		}
 	}
-}, capturePassive);
+}, {
+	capture: true,
+	passive: true
+});
