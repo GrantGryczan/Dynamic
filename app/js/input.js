@@ -40,23 +40,23 @@ const setKeys = evt => {
 document.addEventListener("keydown", evt => {
 	setKeys(evt);
 	if(evt.keyCode === 35) { // `end`
-		if(focused() && !typing()) {
+		if(Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			endFrameJump();
 		}
 	} else if(evt.keyCode === 36) { // `home`
-		if(focused() && !typing()) {
+		if(Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			homeFrameJump();
 		}
 	} else if(evt.keyCode === 37) { // `left`
-		if(focused() && !typing()) {
+		if(Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			leftFrameJump();
 		}
 	} else if(evt.keyCode === 38) { // `up`
-		if(!typing()) {
-			if(focused()) {
+		if(!Miro.typing()) {
+			if(Miro.focused()) {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
 					const assetElems = assets.querySelectorAll(".asset");
@@ -93,13 +93,13 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 39) { // `right`
-		if(focused() && !typing()) {
+		if(Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			rightFrameJump();
 		}
 	} else if(evt.keyCode === 40) { // `down`
-		if(!typing()) {
-			if(focused()) {
+		if(!Miro.typing()) {
+			if(Miro.focused()) {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
 					const assetElems = assets.querySelectorAll(".asset");
@@ -142,7 +142,7 @@ document.addEventListener("keydown", evt => {
 		}
 	} else if(superKey) {
 		if((shiftKey && evt.keyCode === 9) || (!shiftKey && evt.keyCode === 33)) { // ^`shift`+`tab` || ^`page up`
-			if(focused()) {
+			if(Miro.focused()) {
 				if(selectedProject === "home") {
 					if(Object.keys(projects).length) {
 						select(tabs.lastElementChild._project.id);
@@ -155,18 +155,18 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(shiftKey) {
 			if(evt.keyCode === 65) { // ^`shift`+`A`
-				if(focused() && !typing()) {
+				if(Miro.focused() && !Miro.typing()) {
 					selectFramesInRows();
 				}
 			} else if(evt.keyCode === 73) { // ^`shift`+`I`
 				win.toggleDevTools();
 			} else if(evt.keyCode === 83) { // ^`shift`+`S`
-				if(focused()) {
+				if(Miro.focused()) {
 					save(true);
 				}
 			}
 		} else if(evt.keyCode === 9 || evt.keyCode === 34) { // ^`tab` || ^`page down`
-			if(focused()) {
+			if(Miro.focused()) {
 				if(selectedProject === "home") {
 					if(Object.keys(projects).length) {
 						select(homeTab.nextElementSibling._project.id);
@@ -178,13 +178,13 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 57) { // ^`9`
-			if(focused()) {
+			if(Miro.focused()) {
 				if(Object.keys(projects).length) {
 					select(tabs.lastElementChild._project.id);
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
-			if(focused() && !typing()) {
+			if(Miro.focused() && !Miro.typing()) {
 				if(assetContainer.classList.contains("active")) {
 					selectAllAssets();
 				} else if(layerContainer.classList.contains("active")) {
@@ -194,19 +194,19 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 78 || evt.keyCode === 84) { // ^`N` || ^`T`
-			if(focused()) {
+			if(Miro.focused()) {
 				new DynamicProject();
 			}
 		} else if(evt.keyCode === 79) { // ^`O`
-			if(focused()) {
+			if(Miro.focused()) {
 				open();
 			}
 		} else if(evt.keyCode === 83) { // ^`S`
-			if(focused()) {
+			if(Miro.focused()) {
 				save();
 			}
 		} else if(evt.keyCode === 87 || evt.keyCode === 115) { // ^`W` || ^`F4`
-			if(focused()) {
+			if(Miro.focused()) {
 				if(project) {
 					project.close();
 				} else {
@@ -216,21 +216,21 @@ document.addEventListener("keydown", evt => {
 		} else if(evt.keyCode === 116) { // ^`F5`
 			insertFrames(true);
 		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
-			if(focused() && Object.keys(projects).length) {
+			if(Miro.focused() && Object.keys(projects).length) {
 				select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._project.id);
 			}
 		}
 	} else if(shiftKey) {
-		if(focused() && evt.keyCode === 116) { // `shift`+`F5`
+		if(Miro.focused() && evt.keyCode === 116) { // `shift`+`F5`
 			deleteFrames();
 		}
 	} else if(altKey) {
-		if(focused() && evt.keyCode === 36) { // `alt`+`home`
+		if(Miro.focused() && evt.keyCode === 36) { // `alt`+`home`
 			select("home");
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
-		if(!typing()) {
-			if(focused()) {
+		if(!Miro.typing()) {
+			if(Miro.focused()) {
 				if(assetContainer.classList.contains("active")) {
 					removeSelectedAssets();
 				} else if(layerContainer.classList.contains("active")) {
@@ -252,14 +252,14 @@ document.addEventListener("keydown", evt => {
 		}
 	} else if(evt.keyCode === 13) { // `enter`
 		const input = document.body.querySelector(":focus");
-		if(!input && focused()) {
+		if(!input && Miro.focused()) {
 			(playing ? pause : play)();
-		} else if(typing()) {
+		} else if(Miro.typing()) {
 			input.blur();
 		}
 	} else if(evt.keyCode === 27) { // `esc`
-		if(focused()) {
-			const input = typing();
+		if(Miro.focused()) {
+			const input = Miro.typing();
 			if(input) {
 				input.blur();
 			} else {
@@ -278,13 +278,13 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 113) { // `F2`
-		if(focused()) {
+		if(Miro.focused()) {
 			setTimeout(focusName);
 		} else if(sceneDialog) {
 			renameScene();
 		}
 	} else if(evt.keyCode === 116) { // `F5`
-		if(focused()) {
+		if(Miro.focused()) {
 			insertFrames();
 		}
 	} else if(evt.keyCode === 122) { // `F11`
@@ -463,7 +463,7 @@ document.addEventListener("change", evt => {
 	}
 }, capturePassive);
 document.addEventListener("paste", async evt => {
-	if(project && focused() && !typing()) {
+	if(project && Miro.focused() && !Miro.typing()) {
 		if(evt.clipboardData.items.length) {
 			let file;
 			let string;

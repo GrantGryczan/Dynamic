@@ -570,7 +570,7 @@ document.addEventListener("dragend", () => {
 }, capturePassive);
 document.addEventListener("dragover", evt => {
 	evt.preventDefault();
-	if(allowDrag && focused()) {
+	if(allowDrag && Miro.focused()) {
 		if(evt.dataTransfer.types.includes("Files") || evt.dataTransfer.types.includes("text/uri-list")) {
 			indicateTarget(container);
 		}
@@ -581,7 +581,7 @@ document.addEventListener("dragleave", evt => {
 }, capturePassive);
 document.addEventListener("drop", evt => {
 	evt.preventDefault();
-	if(allowDrag && focused()) {
+	if(allowDrag && Miro.focused()) {
 		if(evt.dataTransfer.files.length) {
 			const files = [...evt.dataTransfer.files];
 			for(let i = files.length - 1; i >= 0; i--) {
