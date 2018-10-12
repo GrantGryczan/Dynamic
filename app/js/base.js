@@ -227,9 +227,7 @@ const loadProgress = value => {
 		win.setProgressBar(value);
 	}
 };
-let indicated;
 const indicateTarget = target => {
-	const indicated = target;
 	if(target) {
 		const rect = target.getBoundingClientRect();
 		targetIndicator.style.transform = `translate(${rect.left + rect.width / 2 - 0.5}px, ${rect.top + rect.height / 2 - 0.5}px) scale(${rect.width}, ${rect.height})`;
