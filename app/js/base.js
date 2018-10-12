@@ -26,7 +26,7 @@ const whitespace = /\s+/g;
 const timestampTest = /(\d+):(\d\d)/g;
 const mathTest = /^[\d+\-*\/\(\)e\s]+$/i;
 const startOperationTest = /^[+\-*\/]/i;
-const container = document.querySelector("#container");
+const container = document.body.querySelector("#container");
 const tabs = container.querySelector("#tabs");
 const homeTab = tabs.querySelector("#homeTab");
 const toolbar = container.querySelector("#toolbar");
@@ -269,7 +269,7 @@ const updatePanels = () => {
 		handle.parentNode.style.width = handle.parentNode.style.height = handle.parentNode.style.minHeight = "";
 	}
 	for(const id of Object.keys(storage.size)) {
-		const elem = document.querySelector(`#${id}`);
+		const elem = container.querySelector(`#${id}`);
 		if(elem) {
 			const handle = elem.querySelector(".handle");
 			if(handle) {
@@ -324,5 +324,3 @@ window.onbeforeunload = () => {
 		win.removeAllListeners();
 	}
 };
-const focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
-const typing = () => container.querySelector("input:not([type='button']):not([type='submit']):not([type='reset']):focus, textarea:focus");

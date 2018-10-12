@@ -136,7 +136,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 93) { // `context menu`
-		const ctxCandidates = document.querySelectorAll(":hover, :focus");
+		const ctxCandidates = document.body.querySelectorAll(":hover, :focus");
 		if(ctxCandidates.length) {
 			openCtx(ctxCandidates[ctxCandidates.length - 1]);
 		}
@@ -251,7 +251,7 @@ document.addEventListener("keydown", evt => {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		const input = document.querySelector(":focus");
+		const input = document.body.querySelector(":focus");
 		if(!input && focused()) {
 			(playing ? pause : play)();
 		} else if(typing()) {

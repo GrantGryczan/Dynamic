@@ -239,4 +239,6 @@ class MiroDialog {
 	}
 }
 Miro.Dialog = MiroDialog;
+Miro.focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
+Miro.typing = () => container.querySelector("input:not([type='button']):not([type='submit']):not([type='reset']):focus, textarea:focus");
 Miro.prepare(document);
