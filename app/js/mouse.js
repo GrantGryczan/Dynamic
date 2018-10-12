@@ -586,16 +586,24 @@ document.addEventListener("dragend", () => {
 	capture: true,
 	passive: true
 });
+let dragLeaveTimeout;
 document.addEventListener("dragover", evt => {
-	evt.preventDefault();
-	if(allowDrag && Miro.focused()) {
-		if(evt.dataTransfer.types.includes("Files") || evt.dataTransfer.types.includes("text/uri-list")) {
+	if(evt.dataTransfer.types.includes("Files") || evt.dataTransfer.types.includes("text/uri-list")) {
+		evt.preventDefault();
+		if(allowDrag && Miro.focused()) {
+			if(dragLeaveTimeout) {
+				clearTimeout(dragLeaveTimeout);
+				dragLeaveTimeout = null;
+			}
 			indicateTarget(container);
 		}
 	}
 }, true);
 document.addEventListener("dragleave", evt => {
-	indicateTarget();
+	if(dragLeaveTimeout) {
+		clearTimeout(dragLeaveTimeout);
+	}
+	dragLeaveTimeout = setTimeout(indicateTarget, 100);
 }, {
 	capture: true,
 	passive: true
