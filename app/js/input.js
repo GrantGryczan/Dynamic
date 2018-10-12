@@ -482,16 +482,18 @@ document.addEventListener("paste", async evt => {
 			for(const item of evt.clipboardData.items) {
 				if(item.kind === "file") {
 					file = item;
-				} else {
+				} else if(item.kind === "string") {
 					string = item;
 				}
 			}
 			if(file) {
 				file = file.getAsFile();
-				const htmlFilename = (await new Promise(string.getAsString.bind(string))).match(htmlFilenameTest);
-				Object.defineProperty(file, "name", {
-					value: htmlFilename ? htmlFilename[1] : "Image"
-				});
+				if(string) {
+					const htmlFilename = (await new Promise(string.getAsString.bind(string))).match(htmlFilenameTest);
+					Object.defineProperty(file, "name", {
+						value: htmlFilename ? htmlFilename[1] : "Image"
+					});
+				}
 				addFiles([file]);
 			}
 		}
