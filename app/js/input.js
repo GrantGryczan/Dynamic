@@ -66,7 +66,7 @@ document.addEventListener("keydown", evt => {
 					const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) || assetElems.length) - 1) : 0];
 					if(assetElem) {
 						project.focusedAsset = assetElem.id;
-						if(!superKey) {
+						if(evt.shiftKey || !superKey) {
 							selectAsset(assetElem);
 						}
 					}
@@ -75,7 +75,7 @@ document.addEventListener("keydown", evt => {
 					const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 					if(layer) {
 						project.focusedLayer = layer.id;
-						if(!superKey) {
+						if(evt.shiftKey || !superKey) {
 							selectLayer(layer);
 						}
 					}
@@ -84,7 +84,7 @@ document.addEventListener("keydown", evt => {
 					const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
 					if(timelineItem) {
 						project.focusedTimelineItem = timelineItem.id;
-						if(!superKey) {
+						if(evt.shiftKey || !superKey) {
 							selectTimelineItem(timelineItem);
 						}
 					}
@@ -109,7 +109,7 @@ document.addEventListener("keydown", evt => {
 					const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) : -1) + 1) % assetElems.length];
 					if(assetElem) {
 						project.focusedAsset = assetElem.id;
-						if(!superKey) {
+						if(evt.shiftKey || !superKey) {
 							selectAsset(assetElem);
 						}
 					}
@@ -118,7 +118,7 @@ document.addEventListener("keydown", evt => {
 					const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 					if(layer) {
 						project.focusedLayer = layer.id;
-						if(!superKey) {
+						if(evt.shiftKey || !superKey) {
 							selectLayer(layer);
 						}
 					}
@@ -127,7 +127,7 @@ document.addEventListener("keydown", evt => {
 					const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
 					if(timelineItem) {
 						project.focusedTimelineItem = timelineItem.id;
-						if(!superKey) {
+						if(evt.shiftKey || !superKey) {
 							selectTimelineItem(timelineItem);
 						}
 					}
