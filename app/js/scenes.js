@@ -80,7 +80,7 @@ const removeScene = sceneElem => {
 const confirmRemoveScene = sceneElem => {
 	if(project.data.scenes.length !== 1) {
 		new Miro.Dialog("Remove Scene", html`
-			Are you sure you want to remove <b>${sceneElem._scene.name}</b>?<br>
+			Are you sure you want to remove <b>$${sceneElem._scene.name}</b>?<br>
 			Objects and other data inside the scene will also be removed.
 		`, ["Yes", "No"]).then(value => {
 			if(value === 0) {

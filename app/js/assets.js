@@ -143,12 +143,12 @@ const confirmRemoveAsset = assetElem => {
 	};
 	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
 		new Miro.Dialog("Remove Asset", html`
-			Are you sure you want to remove <b>${assetElem._asset.name}</b>?<br>
+			Are you sure you want to remove <b>$${assetElem._asset.name}</b>?<br>
 			Objects using the asset will also be removed.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	} else if(assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
-			Are you sure you want to remove <b>${assetElem._asset.name}</b>?<br>
+			Are you sure you want to remove <b>$${assetElem._asset.name}</b>?<br>
 			All items inside the group will be taken out.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	}
@@ -265,7 +265,7 @@ const addFiles = async files => {
 		} catch(err) {
 			console.warn(err);
 			new Miro.Dialog("Error", html`
-				An error occurred while encoding <b>${files[i].name}</b>.
+				An error occurred while encoding <b>$${files[i].name}</b>.
 			`);
 			continue;
 		}
@@ -293,7 +293,7 @@ const addFiles = async files => {
 		} catch(err) {
 			console.warn(err);
 			new Miro.Dialog("Error", html`
-				<b>${files[i].name}</b> is not a valid asset.
+				<b>$${files[i].name}</b> is not a valid asset.
 			`);
 			continue;
 		}
@@ -322,7 +322,7 @@ const addFileFromURI = uri => {
 	const error = () => {
 		loadIndeterminate(false);
 		new Miro.Dialog("Error", html`
-			An error occurred while fetching <b>${uri}</b>.
+			An error occurred while fetching <b>$${uri}</b>.
 		`);
 	};
 	try {
