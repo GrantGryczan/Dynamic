@@ -43,22 +43,22 @@ const setKeys = evt => {
 document.addEventListener("keydown", evt => {
 	setKeys(evt);
 	if(evt.keyCode === 35) { // `end`
-		if(Miro.focused() && !Miro.typing()) {
+		if(project && Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			endFrameJump();
 		}
 	} else if(evt.keyCode === 36) { // `home`
-		if(Miro.focused() && !Miro.typing()) {
+		if(project && Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			homeFrameJump();
 		}
 	} else if(evt.keyCode === 37) { // `left`
-		if(Miro.focused() && !Miro.typing()) {
+		if(project && Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			leftFrameJump();
 		}
 	} else if(evt.keyCode === 38) { // `up`
-		if(!Miro.typing()) {
+		if(project && !Miro.typing()) {
 			if(Miro.focused()) {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
@@ -96,12 +96,12 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 39) { // `right`
-		if(Miro.focused() && !Miro.typing()) {
+		if(project && Miro.focused() && !Miro.typing()) {
 			evt.preventDefault();
 			rightFrameJump();
 		}
 	} else if(evt.keyCode === 40) { // `down`
-		if(!Miro.typing()) {
+		if(project && !Miro.typing()) {
 			if(Miro.focused()) {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
@@ -158,13 +158,13 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(shiftKey) {
 			if(evt.keyCode === 65) { // ^`shift`+`A`
-				if(Miro.focused() && !Miro.typing()) {
+				if(project && Miro.focused() && !Miro.typing()) {
 					selectFramesInRows();
 				}
 			} else if(evt.keyCode === 73) { // ^`shift`+`I`
 				win.toggleDevTools();
 			} else if(evt.keyCode === 83) { // ^`shift`+`S`
-				if(Miro.focused()) {
+				if(project && Miro.focused()) {
 					save(true);
 				}
 			}
@@ -187,7 +187,7 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
-			if(Miro.focused() && !Miro.typing()) {
+			if(project && Miro.focused() && !Miro.typing()) {
 				if(assetContainer.classList.contains("active")) {
 					selectAllAssets();
 				} else if(layerContainer.classList.contains("active")) {
@@ -205,7 +205,7 @@ document.addEventListener("keydown", evt => {
 				open();
 			}
 		} else if(evt.keyCode === 83) { // ^`S`
-			if(Miro.focused()) {
+			if(project && Miro.focused()) {
 				save();
 			}
 		} else if(evt.keyCode === 87 || evt.keyCode === 115) { // ^`W` || ^`F4`
@@ -217,14 +217,16 @@ document.addEventListener("keydown", evt => {
 				}
 			}
 		} else if(evt.keyCode === 116) { // ^`F5`
-			insertFrames(true);
-		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1`-`8`
+			if(project) {
+				insertFrames(true);
+			}
+		} else if(evt.keyCode >= 49 && evt.keyCode <= 56) { // ^`1-8`
 			if(Miro.focused() && Object.keys(projects).length) {
 				select((tabs.children[evt.keyCode - 48] || tabs.lastElementChild)._project.id);
 			}
 		}
 	} else if(shiftKey) {
-		if(Miro.focused() && evt.keyCode === 116) { // `shift`+`F5`
+		if(project && Miro.focused() && evt.keyCode === 116) { // `shift`+`F5`
 			deleteFrames();
 		}
 	} else if(altKey) {
@@ -232,7 +234,7 @@ document.addEventListener("keydown", evt => {
 			select("home");
 		}
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
-		if(!Miro.typing()) {
+		if(project && !Miro.typing()) {
 			if(Miro.focused()) {
 				if(assetContainer.classList.contains("active")) {
 					removeSelectedAssets();
@@ -250,12 +252,12 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 9) { // `tab`
-		if(fullPreview.classList.contains("active")) {
+		if(project && fullPreview.classList.contains("active")) {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
 		const input = document.body.querySelector(":focus");
-		if(!input && Miro.focused()) {
+		if(project && !input && Miro.focused()) {
 			(playing ? pause : play)();
 		} else if(Miro.typing()) {
 			input.blur();
@@ -265,7 +267,7 @@ document.addEventListener("keydown", evt => {
 			const input = Miro.typing();
 			if(input) {
 				input.blur();
-			} else {
+			} else if(project) {
 				if(assetContainer.classList.contains("active")) {
 					deselectAssets();
 					updateProperties();
@@ -281,13 +283,15 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 113) { // `F2`
-		if(Miro.focused()) {
-			setTimeout(focusName);
-		} else if(sceneDialog) {
-			renameScene();
+		if(project) {
+			if(Miro.focused()) {
+				setTimeout(focusName);
+			} else if(sceneDialog) {
+				renameScene();
+			}
 		}
 	} else if(evt.keyCode === 116) { // `F5`
-		if(Miro.focused()) {
+		if(project && Miro.focused()) {
 			insertFrames();
 		}
 	} else if(evt.keyCode === 122) { // `F11`
