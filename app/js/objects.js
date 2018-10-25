@@ -117,7 +117,9 @@ class DynamicObject {
 			this.element = this.asset.preview.cloneNode();
 			this.element.addEventListener("canplaythrough", () => {
 				this.element.currentTime = this.element.duration;
-			}, once);
+			}, {
+				once: true
+			});
 			this.timelineItem = html`
 				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
