@@ -26,8 +26,7 @@ class DynamicAsset {
 			}
 			this.mime = value.mime;
 			this.data = value.data;
-			this.media = new (typeImage ? Image : Audio)();
-			this.media.src = this.url;
+			(this.preview = new (typeImage ? Image : Audio)()).src = this.url;
 			this.element = html`
 				<div id="asset_$${this.id}" class="asset typeFile" title="$${this.name}" data-mime="$${this.mime}">
 					<div class="bar">
@@ -81,7 +80,7 @@ class DynamicAsset {
 		}
 		delete obj.element;
 		if(this.type === "file") {
-			delete obj.media;
+			delete obj.preview;
 		}
 		return obj;
 	}
@@ -283,11 +282,11 @@ const addFiles = async files => {
 				data
 			});
 			await new Promise((resolve, reject) => {
-				if(asset.media instanceof Audio && asset.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+				if(asset.preview instanceof Audio && asset.preview.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
 					resolve();
 				} else {
-					asset.media.addEventListener(asset.media instanceof Image ? "load" : "canplaythrough", resolve);
-					asset.media.addEventListener("error", reject);
+					asset.preview.addEventListener(asset.preview instanceof Image ? "load" : "canplaythrough", resolve);
+					asset.preview.addEventListener("error", reject);
 				}
 			});
 		} catch(err) {

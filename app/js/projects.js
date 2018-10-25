@@ -339,13 +339,13 @@ const open = async location => {
 		for(const asset of project.data.assets) {
 			loadProgress(++loaded / totalLoad);
 			try {
-				if(asset.media) {
+				if(asset.preview) {
 					await new Promise((resolve, reject) => {
-						if(asset.media instanceof Audio && asset.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+						if(asset.preview instanceof Audio && asset.preview.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
 							resolve();
 						} else {
-							asset.media.addEventListener(asset.media instanceof Image ? "load" : "canplaythrough", resolve);
-							asset.media.addEventListener("error", reject);
+							asset.preview.addEventListener(asset.preview instanceof Image ? "load" : "canplaythrough", resolve);
+							asset.preview.addEventListener("error", reject);
 						}
 					});
 				}
@@ -359,13 +359,13 @@ const open = async location => {
 		for(const obj of project.objects) {
 			loadProgress(++loaded / totalLoad);
 			try {
-				if(obj.media) {
+				if(obj.element instanceof Audio || obj.element instanceof Image) {
 					await new Promise((resolve, reject) => {
-						if(obj.media instanceof Audio && obj.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+						if(obj.element instanceof Audio && obj.element.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
 							resolve();
 						} else {
-							obj.media.addEventListener(obj.media instanceof Image ? "load" : "canplaythrough", resolve);
-							obj.media.addEventListener("error", reject);
+							obj.element.addEventListener(obj.element instanceof Image ? "load" : "canplaythrough", resolve);
+							obj.element.addEventListener("error", reject);
 						}
 					});
 				}

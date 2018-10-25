@@ -63,7 +63,7 @@ const computeDynamicAudio = (obj, time) => {
 		const prevPlayValue = playValue;
 		const prevLoopValue = loopValue;
 		if(keyframe) {
-			if(keyframe.present && (playValue = keyframe.present.value) && timeValue >= obj.media.duration) {
+			if(keyframe.present && (playValue = keyframe.present.value) && timeValue >= obj.element.duration) {
 				timeValue = 0;
 			}
 			if(keyframe.volume) {
@@ -78,11 +78,11 @@ const computeDynamicAudio = (obj, time) => {
 		}
 		if(keyframe && keyframe.time) {
 			timeValue = keyframe.time.value;
-		} else if(prevPlayValue && (timeValue += speedValue / project.data.fps) >= obj.media.duration) {
+		} else if(prevPlayValue && (timeValue += speedValue / project.data.fps) >= obj.element.duration) {
 			if(!prevLoopValue) {
 				playValue = false;
 			}
-			timeValue = loopValue ? timeValue % obj.media.duration : obj.media.duration;
+			timeValue = loopValue ? timeValue % obj.element.duration : obj.element.duration;
 		}
 		playValues.push(playValue);
 		timeValues.push(timeValue);
@@ -198,7 +198,7 @@ const updateProperties = () => {
 				const durations = [];
 				for(const obj of project.root.objs) {
 					if(obj.type === "audio") {
-						durations.push(obj.media.duration);
+						durations.push(obj.element.duration);
 						const computed = computeDynamicAudio(obj, project.root.duration - 1);
 						for(let i = 0; i < project.root.duration; i++) {
 							if(project.frames[obj.id][i]) {

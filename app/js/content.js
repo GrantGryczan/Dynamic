@@ -38,21 +38,21 @@ const animate = now => {
 						const computed = computeDynamicAudio(obj, value);
 						if(playTimeSpeedLoopSet) {
 							if(playTimeSet) {
-								const promise = obj.media[computed.play ? "play" : "pause"]();
+								const promise = obj.element[computed.play ? "play" : "pause"]();
 								if(promise) {
 									promise.catch(console.warn);
 								}
 							}
-							obj.media.currentTime = computed.time;
+							obj.element.currentTime = computed.time;
 							if(loopSet) {
-								obj.media.loop = computed.loop;
+								obj.element.loop = computed.loop;
 							}
 							if(speedSet) {
-								obj.media.playbackRate = computed.speed;
+								obj.element.playbackRate = computed.speed;
 							}
 						}
 						if(volumeSet) {
-							obj.media.volume = computed.volume;
+							obj.element.volume = computed.volume;
 						}
 					}
 				}
@@ -96,18 +96,18 @@ const playingAudio = [];
 const updateLiveAudio = () => {
 	for(const obj of project.root.objs) {
 		if(obj.type === "audio") {
-			if(!playingAudio.includes(obj.media)) {
-				playingAudio.push(obj.media);
+			if(!playingAudio.includes(obj.element)) {
+				playingAudio.push(obj.element);
 			}
 			const computed = computeDynamicAudio(obj);
-			const promise = obj.media[computed.play ? "play" : "pause"]();
+			const promise = obj.element[computed.play ? "play" : "pause"]();
 			if(promise) {
 				promise.catch(console.warn);
 			}
-			obj.media.currentTime = computed.time;
-			obj.media.volume = computed.volume;
-			obj.media.loop = computed.loop;
-			obj.media.playbackRate = computed.speed;
+			obj.element.currentTime = computed.time;
+			obj.element.volume = computed.volume;
+			obj.element.loop = computed.loop;
+			obj.element.playbackRate = computed.speed;
 		}
 	}
 };

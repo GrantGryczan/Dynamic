@@ -114,12 +114,12 @@ class DynamicObject {
 				</div>
 			`;
 		} else if(this.type === "audio") {
-			this.media = this.asset.media.cloneNode();
+			this.element = this.asset.preview.cloneNode();
 			const playTest = () => {
-				this.media.removeEventListener("canplaythrough", playTest);
-				this.media.currentTime = this.media.duration;
+				this.element.removeEventListener("canplaythrough", playTest);
+				this.element.currentTime = this.element.duration;
 			};
-			this.media.addEventListener("canplaythrough", playTest);
+			this.element.addEventListener("canplaythrough", playTest);
 			this.timelineItem = html`
 				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
@@ -215,7 +215,7 @@ class DynamicObject {
 		} else {
 			obj.asset = this.asset.id;
 			if(this.type === "audio") {
-				delete obj.media;
+				delete obj.element;
 			}
 		}
 		delete obj.layer;
@@ -610,13 +610,13 @@ const addToTimeline = async () => {
 		let obj;
 		try {
 			obj = new DynamicObject(assetElem._asset.id);
-			if(obj.media) {
+			if(obj.element instanceof Audio || obj.element instanceof Image) {
 				await new Promise((resolve, reject) => {
-					if(obj.media instanceof Audio && obj.media.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+					if(obj.element instanceof Audio && obj.element.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
 						resolve();
 					} else {
-						obj.media.addEventListener(obj.media instanceof Image ? "load" : "canplaythrough", resolve);
-						obj.media.addEventListener("error", reject);
+						obj.element.addEventListener(obj.element instanceof Image ? "load" : "canplaythrough", resolve);
+						obj.element.addEventListener("error", reject);
 					}
 				});
 			}
