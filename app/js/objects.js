@@ -415,7 +415,7 @@ const confirmRemoveObjElems = objElems => {
 	if(objElems.length) {
 		if(objElems.length === 1) {
 			confirmRemoveObjElem(objElems[0]);
-		} else if(objElems.length !== 1) {
+		} else {
 			new Miro.Dialog("Remove Objects", "Are you sure you want to remove all those objects?", ["Yes", "No"]).then(value => {
 				if(value === 0) {
 					objElems.forEach(removeObj);
