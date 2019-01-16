@@ -360,7 +360,7 @@ label:not(.mdc-floating-label) {
 #toolbar button {
 	width: 36px;
 	height: 36px;
-	border-radius: 8px;
+	border-radius: 50%;
 }
 #loading {
 	display: none;
