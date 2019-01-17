@@ -81,18 +81,15 @@ button.filled::before, button.filled::after {
 	padding: 0;
 	border-radius: 50%;
 }
-.mdc-icon-button::before, .mdc-icon-button::after {
-	border-radius: inherit;
-}
-.double-icon > * {
+.doubleIcon > * {
 	display: inline-block;
 }
-.double-icon > :first-child {
+.doubleIcon > :first-child {
 	position: relative;
 	left: 5px;
 	top: -1px;
 }
-.double-icon > :last-child {
+.doubleIcon > :last-child {
 	position: relative;
 	left: -11px;
 	top: 6px;
@@ -100,14 +97,24 @@ button.filled::before, button.filled::after {
 }
 .mdc-text-field {
 	width: 100%;
+	height: initial;
 }
-.mdc-text-field--upgraded:not(.mdc-text-field--fullwidth):not(.mdc-text-field--box) {
-	margin-top: 0;
+.mdc-text-field:not(.mdc-text-field--disabled) {
+	background-color: transparent;
 }
-.mdc-text-field:not(.mdc-text-field--disabled):not(.mdc-text-field--outlined):not(.mdc-text-field--textarea) .mdc-text-field__input:read-only {
-	border-bottom: 1px dotted rgba(35, 31, 32, 0.26);
+.mdc-text-field--disabled {
+	background-color: transparent;
 }
-.mdc-text-field__input:read-only ~ .mdc-line-ripple {
+.mdc-text-field--disabled .mdc-text-field__input {
+	border-bottom: 1px dotted rgba(0, 0, 0.12);
+	color: rgba(0, 0, 0, 0.37);
+}
+.mdc-text-field__input {
+	height: 30px;
+	padding: 20px 0 1px;
+	box-sizing: content-box;
+}
+.mdc-text-field::before, .mdc-text-field::after {
 	display: none;
 }
 .mdc-checkbox::before, .mdc-checkbox::after {
@@ -135,20 +142,26 @@ button.filled::before, button.filled::after {
 		background-color: transparent
 	}
 }
-label {
-	pointer-events: none;
-}
-.mdc-form-field label {
-	pointer-events: initial;
-}
-.alwaysFloat {
-	transform: translateY(-100%) scale(0.75);
-}
 label:not(.mdc-floating-label) {
 	display: block;
-	margin: 4px 0 2px 0;
-	font-size: 0.75rem;
 	color: rgba(0, 0, 0, 0.6);
+	transform: scale(0.75);
+	transform-origin: left bottom;
+	will-change: transform;
+}
+.mdc-text-field:not(.mdc-text-field--textarea) .mdc-floating-label, .mdc-select .mdc-floating-label {
+	left: 0;
+	bottom: 8px;
+	max-width: initial !important;
+}
+.mdc-text-field:not(.mdc-text-field--textarea) .mdc-floating-label--float-above, .mdc-text-field:not(.mdc-text-field--textarea) .mdc-floating-label.alwaysFloat {
+	transform: translateY(-100%) scale(0.75);
+}
+.mdc-text-field--textarea .mdc-floating-label--float-above, .mdc-text-field--textarea .mdc-floating-label.alwaysFloat {
+	transform: translateY(-50%) scale(0.923);
+}
+.mdc-select .mdc-floating-label--float-above, .mdc-select .mdc-floating-label.alwaysFloat {
+	transform: translateY(-40%) scale(0.75);
 }
 .opaque {
 	opacity: 1 !important;
@@ -284,23 +297,11 @@ label:not(.mdc-floating-label) {
 	position: relative;
 	background-color: #d0d0d0;
 }
-.mdc-dialog {
-	position: absolute;
+.mdc-dialog__container {
+	overflow: visible;
 }
-.mdc-dialog__surface {
-	width: auto;
-	min-width: 280px;
-	max-width: 880px;
-	max-height: 100%;
-	margin: 15px;
+.mdc-dialog__content {
 	word-break: break-word;
-	word-wrap: break-word;
-}
-.mdc-dialog__body {
-	overflow-y: auto;
-}
-.mdc-dialog__header, .mdc-dialog__footer {
-	flex-shrink: 0;
 }
 #tabs {
 	display: flex;

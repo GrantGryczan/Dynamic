@@ -24,17 +24,20 @@ Miro.prepare = node => {
 		elem.type = "button";
 	}
 	for(const elem of node.querySelectorAll(".mdc-ripple:not(.mdc-ripple-upgraded)")) {
-		elem._mdc = new mdc.ripple.MDCRipple(elem);
+		elem._mdc = mdc.ripple.MDCRipple.attachTo(elem);
 	}
-	for(const elem of node.querySelectorAll(".mdc-text-field:not(.mdc-text-field--upgraded)")) {
-		elem._mdc = new mdc.textField.MDCTextField(elem);
+	for(const elem of node.querySelectorAll(".mdc-text-field:not(.mdc-text-field-upgraded)")) {
+		elem._mdc = mdc.textField.MDCTextField.attachTo(elem);
 	}
-	for(const elem of node.querySelectorAll(".mdc-checkbox:not(.mdc-checkbox--upgraded)")) {
+	for(const elem of node.querySelectorAll(".mdc-select")) {
+		elem._mdc = mdc.select.MDCSelect.attachTo(elem);
+	}
+	for(const elem of node.querySelectorAll(".mdc-checkbox:not(.mdc-checkbox-upgraded)")) {
 		elem.querySelector(".mdc-checkbox__background").appendChild(checkmark.cloneNode(true));
-		elem._mdc = new mdc.checkbox.MDCCheckbox(elem);
+		elem._mdc = mdc.checkbox.MDCCheckbox.attachTo(elem);
 	}
 	for(const elem of node.querySelectorAll(".mdc-form-field")) {
-		elem._mdc = new mdc.formField.MDCFormField(elem);
+		elem._mdc = mdc.formField.MDCFormField.attachTo(elem);
 	}
 };
 const htmlReplacements = [[/&/g, "&amp;"], [/</g, "&lt;"], [/>/g, "&gt;"], [/"/g, "&quot;"], [/'/g, "&#39;"], [/`/g, "&#96;"]];
@@ -101,7 +104,7 @@ const _dialog = Symbol("dialog");
 const _promise = Symbol("promise");
 const _close = Symbol("close");
 class MiroDialog {
-	constructor(title, body, buttons) {
+	constructor(title, content, buttons) {
 		if(!(typeof title === "string")) {
 			throw new MiroError("The `title` parameter must be a string.");
 		}
@@ -110,112 +113,107 @@ class MiroDialog {
 		} else if(!(buttons instanceof Array)) {
 			throw new MiroError("The `buttons` parameter must be an array if it is defined.");
 		}
-		if(typeof body === "string") {
-			const lines = body.split("\n");
-			body = document.createElement("span");
+		if(typeof content === "string") {
+			const lines = content.split("\n");
+			content = document.createElement("span");
 			for(let i = 0; i < lines.length; i++) {
 				if(i !== 0) {
-					body.appendChild(document.createElement("br"));
+					content.appendChild(document.createElement("br"));
 				}
-				body.appendChild(document.createTextNode(lines[i]));
+				content.appendChild(document.createTextNode(lines[i]));
 			}
-		} else if(!(body instanceof Node)) {
-			throw new MiroError("The `body` parameter must be a string or a DOM node.");
+		} else if(!(content instanceof Node)) {
+			throw new MiroError("The `content` parameter must be a string or a DOM node.");
 		}
-		hideFullPreview();
 		this.ready = false;
-		if(body instanceof HTMLElement) {
-			Miro.prepare(body);
+		if(content instanceof HTMLElement) {
+			Miro.prepare(content);
 		}
-		const dialogElem = document.createElement("aside");
+		const dialogElem = html`
+			<div class="mdc-dialog">
+				<div class="mdc-dialog__container">
+					<form class="mdc-dialog__surface">
+						<h2 class="mdc-dialog__title">$${title}</h2>
+						<div class="mdc-dialog__content"></div>
+						<div class="mdc-dialog__actions"></div>
+					</form>
+				</div>
+				<div class="mdc-dialog__scrim"></div>
+			</div>
+		`;
 		dialogElem[_dialog] = this;
-		dialogElem.classList.add("mdc-dialog");
-		const surfaceElem = this.form = document.createElement("form");
-		surfaceElem.classList.add("mdc-dialog__surface");
-		const headerElem = document.createElement("header");
-		headerElem.classList.add("mdc-dialog__header");
-		const titleElem = document.createElement("h2");
-		titleElem.classList.add("mdc-dialog__header__title");
-		titleElem.textContent = title;
-		headerElem.appendChild(titleElem);
-		surfaceElem.appendChild(headerElem);
-		const bodyElem = document.createElement("section");
-		bodyElem.classList.add("mdc-dialog__body");
-		bodyElem.appendChild(body);
-		surfaceElem.appendChild(bodyElem);
-		const footerElem = document.createElement("footer");
-		footerElem.classList.add("mdc-dialog__footer");
-		for(let i = 0; i < buttons.length; i++) {
-			const item = buttons[i];
-			buttons[i] = document.createElement("button");
-			if(typeof item === "string") {
-				buttons[i].type = "button";
-				buttons[i].textContent = item;
-			} else if(item instanceof Object) {
-				buttons[i].type = item.type;
-				buttons[i].textContent = item.text;
-			} else {
-				throw new MiroError("The `buttons` parameter's array must only include strings and objects.");
-			}
-			buttons[i].classList.add("mdc-button");
-			buttons[i].classList.add("mdc-dialog__footer__button");
-			footerElem.appendChild(buttons[i]);
+		const form = this.form = dialogElem.querySelector("form");
+		const contentElem = dialogElem.querySelector(".mdc-dialog__content");
+		contentElem.appendChild(content);
+		const buttonsElem = dialogElem.querySelector(".mdc-dialog__actions");
+		if(buttons.length) {
+			buttons = buttons.map(item => {
+				const button = document.createElement("button");
+				if(typeof item === "string") {
+					button.type = "button";
+					button.textContent = item;
+				} else if(item instanceof Object) {
+					button.type = item.type;
+					button.textContent = item.text;
+				} else {
+					throw new MiroError("The `buttons` parameter's array must only include strings and objects.");
+				}
+				button.classList.add("mdc-button");
+				button.classList.add("mdc-dialog__button");
+				buttonsElem.appendChild(button);
+				return button;
+			});
 		}
-		surfaceElem.appendChild(footerElem);
-		dialogElem.appendChild(surfaceElem);
-		const backdropElem = document.createElement("div");
-		backdropElem.classList.add("mdc-dialog__backdrop");
-		dialogElem.appendChild(backdropElem);
-		const dialog = new mdc.dialog.MDCDialog(dialogElem);
 		container.appendChild(dialogElem);
+		const dialog = mdc.dialog.MDCDialog.attachTo(dialogElem);
 		this[_promise] = new Promise(resolve => {
 			let submitted = false;
 			let formState = true;
-			surfaceElem.addEventListener("submit", (submitted = !footerElem.querySelector("button[type='submit']")) ? evt => {
+			form.addEventListener("submit", (submitted = !buttonsElem.querySelector("button[type='submit']")) ? evt => {
 				evt.preventDefault();
 			} : evt => {
 				evt.preventDefault();
 				submitted = true;
 				setTimeout(() => {
-					formState = !surfaceElem._disabled;
-					Miro.formState(surfaceElem, false);
+					formState = !form._disabled;
+					Miro.formState(form, false);
 				});
 			});
+			let canClose = true;
 			this.value = null;
-			const close = value => {
-				this.closed = true;
-				this.value = value;
-				setTimeout(() => {
-					container.removeChild(dialogElem);
-					Miro.formState(surfaceElem, formState);
-				}, 120);
-				resolve(value);
+			const close = this[_close] = value => {
+				if(canClose) {
+					canClose = false;
+					this.value = value;
+					dialog.close();
+					Miro.formState(form, formState);
+					resolve(value);
+				}
 			};
-			this[_close] = close;
-			const dialogButton = async evt => {
+			const click = async evt => {
 				if(!submitted && evt.target.type === "submit") {
 					await Miro.wait();
 					if(!submitted) {
 						return;
 					}
 				}
-				dialog.close();
 				close(buttons.indexOf(evt.target));
 			};
 			for(const elem of buttons) {
-				elem.addEventListener("click", dialogButton);
+				elem.addEventListener("click", click);
 			}
-			dialog.listen("MDCDialog:cancel", () => {
-				close(-1);
+			dialog.listen("MDCDialog:closing", close.bind(this, -1));
+			dialog.listen("MDCDialog:closed", () => {
+				container.removeChild(dialogElem);
 			});
 			setTimeout(() => {
-				dialog.show();
+				dialog.open();
 				this.ready = true;
 			});
 		});
 		this[_dialog] = dialog;
 		this.element = dialogElem;
-		this.body = bodyElem;
+		this.content = contentElem;
 		this.buttons = buttons;
 	}
 	then(onFulfilled) {
@@ -229,7 +227,6 @@ class MiroDialog {
 	close(value) {
 		setTimeout(() => {
 			if(this.ready) {
-				this[_dialog].close();
 				this[_close](typeof value === "number" ? value : -1);
 				return true;
 			} else {
