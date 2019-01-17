@@ -527,5 +527,5 @@ const openCtx = target => {
 	} else {
 		return;
 	}
-	electron.remote.Menu.buildFromTemplate(template).popup(win);
+	electron.remote.Menu.buildFromTemplate(template).popup();
 };

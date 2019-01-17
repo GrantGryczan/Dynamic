@@ -6,17 +6,19 @@ let addFileToOpen = filesToOpen.push.bind(filesToOpen);
 if(process.argv[1] && process.argv[2] !== "dev") {
 	addFileToOpen(process.argv[1]);
 }
-if(electron.app.makeSingleInstance(([, fileToOpen]) => {
-	if(fileToOpen) {
-		addFileToOpen(fileToOpen);
-	}
-	if(win) {
-		if(win.isMinimized()) {
-			win.restore();
+if(electron.app.requestSingleInstanceLock()) {
+	electron.app.on("second-instance", (evt, [, fileToOpen]) => {
+		if(fileToOpen) {
+			addFileToOpen(fileToOpen);
 		}
-		win.focus();
-	}
-})) {
+		if(win) {
+			if(win.isMinimized()) {
+				win.restore();
+			}
+			win.focus();
+		}
+	});
+} else {
 	electron.app.quit();
 	return;
 }
