@@ -848,6 +848,7 @@ label:not(.mdc-floating-label) {
 }
 .property {
 	position: relative;
+	margin-bottom: 4px;
 }
 .property.array .mdc-text-field, .property.array .mdc-text-field {
 	display; inline-block;
