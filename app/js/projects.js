@@ -199,15 +199,7 @@ class DynamicProject {
 		}
 	}
 	get objects() {
-		const objs = [];
-		for(const objArray of this.data.scenes.map(byObjArrays)) {
-			objs.push(...objArray);
-		}
-		for(const objArray of this.data.assets.filter(byObjArrays).map(byObjArrays)) {
-			objs.push(...objArray);
-		}
-		return objs;
-		// TODO (Chrome 69): return [...this.data.scenes, ...this.data.assets.filter(byObjArrays)].flatMap(byObjArrays);
+		return [...this.data.scenes, ...this.data.assets.filter(byObjArrays)].flatMap(byObjArrays);
 	}
 	getAsset(id) {
 		return this.data.assets.find(asset => asset.id === id);

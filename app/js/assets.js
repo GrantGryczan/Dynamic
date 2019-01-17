@@ -143,7 +143,7 @@ const confirmRemoveAsset = assetElem => {
 	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
 		new Miro.Dialog("Remove Asset", html`
 			Are you sure you want to remove <b>$${assetElem._asset.name}</b>?<br>
-			Objects using the asset will also be removed.
+			Objects using that asset will also be removed.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
 	} else if(assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
@@ -159,7 +159,7 @@ const confirmRemoveAssets = assetElems => {
 		} else {
 			new Miro.Dialog("Remove Assets", html`
 				Are you sure you want to remove all those assets?<br>
-				Objects using the assets will also be removed.
+				Objects using those assets will also be removed.
 			`, ["Yes", "No"]).then(value => {
 				if(value === 0) {
 					assetElems.forEach(removeAsset);

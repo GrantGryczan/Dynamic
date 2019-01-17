@@ -31,7 +31,10 @@ electron.app.once("ready", () => {
 		show: false,
 		minWidth: 480,
 		minHeight: 480,
-		backgroundColor: "#e0e0e0"
+		backgroundColor: "#e0e0e0",
+		webPreferences: {
+			nodeIntegration: true
+		}
 	});
 	win.once("ready-to-show", () => {
 		win.maximize();
