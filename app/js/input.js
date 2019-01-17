@@ -256,11 +256,13 @@ document.addEventListener("keydown", evt => {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
-		const input = document.body.querySelector(":focus");
-		if(project && !input && Miro.focused()) {
-			(playing ? pause : play)();
-		} else if(Miro.typing()) {
-			input.blur();
+		if(Miro.focused()) {
+			const input = document.body.querySelector(":focus");
+			if(project && !input) {
+				(playing ? pause : play)();
+			} else if(Miro.typing()) {
+				input.blur();
+			}
 		}
 	} else if(evt.keyCode === 27) { // `esc`
 		if(Miro.focused()) {
