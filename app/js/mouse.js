@@ -49,14 +49,14 @@ const onMouseDown = evt => {
 	}
 	if(mouseTarget.classList.contains("bar")) {
 		if(mouseTarget.parentNode.classList.contains("asset")) {
-			project.focusedAsset = mouseTarget.parentNode.id;
+			project.focusedAsset = mouseTarget.parentNode;
 		} else if(mouseTarget.parentNode.classList.contains("timelineItem")) {
-			project.focusedTimelineItem = mouseTarget.parentNode.id;
+			project.focusedTimelineItem = mouseTarget.parentNode;
 		} else if(mouseTarget.parentNode.classList.contains("scene")) {
 			mouseTarget.parentNode.classList.add("focus");
 		}
 	} else if(mouseTarget.parentNode.classList.contains("layer")) {
-		project.focusedLayer = mouseTarget.parentNode.id;
+		project.focusedLayer = mouseTarget.parentNode;
 	} else if(mouseTarget.classList.contains("timeUnit")) {
 		setTime(mouseTarget._value);
 	} else if(mouseTarget.classList.contains("frame")) {

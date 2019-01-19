@@ -63,27 +63,27 @@ document.addEventListener("keydown", evt => {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
 					const assetElems = assets.querySelectorAll(".asset");
-					const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) || assetElems.length) - 1) : 0];
+					const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, project.focusedAsset) || assetElems.length) - 1) : 0];
 					if(assetElem) {
-						project.focusedAsset = assetElem.id;
+						project.focusedAsset = assetElem;
 						if(evt.shiftKey || !superKey) {
 							selectAsset(assetElem);
 						}
 					}
 				} else if(layerContainer.classList.contains("active")) {
 					evt.preventDefault();
-					const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).previousElementSibling || layers.lastElementChild : layers.firstElementChild;
+					const layer = project.focusedLayer ? project.focusedLayer.previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 					if(layer) {
-						project.focusedLayer = layer.id;
+						project.focusedLayer = layer;
 						if(evt.shiftKey || !superKey) {
 							selectLayer(layer);
 						}
 					}
 				} else if(timelineContainer.classList.contains("active")) {
 					evt.preventDefault();
-					const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
+					const timelineItem = project.focusedTimelineItem ? project.focusedTimelineItem.previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
 					if(timelineItem) {
-						project.focusedTimelineItem = timelineItem.id;
+						project.focusedTimelineItem = timelineItem;
 						if(evt.shiftKey || !superKey) {
 							selectTimelineItem(timelineItem);
 						}
@@ -106,27 +106,27 @@ document.addEventListener("keydown", evt => {
 				if(assetContainer.classList.contains("active")) {
 					evt.preventDefault();
 					const assetElems = assets.querySelectorAll(".asset");
-					const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, assets.querySelector(`#${project.focusedAsset}`)) : -1) + 1) % assetElems.length];
+					const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, project.focusedAsset) : -1) + 1) % assetElems.length];
 					if(assetElem) {
-						project.focusedAsset = assetElem.id;
+						project.focusedAsset = assetElem;
 						if(evt.shiftKey || !superKey) {
 							selectAsset(assetElem);
 						}
 					}
 				} else if(layerContainer.classList.contains("active")) {
 					evt.preventDefault();
-					const layer = project.focusedLayer ? layers.querySelector(`#${project.focusedLayer}`).nextElementSibling || layers.firstElementChild : layers.firstElementChild;
+					const layer = project.focusedLayer ? project.focusedLayer.nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 					if(layer) {
-						project.focusedLayer = layer.id;
+						project.focusedLayer = layer;
 						if(evt.shiftKey || !superKey) {
 							selectLayer(layer);
 						}
 					}
 				} else if(timelineContainer.classList.contains("active")) {
 					evt.preventDefault();
-					const timelineItem = project.focusedTimelineItem ? timelineItems.querySelector(`#${project.focusedTimelineItem}`).nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
+					const timelineItem = project.focusedTimelineItem ? project.focusedTimelineItem.nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
 					if(timelineItem) {
-						project.focusedTimelineItem = timelineItem.id;
+						project.focusedTimelineItem = timelineItem;
 						if(evt.shiftKey || !superKey) {
 							selectTimelineItem(timelineItem);
 						}

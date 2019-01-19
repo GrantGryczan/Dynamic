@@ -268,7 +268,7 @@ const getTopFrames = () => {
 	return topFrames;
 };
 const focusFrame = (timeline, value) => {
-	project.focusedTimelineItem = `timelineItem_${timeline}`;
+	project.focusedTimelineItem = project.root.objs.find(obj => obj.id === timeline).timelineItem;
 	project.frames[timeline][value] = 2;
 	project.time = value;
 };

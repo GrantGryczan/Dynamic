@@ -9,6 +9,15 @@ const baseData = {
 	version: 0
 };
 const byObjArrays = data => data.objs;
+const _saved = Symbol("saved");
+const _name = Symbol("name");
+const _location = Symbol("location");
+const _selectedAsset = Symbol("selectedAsset");
+const _focusedAsset = Symbol("focusedAsset");
+const _selectedLayer = Symbol("selectedLayer");
+const _focusedLayer = Symbol("focusedLayer");
+const _selectedTimelineItem = Symbol("selectedTimelineItem");
+const _focusedTimelineItem = Symbol("focusedTimelineItem");
 class DynamicProject {
 	constructor(value) {
 		if(!(value instanceof Object)) {
@@ -155,9 +164,8 @@ class DynamicProject {
 			assetElem.classList.remove("focus");
 		}
 		if(this[_focusedAsset] = value) {
-			const assetElem = assets.querySelector(`#${value}`);
-			assetElem.classList.add("focus");
-			scrollIntoView(assetElem.querySelector(".bar"), assets);
+			value.classList.add("focus");
+			scrollIntoView(value.querySelector(".bar"), assets);
 		}
 	}
 	get selectedLayer() {
@@ -174,9 +182,8 @@ class DynamicProject {
 			layer.classList.remove("focus");
 		}
 		if(this[_focusedLayer] = value) {
-			const layer = layers.querySelector(`#${value}`);
-			layer.classList.add("focus");
-			scrollIntoView(layer.querySelector(".bar"), layerBox);
+			value.classList.add("focus");
+			scrollIntoView(value.querySelector(".bar"), layerBox);
 		}
 	}
 	get selectedTimelineItem() {
@@ -193,9 +200,8 @@ class DynamicProject {
 			timelineItem.classList.remove("focus");
 		}
 		if(this[_focusedTimelineItem] = value) {
-			const timelineItem = timelineItems.querySelector(`#${value}`);
-			timelineItem.classList.add("focus");
-			scrollIntoView(timelineItem.querySelector(".bar"), timelineItems);
+			value.classList.add("focus");
+			scrollIntoView(value.querySelector(".bar"), timelineItems);
 		}
 	}
 	get objects() {

@@ -360,10 +360,10 @@ const storeObjs = () => {
 	project.saved = false;
 };
 const removeObj = objElem => {
-	if(project.selectedTimelineItem === `timelineItem_${objElem._obj.id}`) {
+	if(project.selectedTimelineItem === objElem) {
 		project.selectedTimelineItem = null;
 	}
-	if(project.selectedLayer === `layer_${objElem._obj.id}`) {
+	if(project.selectedLayer === objElem) {
 		project.selectedLayer = null;
 	}
 	if(objElem._obj.type === "group") {
@@ -461,20 +461,20 @@ const selectLayer = (target, button) => {
 				layer.classList.remove("selected");
 			}
 			target.classList.add("selected");
-			project.selectedLayer = target.id;
+			project.selectedLayer = target;
 		}
 	} else if(shiftKey) {
 		let selecting = !project.selectedLayer;
-		const classListMethod = superKey && project.selectedLayer && !layers.querySelector(`#${project.selectedLayer}`).classList.contains("selected") ? "remove" : "add";
+		const classListMethod = superKey && project.selectedLayer && !project.selectedLayer.classList.contains("selected") ? "remove" : "add";
 		for(const layer of layers.querySelectorAll(".layer")) {
-			if(layer.id === project.selectedLayer || layer.id === target.id) {
+			if(layer === project.selectedLayer || layer === target) {
 				if(selecting) {
 					layer.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
 					layer.classList[classListMethod]("selected");
-					if(project.selectedLayer !== target.id) {
+					if(project.selectedLayer !== target) {
 						selecting = true;
 					}
 				}
@@ -485,7 +485,7 @@ const selectLayer = (target, button) => {
 			}
 		}
 	} else {
-		project.selectedLayer = target.id;
+		project.selectedLayer = target;
 		if(superKey) {
 			target.classList.toggle("selected");
 		} else {
@@ -498,7 +498,7 @@ const selectLayer = (target, button) => {
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
 				project.selectedLayer = null;
-				project.focusedLayer = target.id;
+				project.focusedLayer = target;
 			}
 		}
 	}
@@ -547,20 +547,20 @@ const selectTimelineItem = (target, button) => {
 				timelineItem.classList.remove("selected");
 			}
 			target.classList.add("selected");
-			project.selectedTimelineItem = target.id;
+			project.selectedTimelineItem = target;
 		}
 	} else if(shiftKey) {
 		let selecting = !project.selectedTimelineItem;
-		const classListMethod = superKey && project.selectedTimelineItem && !timelineItems.querySelector(`#${project.selectedTimelineItem}`).classList.contains("selected") ? "remove" : "add";
+		const classListMethod = superKey && project.selectedTimelineItem && !project.selectedTimelineItem.classList.contains("selected") ? "remove" : "add";
 		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
-			if(timelineItem.id === project.selectedTimelineItem || timelineItem.id === target.id) {
+			if(timelineItem === project.selectedTimelineItem || timelineItem === target) {
 				if(selecting) {
 					timelineItem.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
 					timelineItem.classList[classListMethod]("selected");
-					if(project.selectedTimelineItem !== target.id) {
+					if(project.selectedTimelineItem !== target) {
 						selecting = true;
 					}
 				}
@@ -571,7 +571,7 @@ const selectTimelineItem = (target, button) => {
 			}
 		}
 	} else {
-		project.selectedTimelineItem = target.id;
+		project.selectedTimelineItem = target;
 		if(superKey) {
 			target.classList.toggle("selected");
 		} else {
@@ -584,7 +584,7 @@ const selectTimelineItem = (target, button) => {
 			}
 			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
 				project.selectedTimelineItem = null;
-				project.focusedTimelineItem = target.id;
+				project.focusedTimelineItem = target;
 			}
 		}
 	}
@@ -638,7 +638,7 @@ const addToTimeline = async () => {
 			}
 			project.root.objs.unshift(obj);
 			obj.timelineItem.classList.add("selected");
-			project.selectedTimelineItem = obj.timelineItem.id;
+			project.selectedTimelineItem = obj.timelineItem;
 			if(obj.type === "group") {
 				obj.timelineItem.classList.add("open");
 			}

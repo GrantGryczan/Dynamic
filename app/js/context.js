@@ -64,7 +64,7 @@ const assetCreationMenuItems = [{
 		}
 		storeAssets();
 		asset.element.classList.add("selected");
-		project.selectedAsset = asset.element.id;
+		project.selectedAsset = asset.element;
 		setActive(assetContainer);
 	}
 }, {
@@ -91,7 +91,7 @@ const assetCreationMenuItems = [{
 		asset.element.classList.add("open");
 		storeAssets();
 		asset.element.classList.add("selected");
-		project.selectedAsset = asset.element.id;
+		project.selectedAsset = asset.element;
 		updateProperties();
 	}
 }, {
@@ -218,13 +218,13 @@ const assetMenuGroupItems = [{
 }, {
 	label: "Deselect && select children",
 	click: () => {
-		const childrenToSelect = assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset");
+		const assetElems = assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset");
 		deselectAssets();
-		for(let i = 0; i < childrenToSelect.length; i++) {
-			childrenToSelect[i].classList.add("selected");
+		for(const assetElem of assetElems) {
+			assetElem.classList.add("selected");
 			if(i === 0) {
-				childrenToSelect[i].classList.add("focus");
-				project.focusedAsset = childrenToSelect[i].id;
+				assetElem.classList.add("focus");
+				project.focusedAsset = assetElem;
 			}
 		}
 		updateProperties();
@@ -277,7 +277,7 @@ const timelineItemCreationMenuItems = [{
 			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
 		obj.timelineItem.classList.add("selected");
-		project.selectedTimelineItem = obj.timelineItem.id;
+		project.selectedTimelineItem = obj.timelineItem;
 		obj.timelineItem.classList.add("open");
 		storeObjs();
 		updateSelectedTimelineItems();
@@ -406,7 +406,7 @@ const timelineItemMenuItems2 = [menuSeparator, ...objectSelectionTimelineMenu, {
 			childrenToSelect[i].classList.add("selected");
 			if(i === 0) {
 				childrenToSelect[i].classList.add("focus");
-				project.focusedTimelineItem = childrenToSelect[i].id;
+				project.focusedTimelineItem = childrenToSelect[i];
 			}
 		}
 		updateSelectedTimelineItems();
