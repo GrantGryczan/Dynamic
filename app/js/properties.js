@@ -111,7 +111,7 @@ const updateProperties = () => {
 	previewImage.classList.add("hidden");
 	previewAudio.classList.add("hidden");
 	previewImage.src = previewAudio.src = "";
-	if(assetContainer.classList.contains("activeProperties")) {
+	if(activeProperties === assetContainer) {
 		const assetElems = assets.querySelectorAll(".asset.selected");
 		if(assetElems.length) {
 			const singleSelected = assetElems.length === 1;
@@ -158,7 +158,7 @@ const updateProperties = () => {
 			canvasProperties();
 		}
 	} else {
-		const objElems = timelineContainer.classList.contains("activeProperties") || contentContainer.classList.contains("activeProperties") ? timelineItems.querySelectorAll(".timelineItem.selected") : (layerContainer.classList.contains("activeProperties") ? layers.querySelectorAll(".layer.selected") : []);
+		const objElems = activeProperties === timelineContainer || activeProperties === contentContainer ? timelineItems.querySelectorAll(".timelineItem.selected") : (activeProperties === layerContainer ? layers.querySelectorAll(".layer.selected") : []);
 		if(objElems.length) {
 			const singleSelected = objElems.length === 1;
 			const nameElement = prop.name.elements[0];

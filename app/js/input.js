@@ -60,7 +60,7 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 38) { // `up`
 		if(project && !Miro.typing()) {
 			if(Miro.focused()) {
-				if(assetContainer.classList.contains("active")) {
+				if(active === assetContainer) {
 					evt.preventDefault();
 					const assetElems = assets.querySelectorAll(".asset");
 					const assetElem = assetElems[project.focusedAsset ? ((Array.prototype.indexOf.call(assetElems, project.focusedAsset) || assetElems.length) - 1) : 0];
@@ -70,7 +70,7 @@ document.addEventListener("keydown", evt => {
 							selectAsset(assetElem);
 						}
 					}
-				} else if(layerContainer.classList.contains("active")) {
+				} else if(active === layerContainer) {
 					evt.preventDefault();
 					const layer = project.focusedLayer ? project.focusedLayer.previousElementSibling || layers.lastElementChild : layers.firstElementChild;
 					if(layer) {
@@ -79,7 +79,7 @@ document.addEventListener("keydown", evt => {
 							selectLayer(layer);
 						}
 					}
-				} else if(timelineContainer.classList.contains("active")) {
+				} else if(active === timelineContainer) {
 					evt.preventDefault();
 					const timelineItem = project.focusedTimelineItem ? project.focusedTimelineItem.previousElementSibling || timelineItems.lastElementChild : timelineItems.firstElementChild;
 					if(timelineItem) {
@@ -103,7 +103,7 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 40) { // `down`
 		if(project && !Miro.typing()) {
 			if(Miro.focused()) {
-				if(assetContainer.classList.contains("active")) {
+				if(active === assetContainer) {
 					evt.preventDefault();
 					const assetElems = assets.querySelectorAll(".asset");
 					const assetElem = assetElems[((project.focusedAsset ? Array.prototype.indexOf.call(assetElems, project.focusedAsset) : -1) + 1) % assetElems.length];
@@ -113,7 +113,7 @@ document.addEventListener("keydown", evt => {
 							selectAsset(assetElem);
 						}
 					}
-				} else if(layerContainer.classList.contains("active")) {
+				} else if(active === layerContainer) {
 					evt.preventDefault();
 					const layer = project.focusedLayer ? project.focusedLayer.nextElementSibling || layers.firstElementChild : layers.firstElementChild;
 					if(layer) {
@@ -122,7 +122,7 @@ document.addEventListener("keydown", evt => {
 							selectLayer(layer);
 						}
 					}
-				} else if(timelineContainer.classList.contains("active")) {
+				} else if(active === timelineContainer) {
 					evt.preventDefault();
 					const timelineItem = project.focusedTimelineItem ? project.focusedTimelineItem.nextElementSibling || timelineItems.firstElementChild : timelineItems.firstElementChild;
 					if(timelineItem) {
@@ -188,11 +188,11 @@ document.addEventListener("keydown", evt => {
 			}
 		} else if(evt.keyCode === 65) { // ^`A`
 			if(project && Miro.focused() && !Miro.typing()) {
-				if(assetContainer.classList.contains("active")) {
+				if(active === assetContainer) {
 					selectAllAssets();
-				} else if(layerContainer.classList.contains("active")) {
+				} else if(active === layerContainer) {
 					selectAllLayers();
-				} else if(timelineContainer.classList.contains("active")) {
+				} else if(active === timelineContainer) {
 					selectAllTimelineItems();
 				}
 			}
@@ -236,11 +236,11 @@ document.addEventListener("keydown", evt => {
 	} else if(evt.keyCode === 8 || evt.keyCode === 46) { // `backspace` || `delete`
 		if(project && !Miro.typing()) {
 			if(Miro.focused()) {
-				if(assetContainer.classList.contains("active")) {
+				if(active === assetContainer) {
 					removeSelectedAssets();
-				} else if(layerContainer.classList.contains("active")) {
+				} else if(active === layerContainer) {
 					removeSelectedLayers();
-				} else if(timelineContainer.classList.contains("active")) {
+				} else if(active === timelineContainer) {
 					if(timelineArea.contains(mouseTarget)) {
 						// TODO: Remove frames
 					} else {
@@ -252,7 +252,7 @@ document.addEventListener("keydown", evt => {
 			}
 		}
 	} else if(evt.keyCode === 9) { // `tab`
-		if(project && fullPreview.classList.contains("active")) {
+		if(project && active === fullPreview) {
 			evt.preventDefault();
 		}
 	} else if(evt.keyCode === 13) { // `enter`
@@ -270,16 +270,16 @@ document.addEventListener("keydown", evt => {
 			if(input) {
 				input.blur();
 			} else if(project) {
-				if(assetContainer.classList.contains("active")) {
+				if(active === assetContainer) {
 					deselectAssets();
 					updateProperties();
-				} else if(layerContainer.classList.contains("active")) {
+				} else if(active === layerContainer) {
 					deselectLayers();
 					updateProperties();
-				} else if(timelineContainer.classList.contains("active")) {
+				} else if(active === timelineContainer) {
 					deselectTimelineItems();
 					updateProperties();
-				} else if(fullPreview.classList.contains("active")) {
+				} else if(active === fullPreview) {
 					hideFullPreview();
 				}
 			}
@@ -316,11 +316,11 @@ document.addEventListener("input", evt => {
 	if(evt.target === prop.name.elements[0]) {
 		const trimmedValue = evt.target.value.trim();
 		if(trimmedValue) {
-			if(assetContainer.classList.contains("activeProperties")) {
+			if(activeProperties === assetContainer) {
 				if(!project.data.assets.map(byName).map(insensitiveString).includes(trimmedValue.toLowerCase())) {
 					assets.querySelector(".asset.selected")._asset.name = trimmedValue;
 				}
-			} else if(timelineContainer.classList.contains("activeProperties")) {
+			} else if(activeProperties === timelineContainer) {
 				if(!project.root.objs.map(byName).map(insensitiveString).includes(trimmedValue.toLowerCase())) {
 					timelineItems.querySelector(".timelineItem.selected")._obj.name = trimmedValue;
 				}

@@ -224,25 +224,18 @@ const indicateTarget = target => {
 		targetIndicator.classList.remove("visible");
 	}
 };
-const setProperties = elem => {
-	const active = container.querySelector(".activeProperties");
-	if(active) {
-		active.classList.remove("activeProperties");
-	}
-	if(elem) {
-		elem.classList.add("activeProperties");
-	}
-	updateProperties();
-};
+let active = null;
+let activeProperties = null;
 const setActive = elem => {
-	const active = container.querySelector(".active");
 	if(active) {
 		active.classList.remove("active");
+		active = null;
 	}
 	if(elem) {
-		elem.classList.add("active");
+		(active = elem).classList.add("active");
 		if(elem.classList.contains("container") && elem !== propertyContainer) {
-			setProperties(elem);
+			activeProperties = elem;
+			updateProperties();
 		}
 	}
 };

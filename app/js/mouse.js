@@ -37,7 +37,6 @@ const onMouseDown = evt => {
 		}
 	}
 	if(noDialogTarget) {
-		const active = projectPage.querySelector(".container.active");
 		if(!(active && active.contains(mouseTarget))) {
 			for(const panel of containers) {
 				if(panel.contains(mouseTarget)) {
