@@ -103,7 +103,7 @@ class DynamicObject {
 		this.project.root.objs.push(this);
 		this.project.frames[this.id] = new Array(this.project.root.duration).fill(0);
 		if(this.type === "group") {
-			this.timelineItem = html`
+			(this.timelineItem = html`
 				<div id="timelineItem_$${this.id}" class="timelineItem typeGroup" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
@@ -112,15 +112,9 @@ class DynamicObject {
 					</div>
 					<div class="children"></div>
 				</div>
-			`;
+			`)._label = this.timelineItem.querySelector(".label");
 		} else if(this.type === "audio") {
-			this.element = this.asset.preview.cloneNode();
-			this.element.addEventListener("canplaythrough", () => {
-				this.element.currentTime = this.element.duration;
-			}, {
-				once: true
-			});
-			this.timelineItem = html`
+			(this.timelineItem = html`
 				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
@@ -128,9 +122,9 @@ class DynamicObject {
 						<div class="close material-icons"></div>
 					</div>
 				</div>
-			`;
+			`)._label = this.timelineItem.querySelector(".label");
 		} else {
-			this.layer = html`
+			(this.layer = html`
 				<table>
 					<tbody>
 						<tr id="layer_$${this.id}" class="layer" title="$${this.name}">
@@ -144,10 +138,10 @@ class DynamicObject {
 						</tr>
 					</tbody>
 				</table>
-			`.firstElementChild.firstElementChild;
+			`.firstElementChild.firstElementChild)._label = this.layer.querySelector(".label");
 			this.layer._obj = this;
 			if(this.type === "obj") {
-				this.timelineItem = html`
+				(this.timelineItem = html`
 					<div id="timelineItem_$${this.id}" class="timelineItem typeObj" title="$${this.name}">
 						<div class="bar">
 							<div class="icon material-icons"></div>
@@ -156,9 +150,9 @@ class DynamicObject {
 						</div>
 						<div class="children"></div>
 					</div>
-				`;
+				`)._label = this.timelineItem.querySelector(".label");
 			} else if(this.type === "image") {
-				this.timelineItem = html`
+				(this.timelineItem = html`
 					<div id="timelineItem_$${this.id}" class="timelineItem typeImage" title="$${this.name}">
 						<div class="bar">
 							<div class="icon material-icons"></div>
@@ -167,7 +161,8 @@ class DynamicObject {
 						</div>
 						<div class="children"></div>
 					</div>
-				`;
+				`)._label = this.timelineItem.querySelector(".label");
+				this.element = this.asset.preview.cloneNode();
 			}
 		}
 		appendObj(this.timelineItem._obj = this);
@@ -196,10 +191,10 @@ class DynamicObject {
 			}
 		}
 		if(this.timelineItem) {
-			this.timelineItem.querySelector(".label").textContent = this.timelineItem.title = this[_name];
+			this.timelineItem._label.textContent = this.timelineItem.title = this[_name];
 		}
 		if(this.layer) {
-			this.layer.querySelector(".label").textContent = this.layer.title = this[_name];
+			this.layer._label.textContent = this.layer.title = this[_name];
 		}
 	}
 	toJSON() {

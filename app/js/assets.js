@@ -51,7 +51,7 @@ class DynamicAsset {
 		} else {
 			throw new MiroError("The `type` value is invalid.");
 		}
-		this.layer = this.element.querySelector(".label");
+		this.element._label = this.element.querySelector(".label");
 		this.project.data.assets.push(this);
 		if(value.parent) {
 			this.parent = this.project.getAsset(value.parent);
@@ -62,7 +62,7 @@ class DynamicAsset {
 		return this[_name];
 	}
 	set name(value) {
-		this[_name] = this.label.textContent = this.element.title = value;
+		this[_name] = this.element.title = this.element._label.textContent = value;
 		for(const obj of this.objects) {
 			obj.updateName();
 		}

@@ -36,14 +36,14 @@ class DynamicProject {
 				this[_name] = `Project ${++i}`;
 			} while(projectValues.some(project => project.name === this[_name]));
 		}
+		(this.tab = html`
+			<div class="tab">
+				<div class="label">$${this[_name]}</div>
+				<div class="close material-icons"></div>
+			</div>
+		`)._label = this.tab.querySelector(".label");
 		Object.assign(this, {
 			id: String(++projectID),
-			tab: html`
-				<div class="tab">
-					<div class="label">$${this[_name]}</div>
-					<div class="close material-icons"></div>
-				</div>
-			`,
 			location: validLocation ? value.location : null,
 			data: {
 				...baseData,
@@ -128,7 +128,7 @@ class DynamicProject {
 		return this[_name];
 	}
 	set name(value) {
-		this[_name] = this.tab.querySelector(".label").textContent = value;
+		this[_name] = this.tab._label.textContent = value;
 	}
 	get saved() {
 		return this[_saved];
@@ -165,7 +165,7 @@ class DynamicProject {
 		}
 		if(this[_focusedAsset] = value) {
 			value.classList.add("focus");
-			scrollIntoView(value.querySelector(".bar"), assets);
+			scrollIntoView(value.firstElementChild, assets);
 		}
 	}
 	get selectedLayer() {
@@ -183,7 +183,7 @@ class DynamicProject {
 		}
 		if(this[_focusedLayer] = value) {
 			value.classList.add("focus");
-			scrollIntoView(value.querySelector(".bar"), layerBox);
+			scrollIntoView(value.firstElementChild, layerBox);
 		}
 	}
 	get selectedTimelineItem() {
@@ -201,7 +201,7 @@ class DynamicProject {
 		}
 		if(this[_focusedTimelineItem] = value) {
 			value.classList.add("focus");
-			scrollIntoView(value.querySelector(".bar"), timelineItems);
+			scrollIntoView(value.firstElementChild, timelineItems);
 		}
 	}
 	get objects() {

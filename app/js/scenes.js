@@ -34,7 +34,7 @@ class DynamicScene {
 				</div>
 			`
 		});
-		this.element._scene = this;
+		(this.element._scene = this).element._label = this.element.querySelector(".label");
 		if(sceneDialog) {
 			scenes.appendChild(this.element);
 		}
@@ -44,7 +44,7 @@ class DynamicScene {
 		return this[_name];
 	}
 	set name(value) {
-		this[_name] = this.element.querySelector(".label").textContent = this.element.title = value;
+		this[_name] = this.element._label.textContent = this.element.title = value;
 		if(this === project.scene) {
 			sceneChipText.textContent = sceneChip.title = this.name;
 		}

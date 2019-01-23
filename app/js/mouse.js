@@ -205,7 +205,7 @@ document.addEventListener("mousemove", evt => {
 					side = distTop < 0 ? "before" : "after";
 				}
 			}
-			minLayer.querySelector(".bar")[side](layerDrag);
+			minLayer.firstElementChild[side](layerDrag);
 		} else if(mouseTarget.classList.contains("frame")) {
 			let timeline;
 			let value = false;
@@ -215,7 +215,7 @@ document.addEventListener("mousemove", evt => {
 			} else {
 				const objs = project.root.objs.filter(byVisible);
 				const obj = objs[Math.max(0, Math.min(objs.length - 1, Math.floor((mouseY - timelineItems.getBoundingClientRect().top + timelineItems.scrollTop) / 24)))];
-				scrollIntoView(obj.timelineItem.querySelector(".bar"), timelineItems);
+				scrollIntoView(obj.timelineItem.firstElementChild, timelineItems);
 				timeline = obj.id;
 				value = Math.max(0, Math.min(project.root.duration - 1, Math.floor((mouseX - timeRuler.getBoundingClientRect().left + timeRuler.scrollLeft) / storage.frameWidth)));
 			}
