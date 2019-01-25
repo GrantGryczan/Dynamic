@@ -41,17 +41,17 @@ const assetCreationMenuItems = [{
 	label: "Create object",
 	click: () => {
 		let assetParent = assets;
-		if(ctxTarget.classList.contains("bar")) {
-			if(ctxTarget.parentNode._asset.type === "group") {
+		if (ctxTarget.classList.contains("bar")) {
+			if (ctxTarget.parentNode._asset.type === "group") {
 				assetParent = ctxTarget.parentNode.lastElementChild;
-			} else if(ctxTarget.parentNode._asset.parent) {
+			} else if (ctxTarget.parentNode._asset.parent) {
 				assetParent = ctxTarget.parentNode._asset.parent.element.lastElementChild;
 			}
 		}
 		deselectAssets();
 		const names = project.data.assets.map(byName).map(insensitiveString);
 		let name = "Object";
-		for(let i = 2; names.includes(insensitiveString(name)); i++) {
+		for (let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Object ${i}`;
 		}
 		const asset = new DynamicAsset({
@@ -59,7 +59,7 @@ const assetCreationMenuItems = [{
 			name
 		});
 		assetParent.appendChild(asset.element);
-		if(!assetParent.parentNode.classList.contains("open")) {
+		if (!assetParent.parentNode.classList.contains("open")) {
 			assetParent.parentNode.classList.add("open");
 		}
 		storeAssets();
@@ -72,19 +72,19 @@ const assetCreationMenuItems = [{
 	click: () => {
 		setActive(assetContainer);
 		const assetElems = assets.querySelectorAll(".asset.selected");
-		for(const assetElem of assetElems) {
+		for (const assetElem of assetElems) {
 			assetElem.classList.remove("selected");
 		}
 		const names = project.data.assets.map(byName).map(insensitiveString);
 		let name = "Group";
-		for(let i = 2; names.includes(insensitiveString(name)); i++) {
+		for (let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Group ${i}`;
 		}
 		const asset = new DynamicAsset({
 			type: "group",
 			name
 		});
-		if(ctxTarget.classList.contains("bar")) {
+		if (ctxTarget.classList.contains("bar")) {
 			assetElems[0].before(asset.element);
 			assetElems.forEach(asset.element.lastElementChild.appendChild.bind(asset.element.lastElementChild));
 		}
@@ -113,39 +113,39 @@ const assetElemsAlphabetically = assetElem => `${numericAssetType(assetElem._ass
 const sortAssetsMenuItems = [{
 	label: "Sort by asset type",
 	click: () => {
-		for(const children of [assets, ...assets.querySelectorAll(".children")]) {
+		for (const children of [assets, ...assets.querySelectorAll(".children")]) {
 			const assetElems = Array.prototype.filter.call(children.children, byAssets);
 			let afterGroup = null;
 			let afterObj = null;
 			let afterImage = null;
-			for(const assetElem of assetElems) {
-				if(assetElem._asset.type === "obj") {
-					if(!afterGroup) {
+			for (const assetElem of assetElems) {
+				if (assetElem._asset.type === "obj") {
+					if (!afterGroup) {
 						afterGroup = assetElem;
 					}
-				} else if(assetElem._asset.type === "file") {
-					if(assetElem._asset.mime.startsWith("image/")) {
-						if(!afterObj) {
+				} else if (assetElem._asset.type === "file") {
+					if (assetElem._asset.mime.startsWith("image/")) {
+						if (!afterObj) {
 							afterObj = assetElem;
 						}
-					} else if(!afterImage) {
+					} else if (!afterImage) {
 						afterImage = assetElem;
 					}
 				}
 			}
-			if(!afterObj) {
+			if (!afterObj) {
 				afterObj = afterImage;
 			}
-			if(!afterGroup) {
+			if (!afterGroup) {
 				afterGroup = afterObj;
 			}
-			for(const assetElem of assetElems) {
-				if(assetElem._asset.type === "group") {
+			for (const assetElem of assetElems) {
+				if (assetElem._asset.type === "group") {
 					children.insertBefore(assetElem, afterGroup);
-				} else if(assetElem._asset.type === "obj") {
+				} else if (assetElem._asset.type === "obj") {
 					children.insertBefore(assetElem, afterObj);
-				} else if(assetElem._asset.type === "file") {
-					if(assetElem._asset.mime.startsWith("image/")) {
+				} else if (assetElem._asset.type === "file") {
+					if (assetElem._asset.mime.startsWith("image/")) {
 						children.insertBefore(assetElem, afterImage);
 					} else {
 						children.appendChild(assetElem);
@@ -158,9 +158,9 @@ const sortAssetsMenuItems = [{
 }, {
 	label: "Sort alphabetically",
 	click: () => {
-		for(const children of [assets, ...assets.querySelectorAll(".children")]) {
+		for (const children of [assets, ...assets.querySelectorAll(".children")]) {
 			const assetElems = Array.prototype.filter.call(children.children, byAssets);
-			for(const name of assetElems.map(assetElemsAlphabetically).sort()) {
+			for (const name of assetElems.map(assetElemsAlphabetically).sort()) {
 				children.lastChild.after(assetElems.find(assetElem => assetElem._asset.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
 			}
 		}
@@ -169,7 +169,7 @@ const sortAssetsMenuItems = [{
 }, {
 	label: "Reverse",
 	click: () => {
-		for(const assetElem of assets.querySelectorAll(".asset")) {
+		for (const assetElem of assets.querySelectorAll(".asset")) {
 			assetElem.parentNode.firstChild.before(assetElem);
 		}
 		storeAssets();
@@ -210,7 +210,7 @@ const selectedAssetsMenuItems2 = [{
 const assetMenuGroupItems = [{
 	label: "Select children",
 	click: () => {
-		for(const assetElem of assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset")) {
+		for (const assetElem of assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset")) {
 			assetElem.classList.add("selected");
 		}
 		updateProperties();
@@ -220,9 +220,9 @@ const assetMenuGroupItems = [{
 	click: () => {
 		const assetElems = assets.querySelectorAll(".asset.typeGroup.selected > .children > .asset");
 		deselectAssets();
-		for(const assetElem of assetElems) {
+		for (const assetElem of assetElems) {
 			assetElem.classList.add("selected");
-			if(i === 0) {
+			if (i === 0) {
 				assetElem.classList.add("focus");
 				project.focusedAsset = assetElem;
 			}
@@ -259,12 +259,12 @@ const timelineItemCreationMenuItems = [{
 	click: () => {
 		setActive(timelineContainer);
 		const timelineItemArray = timelineItems.querySelectorAll(".timelineItem.selected");
-		for(const timelineItem of timelineItemArray) {
+		for (const timelineItem of timelineItemArray) {
 			timelineItem.classList.remove("selected");
 		}
 		const names = project.root.objs.map(byName).map(insensitiveString);
 		let name = "Group";
-		for(let i = 2; names.includes(insensitiveString(name)); i++) {
+		for (let i = 2; names.includes(insensitiveString(name)); i++) {
 			name = `Group ${i}`;
 		}
 		const obj = new DynamicObject({
@@ -272,7 +272,7 @@ const timelineItemCreationMenuItems = [{
 			name
 		});
 		timelineItems.firstElementChild.before(obj.timelineItem);
-		if(ctxTarget.classList.contains("bar")) {
+		if (ctxTarget.classList.contains("bar")) {
 			timelineItemArray[0].before(obj.timelineItem);
 			timelineItemArray.forEach(obj.timelineItem.lastElementChild.appendChild.bind(obj.timelineItem.lastElementChild));
 		}
@@ -290,8 +290,8 @@ const timelineItemsAlphabetically = timelineItem => `${numericObjType(timelineIt
 const sortObjsMenuItems = [{
 	label: "Sort by layer",
 	click: () => {
-		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
-			for(const obj of Array.prototype.map.call(children.children, byObjs).filter(onlyGraphics).sort(byZIndex)) {
+		for (const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+			for (const obj of Array.prototype.map.call(children.children, byObjs).filter(onlyGraphics).sort(byZIndex)) {
 				children.lastChild.after(obj.timelineItem);
 			}
 		}
@@ -301,37 +301,37 @@ const sortObjsMenuItems = [{
 }, {
 	label: "Sort by object type",
 	click: () => {
-		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+		for (const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
 			const timelineItemArray = Array.prototype.filter.call(children.children, byObjs);
 			let afterGroup = null;
 			let afterObj = null;
 			let afterImage = null;
-			for(const timelineItem of timelineItemArray) {
-				if(timelineItem._obj.type === "obj") {
-					if(!afterGroup) {
+			for (const timelineItem of timelineItemArray) {
+				if (timelineItem._obj.type === "obj") {
+					if (!afterGroup) {
 						afterGroup = timelineItem;
 					}
-				} else if(timelineItem._obj.type === "image") {
-					if(!afterObj) {
+				} else if (timelineItem._obj.type === "image") {
+					if (!afterObj) {
 						afterObj = timelineItem;
 					}
-				} else if(!afterImage) {
+				} else if (!afterImage) {
 					afterImage = timelineItem;
 				}
 			}
-			if(!afterObj) {
+			if (!afterObj) {
 				afterObj = afterImage;
 			}
-			if(!afterGroup) {
+			if (!afterGroup) {
 				afterGroup = afterObj;
 			}
-			for(const timelineItem of timelineItemArray) {
-				if(timelineItem._obj.type === "group") {
+			for (const timelineItem of timelineItemArray) {
+				if (timelineItem._obj.type === "group") {
 					children.insertBefore(timelineItem, afterGroup);
-				} else if(timelineItem._obj.type === "obj") {
+				} else if (timelineItem._obj.type === "obj") {
 					children.insertBefore(timelineItem, afterObj);
-				} else if(timelineItem._obj.type === "file") {
-					if(timelineItem._obj.mime.startsWith("image/")) {
+				} else if (timelineItem._obj.type === "file") {
+					if (timelineItem._obj.mime.startsWith("image/")) {
 						children.insertBefore(timelineItem, afterImage);
 					} else {
 						children.appendChild(timelineItem);
@@ -345,9 +345,9 @@ const sortObjsMenuItems = [{
 }, {
 	label: "Sort alphabetically",
 	click: () => {
-		for(const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
+		for (const children of [timelineItems, ...timelineItems.querySelectorAll(".children")]) {
 			const items = Array.prototype.filter.call(children.children, byObjs);
-			for(const name of items.map(timelineItemsAlphabetically).sort()) {
+			for (const name of items.map(timelineItemsAlphabetically).sort()) {
 				children.lastChild.after(items.find(timelineItem => timelineItem._obj.name.toLowerCase() === name.slice(name.indexOf(" ") + 1)));
 			}
 		}
@@ -357,7 +357,7 @@ const sortObjsMenuItems = [{
 }, {
 	label: "Reverse",
 	click: () => {
-		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
+		for (const timelineItem of timelineItems.querySelectorAll(".timelineItem")) {
 			timelineItem.parentNode.firstChild.before(timelineItem);
 		}
 		storeObjs();
@@ -391,7 +391,7 @@ const openTimelineItemMenuItem = {
 const timelineItemMenuItems2 = [menuSeparator, ...objectSelectionTimelineMenu, {
 	label: "Select children",
 	click: () => {
-		for(const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem")) {
+		for (const timelineItem of timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem")) {
 			timelineItem.classList.add("selected");
 		}
 		updateSelectedTimelineItems();
@@ -402,9 +402,9 @@ const timelineItemMenuItems2 = [menuSeparator, ...objectSelectionTimelineMenu, {
 	click: () => {
 		const childrenToSelect = timelineItems.querySelectorAll(".timelineItem.selected > .children > .timelineItem");
 		deselectTimelineItems();
-		for(let i = 0; i < childrenToSelect.length; i++) {
+		for (let i = 0; i < childrenToSelect.length; i++) {
 			childrenToSelect[i].classList.add("selected");
-			if(i === 0) {
+			if (i === 0) {
 				childrenToSelect[i].classList.add("focus");
 				project.focusedTimelineItem = childrenToSelect[i];
 			}
@@ -456,56 +456,56 @@ const assetObjs = objElem => objElem._obj.asset && objElem._obj.asset.type === "
 const openCtx = target => {
 	ctxTarget = target;
 	const template = [];
-	if((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
+	if ((ctxTarget instanceof HTMLInputElement && ctxTarget.type !== "button" && ctxTarget.type !== "submit" && ctxTarget.type !== "reset") || ctxTarget instanceof HTMLTextAreaElement) {
 		template.push(...textMenuItems);
-	} else if(project) {
-		if(ctxTarget === addAsset) {
+	} else if (project) {
+		if (ctxTarget === addAsset) {
 			template.push(...assetCreationMenuItems);
-		} else if(ctxTarget === sortAssets) {
+		} else if (ctxTarget === sortAssets) {
 			template.push(...sortAssetsMenuItems)
-		} else if(ctxTarget === addObj) {
+		} else if (ctxTarget === addObj) {
 			template.push(...timelineItemCreationMenuItems);
-		} else if(ctxTarget === sortObjs) {
+		} else if (ctxTarget === sortObjs) {
 			template.push(...sortObjsMenuItems);
-		} else if(ctxTarget === addScene) {
+		} else if (ctxTarget === addScene) {
 			template.push(...sceneCreationMenuItems);
 		} else {
-			if(assets.contains(ctxTarget)) {
+			if (assets.contains(ctxTarget)) {
 				const selected = assets.querySelectorAll(".asset.selected");
-				if(selected.length) {
+				if (selected.length) {
 					const singleSelected = selected.length === 1;
 					renameMenuItem.enabled = singleSelected;
 					template.push(...selectedAssetsMenuItems);
-					if(assets.querySelector(".asset.typeObj.selected")) {
+					if (assets.querySelector(".asset.typeObj.selected")) {
 						openAssetMenuItem.enabled = singleSelected;
 						template.push(openAssetMenuItem);
 					}
 					template.push(...selectedAssetsMenuItems2);
-					if(assets.querySelector(".asset.typeGroup.selected")) {
+					if (assets.querySelector(".asset.typeGroup.selected")) {
 						template.push(...assetMenuGroupItems);
 					}
 				} else {
 					template.push(selectAllAssetsMenuItem);
 				}
 				template.push(menuSeparator, ...assetCreationMenuItems);
-			} else if(layerBox.contains(ctxTarget)) {
+			} else if (layerBox.contains(ctxTarget)) {
 				const selected = layers.querySelectorAll(".layer.selected");
-				if(selected.length) {
+				if (selected.length) {
 					template.push(removeLayersMenuItem);
-					if(Array.prototype.some.call(selected, assetObjs)) {
+					if (Array.prototype.some.call(selected, assetObjs)) {
 						openLayerMenuItem.enabled = selected.length === 1;
 						template.push(menuSeparator, openLayerMenuItem);
 					}
 					template.push(menuSeparator, deselectLayersMenuItem);
 				}
 				template.push(selectAllLayersMenuItem);
-			} else if(timelineItems.contains(ctxTarget)) {
+			} else if (timelineItems.contains(ctxTarget)) {
 				const selected = timelineItems.querySelectorAll(".timelineItem.selected");
-				if(selected.length) {
+				if (selected.length) {
 					const singleSelected = selected.length === 1;
 					renameMenuItem.enabled = singleSelected;
 					template.push(...timelineItemMenuItems);
-					if(Array.prototype.some.call(selected, assetObjs)) {
+					if (Array.prototype.some.call(selected, assetObjs)) {
 						openTimelineItemMenuItem.enabled = singleSelected;
 						template.push(menuSeparator, openTimelineItemMenuItem);
 					}
@@ -514,12 +514,12 @@ const openCtx = target => {
 					template.push(selectAllObjectsMenuItem);
 				}
 				template.push(menuSeparator, ...timelineItemCreationMenuItems);
-			} else if(timelineArea.contains(ctxTarget)) {
+			} else if (timelineArea.contains(ctxTarget)) {
 				template.push(...timelineMenuItems);
-			} else if(scenes.contains(ctxTarget)) {
+			} else if (scenes.contains(ctxTarget)) {
 				template.push(...sceneMenuItems);
 			}
-			if(template.length) {
+			if (template.length) {
 				template.push(menuSeparator);
 			}
 			template.push(...editHistoryMenuItems);

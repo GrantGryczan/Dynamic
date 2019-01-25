@@ -1,14 +1,14 @@
 "use strict";
 class DynamicAsset {
 	constructor(value) {
-		if(!(value instanceof Object)) {
+		if (!(value instanceof Object)) {
 			throw new MiroError("The `value` parameter must be an object.");
 		}
 		this.project = value.project instanceof DynamicProject ? value.project : project;
 		this.id = typeof value.id === "string" ? value.id : uid(this.project.data.assets.map(byID));
 		this.type = value.type;
 		this[_name] = value.name;
-		if(this.type === "group") {
+		if (this.type === "group") {
 			this.element = html`
 				<div class="asset typeGroup" title="$${this.name}">
 					<div class="bar">
@@ -19,9 +19,9 @@ class DynamicAsset {
 					<div class="children"></div>
 				</div>
 			`;
-		} else if(this.type === "file") {
+		} else if (this.type === "file") {
 			const typeImage = value.mime.startsWith("image/");
-			if(!(typeImage || value.mime.startsWith("audio/"))) {
+			if (!(typeImage || value.mime.startsWith("audio/"))) {
 				throw new MiroError("The `mime` value is invalid.");
 			}
 			this.mime = value.mime;
@@ -36,7 +36,7 @@ class DynamicAsset {
 					</div>
 				</div>
 			`;
-		} else if(this.type === "obj") {
+		} else if (this.type === "obj") {
 			this.objs = [];
 			this.duration = 1;
 			this.element = html`
@@ -53,7 +53,7 @@ class DynamicAsset {
 		}
 		this.element._label = this.element.querySelector(".label");
 		this.project.data.assets.push(this);
-		if(value.parent) {
+		if (value.parent) {
 			this.parent = this.project.getAsset(value.parent);
 		}
 		appendAsset(this.element._asset = this);
@@ -63,10 +63,10 @@ class DynamicAsset {
 	}
 	set name(value) {
 		this[_name] = this.element.title = this.element._label.textContent = value;
-		for(const obj of this.objects) {
+		for (const obj of this.objects) {
 			obj.updateName();
 		}
-		if(this === this.project.root) {
+		if (this === this.project.root) {
 			objChipText.textContent = objChip.title = this.name;
 		}
 	}
@@ -76,17 +76,17 @@ class DynamicAsset {
 			name: this.name
 		};
 		delete obj.project;
-		if(this.parent) {
+		if (this.parent) {
 			obj.parent = this.parent.id;
 		}
 		delete obj.element;
-		if(this.type === "file") {
+		if (this.type === "file") {
 			delete obj.preview;
 		}
 		return obj;
 	}
 	get url() {
-		if(this.type === "file") {
+		if (this.type === "file") {
 			return `data:${this.mime};base64,${this.data}`;
 		}
 	}
@@ -102,8 +102,8 @@ const appendAsset = asset => {
 };
 const storeAssets = () => {
 	project.data.assets = [];
-	for(const assetElem of assets.querySelectorAll(".asset")) {
-		if(assetElem.parentNode === assets) {
+	for (const assetElem of assets.querySelectorAll(".asset")) {
+		if (assetElem.parentNode === assets) {
 			delete assetElem._asset.parent;
 		} else {
 			assetElem._asset.parent = assetElem.parentNode.parentNode._asset;
@@ -113,18 +113,18 @@ const storeAssets = () => {
 	project.saved = false;
 };
 const removeAsset = assetElem => {
-	if(project.selectedAsset === assetElem) {
+	if (project.selectedAsset === assetElem) {
 		project.selectedAsset = null;
 	}
-	if(assetElem._asset.type === "group") {
-		while(assetElem.lastElementChild.firstElementChild) {
+	if (assetElem._asset.type === "group") {
+		while (assetElem.lastElementChild.firstElementChild) {
 			assetElem.before(assetElem.lastElementChild.firstElementChild);
 		}
 	} else {
-		if(project.root === assetElem._asset) {
+		if (project.root === assetElem._asset) {
 			setRoot();
 		}
-		for(const obj of assetElem._asset.objects) {
+		for (const obj of assetElem._asset.objects) {
 			removeObj(obj.timelineItem);
 		}
 		updateTimelines();
@@ -134,19 +134,19 @@ const removeAsset = assetElem => {
 };
 const confirmRemoveAsset = assetElem => {
 	const actuallyRemoveAsset = value => {
-		if(value === 0) {
+		if (value === 0) {
 			removeAsset(assetElem);
 			storeAssets();
 			storeObjs();
 			updateProperties();
 		}
 	};
-	if(assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
+	if (assetElem._asset.type === "file" || assetElem._asset.type === "obj") {
 		new Miro.Dialog("Remove Asset", html`
 			Are you sure you want to remove <b>$${assetElem._asset.name}</b>?<br>
 			Objects using that asset will also be removed.
 		`, ["Yes", "No"]).then(actuallyRemoveAsset);
-	} else if(assetElem._asset.type === "group") {
+	} else if (assetElem._asset.type === "group") {
 		new Miro.Dialog("Remove Group", html`
 			Are you sure you want to remove <b>$${assetElem._asset.name}</b>?<br>
 			All items inside the group will be taken out.
@@ -154,15 +154,15 @@ const confirmRemoveAsset = assetElem => {
 	}
 };
 const confirmRemoveAssets = assetElems => {
-	if(assetElems.length) {
-		if(assetElems.length === 1) {
+	if (assetElems.length) {
+		if (assetElems.length === 1) {
 			confirmRemoveAsset(assetElems[0]);
 		} else {
 			new Miro.Dialog("Remove Assets", html`
 				Are you sure you want to remove all those assets?<br>
 				Objects using those assets will also be removed.
 			`, ["Yes", "No"]).then(value => {
-				if(value === 0) {
+				if (value === 0) {
 					assetElems.forEach(removeAsset);
 					storeAssets();
 					storeObjs();
@@ -176,64 +176,64 @@ const removeSelectedAssets = () => {
 	confirmRemoveAssets(assets.querySelectorAll(".asset.selected"));
 };
 const deselectAssets = () => {
-	for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+	for (const assetElem of assets.querySelectorAll(".asset.selected")) {
 		assetElem.classList.remove("selected");
 		assetElem.classList.remove("focus");
 	}
 	project.selectedAsset = null;
 };
 const selectAllAssets = () => {
-	for(const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
+	for (const assetElem of assets.querySelectorAll(".asset:not(.selected)")) {
 		assetElem.classList.add("selected");
 	}
 	updateProperties();
 };
 const selectAsset = (target, button) => {
-	if(typeof button !== "number") {
+	if (typeof button !== "number") {
 		button = 0;
 	}
-	if(button === 2 && !(superKey || shiftKey)) {
-		if(!target.classList.contains("selected")) {
-			for(const assetElem of assets.querySelectorAll(".asset.selected")) {
+	if (button === 2 && !(superKey || shiftKey)) {
+		if (!target.classList.contains("selected")) {
+			for (const assetElem of assets.querySelectorAll(".asset.selected")) {
 				assetElem.classList.remove("selected");
 			}
 			target.classList.add("selected");
 			project.selectedAsset = target;
 		}
-	} else if(shiftKey) {
+	} else if (shiftKey) {
 		let selecting = !project.selectedAsset;
 		const classListMethod = superKey && project.selectedAsset && !project.selectedAsset.classList.contains("selected") ? "remove" : "add";
-		for(const assetElem of assets.querySelectorAll(".asset")) {
-			if(assetElem === project.selectedAsset || assetElem === target) {
-				if(selecting) {
+		for (const assetElem of assets.querySelectorAll(".asset")) {
+			if (assetElem === project.selectedAsset || assetElem === target) {
+				if (selecting) {
 					assetElem.classList[classListMethod]("selected");
 					selecting = false;
 					continue;
 				} else {
 					assetElem.classList[classListMethod]("selected");
-					if(project.selectedAsset !== target) {
+					if (project.selectedAsset !== target) {
 						selecting = true;
 					}
 				}
-			} else if(selecting) {
+			} else if (selecting) {
 				assetElem.classList[classListMethod]("selected");
-			} else if(!superKey) {
+			} else if (!superKey) {
 				assetElem.classList.remove("selected");
 			}
 		}
 	} else {
 		project.selectedAsset = target;
-		if(superKey) {
+		if (superKey) {
 			target.classList.toggle("selected");
 		} else {
 			let othersSelected = false;
-			for(const assetElem of assets.querySelectorAll(".asset.selected")) {
-				if(assetElem !== target) {
+			for (const assetElem of assets.querySelectorAll(".asset.selected")) {
+				if (assetElem !== target) {
 					othersSelected = true;
 					assetElem.classList.remove("selected");
 				}
 			}
-			if(target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
+			if (target.classList[othersSelected ? "add" : "toggle"]("selected") === false) {
 				project.selectedAsset = null;
 				project.focusedAsset = target;
 			}
@@ -245,15 +245,15 @@ const byID = asset => asset.id;
 const addFiles = async files => {
 	loadProgress(0);
 	let assetParent = assets;
-	if(ctxTarget && ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset")) {
-		if(ctxTarget.parentNode._asset.type === "group") {
+	if (ctxTarget && ctxTarget.classList.contains("bar") && ctxTarget.parentNode.classList.contains("asset")) {
+		if (ctxTarget.parentNode._asset.type === "group") {
 			assetParent = ctxTarget.parentNode.lastElementChild;
-		} else if(ctxTarget.parentNode._asset.parent) {
+		} else if (ctxTarget.parentNode._asset.parent) {
 			assetParent = ctxTarget.parentNode._asset.parent.element.lastElementChild;
 		}
 	}
 	deselectAssets();
-	for(let i = 0; i < files.length; i++) {
+	for (let i = 0; i < files.length; i++) {
 		loadProgress((i + 1) / files.length);
 		let data;
 		try {
@@ -262,7 +262,7 @@ const addFiles = async files => {
 				reader.addEventListener("loadend", resolve);
 				reader.readAsArrayBuffer(files[i]);
 			})).target.result).toString("base64");
-		} catch(err) {
+		} catch (err) {
 			console.warn(err);
 			new Miro.Dialog("Error", html`
 				An error occurred while encoding <b>$${files[i].name}</b>.
@@ -271,7 +271,7 @@ const addFiles = async files => {
 		}
 		const names = project.data.assets.map(byName).map(insensitiveString);
 		let name = files[i].name;
-		for(let j = 2; names.includes(insensitiveString(name)); j++) {
+		for (let j = 2; names.includes(insensitiveString(name)); j++) {
 			name = `${files[i].name} ${j}`;
 		}
 		let asset;
@@ -283,14 +283,14 @@ const addFiles = async files => {
 				data
 			});
 			await new Promise((resolve, reject) => {
-				if(asset.preview instanceof Audio && asset.preview.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+				if (asset.preview instanceof Audio && asset.preview.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
 					resolve();
 				} else {
 					asset.preview.addEventListener(asset.preview instanceof Image ? "load" : "canplaythrough", resolve);
 					asset.preview.addEventListener("error", reject);
 				}
 			});
-		} catch(err) {
+		} catch (err) {
 			console.warn(err);
 			new Miro.Dialog("Error", html`
 				<b>$${files[i].name}</b> is not a valid asset.
@@ -298,11 +298,11 @@ const addFiles = async files => {
 			continue;
 		}
 		assetParent.appendChild(asset.element);
-		if(!assetParent.parentNode.classList.contains("open")) {
+		if (!assetParent.parentNode.classList.contains("open")) {
 			assetParent.parentNode.classList.add("open");
 		}
 		asset.element.classList.add("selected");
-		if(i === 0) {
+		if (i === 0) {
 			project.selectedAsset = asset.element;
 		}
 	}
@@ -338,7 +338,7 @@ const addFileFromURI = uri => {
 				}]);
 			});
 		}).once("error", error);
-	} catch(err) {
+	} catch (err) {
 		console.warn(err);
 		error();
 	}

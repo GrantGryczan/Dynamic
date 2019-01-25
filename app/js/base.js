@@ -77,14 +77,14 @@ const slider = timelineFoot.querySelector("#slider");
 const sliderTrack = slider.querySelector(".mdc-slider__track");
 const sliderThumb = slider.querySelector(".mdc-slider__thumb-container");
 const foot = {};
-for(const footElem of timelineFoot.querySelectorAll("[data-key]")) {
+for (const footElem of timelineFoot.querySelectorAll("[data-key]")) {
 	foot[footElem.getAttribute("data-key")] = footElem;
 }
 const propertyContainer = projectPage.querySelector("#propertyContainer");
 const properties = propertyContainer.querySelector("#properties");
 const propElems = properties.querySelectorAll("[data-key]");
 const prop = {};
-for(const propElem of propElems) {
+for (const propElem of propElems) {
 	prop[propElem.getAttribute("data-key")] = propElem;
 }
 const previewImage = prop.preview.querySelector("img");
@@ -98,7 +98,7 @@ const layers = layerBox.querySelector("#layers");
 const layerDrag = layerBox.querySelector(".drag");
 layerDrag.remove();
 const status = {};
-for(const statusElem of projectPage.querySelectorAll("#statusBar [data-key]")) {
+for (const statusElem of projectPage.querySelectorAll("#statusBar [data-key]")) {
 	status[statusElem.getAttribute("data-key")] = statusElem;
 }
 const targetIndicator = container.querySelector("#targetIndicator");
@@ -110,7 +110,7 @@ const win = electron.remote.getCurrentWindow();
 electron.webFrame.setVisualZoomLevelLimits(1, 1);
 win.setProgressBar(-1);
 const flashFrame = () => {
-	if(!win.isFocused()) {
+	if (!win.isFocused()) {
 		win.flashFrame(true);
 	}
 };
@@ -124,11 +124,11 @@ const onBlur = () => {
 		shiftKey = false;
 		superKey = false;
 		altKey = false;
-	} catch(err) {}
+	} catch (err) {}
 };
 win.on("focus", onFocus);
 win.on("blur", onBlur);
-if(win.isFocused()) {
+if (win.isFocused()) {
 	onFocus();
 } else {
 	onBlur();
@@ -138,12 +138,12 @@ const uid = keys => {
 	let key;
 	do {
 		key = crypto.createHash("sha256").update(crypto.randomBytes(8)).digest("hex").slice(0, 8);
-	} while(keys.includes(key));
+	} while (keys.includes(key));
 	return key;
 };
 const zip = data => new Promise((resolve, reject) => {
 	zlib.gzip(data, (err, result) => {
-		if(err) {
+		if (err) {
 			reject(err);
 		} else {
 			resolve(result);
@@ -152,7 +152,7 @@ const zip = data => new Promise((resolve, reject) => {
 });
 const unzip = data => new Promise((resolve, reject) => {
 	zlib.unzip(data, (err, result) => {
-		if(err) {
+		if (err) {
 			reject(err);
 		} else {
 			resolve(result);
@@ -160,18 +160,18 @@ const unzip = data => new Promise((resolve, reject) => {
 	});
 });
 const scrollIntoView = (elem, parent) => {
-	if(!parent) {
+	if (!parent) {
 		parent = elem.parentNode;
 	}
 	const yOffset = parent === timelineItems ? SCROLLBAR_SIZE + 2 : 0;
-	if(elem.offsetTop < parent.scrollTop) {
+	if (elem.offsetTop < parent.scrollTop) {
 		parent.scrollTop = elem.offsetTop;
-	} else if(elem.offsetTop + elem.offsetHeight > parent.scrollTop + parent.offsetHeight - yOffset) {
+	} else if (elem.offsetTop + elem.offsetHeight > parent.scrollTop + parent.offsetHeight - yOffset) {
 		parent.scrollTop = elem.offsetTop + elem.offsetHeight - parent.offsetHeight + yOffset;
 	}
-	if(elem.offsetLeft < parent.scrollLeft) {
+	if (elem.offsetLeft < parent.scrollLeft) {
 		parent.scrollLeft = elem.offsetLeft;
-	} else if(elem.offsetLeft + elem.offsetWidth > parent.scrollLeft + parent.offsetWidth) {
+	} else if (elem.offsetLeft + elem.offsetWidth > parent.scrollLeft + parent.offsetWidth) {
 		parent.scrollLeft = elem.offsetLeft + elem.offsetWidth - parent.offsetWidth;
 	}
 };
@@ -187,7 +187,7 @@ const block = state => {
 };
 const loadIndeterminate = value => {
 	block(value);
-	if(value) {
+	if (value) {
 		document.body.classList.add("indeterminate");
 		win.setProgressBar(0, {
 			mode: "indeterminate"
@@ -199,11 +199,11 @@ const loadIndeterminate = value => {
 	}
 };
 const loadProgress = value => {
-	if(value === 0) {
+	if (value === 0) {
 		document.body.classList.add("loading");
 		win.setProgressBar(0);
 		block(true);
-	} else if(value === 1) {
+	} else if (value === 1) {
 		document.body.classList.remove("loading");
 		loading.style.width = "";
 		win.setProgressBar(-1);
@@ -215,11 +215,11 @@ const loadProgress = value => {
 	}
 };
 const indicateTarget = target => {
-	if(target) {
+	if (target) {
 		const rect = target.getBoundingClientRect();
 		targetIndicator.style.transform = `translate(${rect.left + rect.width / 2 - 0.5}px, ${rect.top + rect.height / 2 - 0.5}px) scale(${rect.width}, ${rect.height})`;
 		targetIndicator.classList.add("visible");
-	} else if(targetIndicator.classList.contains("visible")) {
+	} else if (targetIndicator.classList.contains("visible")) {
 		targetIndicator.style.transform = "";
 		targetIndicator.classList.remove("visible");
 	}
@@ -227,13 +227,13 @@ const indicateTarget = target => {
 let active = null;
 let activeProperties = null;
 const setActive = elem => {
-	if(active) {
+	if (active) {
 		active.classList.remove("active");
 		active = null;
 	}
-	if(elem) {
+	if (elem) {
 		(active = elem).classList.add("active");
-		if(elem.classList.contains("container") && elem !== propertyContainer) {
+		if (elem.classList.contains("container") && elem !== propertyContainer) {
 			activeProperties = elem;
 			updateProperties();
 		}
@@ -243,18 +243,18 @@ document.addEventListener("submit", evt => {
 	evt.preventDefault();
 }, true);
 const updatePanels = () => {
-	for(const handle of handles) {
+	for (const handle of handles) {
 		handle.parentNode.style.width = handle.parentNode.style.height = handle.parentNode.style.minHeight = "";
 	}
-	for(const id of Object.keys(storage.size)) {
+	for (const id of Object.keys(storage.size)) {
 		const elem = container.querySelector(`#${id}`);
-		if(elem) {
+		if (elem) {
 			const handle = elem.querySelector(".handle");
-			if(handle) {
+			if (handle) {
 				const verticalHandle = handle.classList.contains("top") || handle.classList.contains("bottom");
 				const px = `${storage.size[id]}px`;
 				elem.style[verticalHandle ? "height" : "width"] = px;
-				if(verticalHandle) {
+				if (verticalHandle) {
 					elem.style.minHeight = px;
 				}
 			}
@@ -265,19 +265,19 @@ const updatePanels = () => {
 	layerContainer.style.height = layerContainer.style.minHeight = `${Math.max(150, statusTop - layerContainer.getBoundingClientRect().top)}px`;
 	absoluteCenter(content);
 	timelineContainerContents.style.width = "";
-	for(const child of timelineContainerContents.children) {
+	for (const child of timelineContainerContents.children) {
 		child.classList.add("hidden");
 	}
 	timelineContainerContents.style.width = `${timelineContainerContents.offsetWidth}px`;
-	for(const child of timelineContainerContents.children) {
+	for (const child of timelineContainerContents.children) {
 		child.classList.remove("hidden");
 	}
 	updateTimeRuler();
 	timelineFoot.firstElementChild.style.width = `${timelineItemContainer.offsetWidth - 12}px`;
 };
 window.addEventListener("resize", () => {
-	if(project) {
-		if(!fullPreview.classList.contains("hidden")) {
+	if (project) {
+		if (!fullPreview.classList.contains("hidden")) {
 			absoluteCenter(fullPreviewImage);
 		}
 		updatePanels();
@@ -287,14 +287,14 @@ let notConfirmingClose = true;
 let shouldNotClose = true;
 const confirmClose = value => {
 	notConfirmingClose = true;
-	if(value === 0) {
+	if (value === 0) {
 		shouldNotClose = false;
 		win.close();
 	}
 };
 const unsaved = project => !project.saved;
 window.onbeforeunload = () => {
-	if(shouldNotClose && notConfirmingClose && Object.values(projects).some(unsaved)) {
+	if (shouldNotClose && notConfirmingClose && Object.values(projects).some(unsaved)) {
 		notConfirmingClose = false;
 		new Miro.Dialog("Exit", "Are you sure you want to exit?\nAll unsaved changes will be lost.", ["Yes", "No"]).then(confirmClose);
 		return true;

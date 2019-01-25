@@ -14,38 +14,38 @@ Miro.wait = delay => new Promise(resolve => {
 	setTimeout(resolve, delay);
 });
 Miro.prepare = node => {
-	if(!(node instanceof Element || node instanceof Document)) {
+	if (!(node instanceof Element || node instanceof Document)) {
 		throw new MiroError("The `node` parameter must be an element or a document.");
 	}
-	for(const elem of node.querySelectorAll("input[type='email']")) {
+	for (const elem of node.querySelectorAll("input[type='email']")) {
 		elem.maxLength = 254;
 	}
-	for(const elem of node.querySelectorAll("button:not([type])")) {
+	for (const elem of node.querySelectorAll("button:not([type])")) {
 		elem.type = "button";
 	}
-	for(const elem of node.querySelectorAll(".mdc-ripple:not(.mdc-ripple-upgraded)")) {
+	for (const elem of node.querySelectorAll(".mdc-ripple:not(.mdc-ripple-upgraded)")) {
 		elem._mdc = mdc.ripple.MDCRipple.attachTo(elem);
 	}
-	for(const elem of node.querySelectorAll(".mdc-text-field:not(.mdc-text-field-upgraded)")) {
+	for (const elem of node.querySelectorAll(".mdc-text-field:not(.mdc-text-field-upgraded)")) {
 		elem._mdc = mdc.textField.MDCTextField.attachTo(elem);
 	}
-	for(const elem of node.querySelectorAll(".mdc-select")) {
+	for (const elem of node.querySelectorAll(".mdc-select")) {
 		elem._mdc = mdc.select.MDCSelect.attachTo(elem);
 	}
-	for(const elem of node.querySelectorAll(".mdc-checkbox:not(.mdc-checkbox-upgraded)")) {
+	for (const elem of node.querySelectorAll(".mdc-checkbox:not(.mdc-checkbox-upgraded)")) {
 		elem.querySelector(".mdc-checkbox__background").appendChild(checkmark.cloneNode(true));
 		elem._mdc = mdc.checkbox.MDCCheckbox.attachTo(elem);
 	}
-	for(const elem of node.querySelectorAll(".mdc-form-field")) {
+	for (const elem of node.querySelectorAll(".mdc-form-field")) {
 		elem._mdc = mdc.formField.MDCFormField.attachTo(elem);
 	}
 };
 const htmlReplacements = [[/&/g, "&amp;"], [/</g, "&lt;"], [/>/g, "&gt;"], [/"/g, "&quot;"], [/'/g, "&#39;"], [/`/g, "&#96;"]];
 const html = global.html = (strs, ...exps) => {
 	let str = strs[0];
-	for(let i = 0; i < exps.length; i++) {
+	for (let i = 0; i < exps.length; i++) {
 		let code = String(exps[i]);
-		if(strs[i].slice(-1) === "$") {
+		if (strs[i].slice(-1) === "$") {
 			str = str.slice(0, -1);
 			code = html.escape(code);
 		}
@@ -57,10 +57,10 @@ const html = global.html = (strs, ...exps) => {
 	return elem.childNodes.length === 1 ? elem.firstChild : elem;
 };
 html.escape = code => {
-	if(typeof code !== "string") {
+	if (typeof code !== "string") {
 		throw new MiroError("The `code` parameter must be a string.");
 	}
-	for(const htmlReplacement of htmlReplacements) {
+	for (const htmlReplacement of htmlReplacements) {
 		code = code.replace(...htmlReplacement);
 	}
 	return code;
@@ -72,28 +72,28 @@ const checkmark = html`
 	</svg>
 `;
 Miro.formState = (form, state) => {
-	if(!(form instanceof HTMLFormElement)) {
+	if (!(form instanceof HTMLFormElement)) {
 		throw new MiroError("The `form` parameter must be an HTML `form` element.");
 	}
 	state = !state;
-	if(form._disabled !== state) {
+	if (form._disabled !== state) {
 		form._disabled = state;
-		for(const elem of form.elements) {
-			if(state) {
+		for (const elem of form.elements) {
+			if (state) {
 				elem._prevDisabled = elem.disabled;
 				elem.disabled = true;
-			} else if(!elem._prevDisabled) {
+			} else if (!elem._prevDisabled) {
 				elem.disabled = false;
 			}
 		}
-		for(const mdcType of mdcTypes) {
+		for (const mdcType of mdcTypes) {
 			const mdcClass = `.mdc-${mdcType}`;
 			const disabledClass = `mdc-${mdcType}--disabled`;
-			for(const elem of form.querySelectorAll(mdcClass)) {
-				if(state) {
+			for (const elem of form.querySelectorAll(mdcClass)) {
+				if (state) {
 					elem._prevDisabled = elem.classList.contains(disabledClass);
 					elem.classList.add(disabledClass);
-				} else if(!elem._prevDisabled) {
+				} else if (!elem._prevDisabled) {
 					elem.classList.remove(disabledClass);
 				}
 			}
@@ -105,28 +105,28 @@ const _promise = Symbol("promise");
 const _close = Symbol("close");
 class MiroDialog {
 	constructor(title, content, buttons) {
-		if(!(typeof title === "string")) {
+		if (!(typeof title === "string")) {
 			throw new MiroError("The `title` parameter must be a string.");
 		}
-		if(buttons === undefined) {
+		if (buttons === undefined) {
 			buttons = ["Okay"];
-		} else if(!(buttons instanceof Array)) {
+		} else if (!(buttons instanceof Array)) {
 			throw new MiroError("The `buttons` parameter must be an array if it is defined.");
 		}
-		if(typeof content === "string") {
+		if (typeof content === "string") {
 			const lines = content.split("\n");
 			content = document.createElement("span");
-			for(let i = 0; i < lines.length; i++) {
-				if(i !== 0) {
+			for (let i = 0; i < lines.length; i++) {
+				if (i !== 0) {
 					content.appendChild(document.createElement("br"));
 				}
 				content.appendChild(document.createTextNode(lines[i]));
 			}
-		} else if(!(content instanceof Node)) {
+		} else if (!(content instanceof Node)) {
 			throw new MiroError("The `content` parameter must be a string or a DOM node.");
 		}
 		this.ready = false;
-		if(content instanceof HTMLElement) {
+		if (content instanceof HTMLElement) {
 			Miro.prepare(content);
 		}
 		const dialogElem = html`
@@ -146,13 +146,13 @@ class MiroDialog {
 		const contentElem = dialogElem.querySelector(".mdc-dialog__content");
 		contentElem.appendChild(content);
 		const buttonsElem = dialogElem.querySelector(".mdc-dialog__actions");
-		if(buttons.length) {
+		if (buttons.length) {
 			buttons = buttons.map(item => {
 				const button = document.createElement("button");
-				if(typeof item === "string") {
+				if (typeof item === "string") {
 					button.type = "button";
 					button.textContent = item;
-				} else if(item instanceof Object) {
+				} else if (item instanceof Object) {
 					button.type = item.type;
 					button.textContent = item.text;
 				} else {
@@ -182,7 +182,7 @@ class MiroDialog {
 			let canClose = true;
 			this.value = null;
 			const close = this[_close] = value => {
-				if(canClose) {
+				if (canClose) {
 					canClose = false;
 					this.value = value;
 					dialog.close();
@@ -191,15 +191,15 @@ class MiroDialog {
 				}
 			};
 			const click = async evt => {
-				if(!submitted && evt.target.type === "submit") {
+				if (!submitted && evt.target.type === "submit") {
 					await Miro.wait();
-					if(!submitted) {
+					if (!submitted) {
 						return;
 					}
 				}
 				close(buttons.indexOf(evt.target));
 			};
-			for(const elem of buttons) {
+			for (const elem of buttons) {
 				elem.addEventListener("click", click);
 			}
 			dialog.listen("MDCDialog:closing", close.bind(this, -1));
@@ -226,7 +226,7 @@ class MiroDialog {
 	}
 	close(value) {
 		setTimeout(() => {
-			if(this.ready) {
+			if (this.ready) {
 				this[_close](typeof value === "number" ? value : -1);
 				return true;
 			} else {

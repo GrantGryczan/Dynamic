@@ -1,21 +1,21 @@
 "use strict";
 class DynamicScene {
 	constructor(value) {
-		if(!(value instanceof Object)) {
+		if (!(value instanceof Object)) {
 			value = {};
 		}
-		if(!(value.project instanceof DynamicProject)) {
+		if (!(value.project instanceof DynamicProject)) {
 			value.project = project;
 		}
-		if(typeof value.id !== "string") {
+		if (typeof value.id !== "string") {
 			value.id = uid(value.project.data.scenes.map(byID));
 		}
-		if(typeof value.name === "string") {
+		if (typeof value.name === "string") {
 			value.name = value.name.trim();
 		} else {
 			const names = value.project.data.scenes.map(byName).map(insensitiveString);
 			value.name = "Scene";
-			for(let i = 2; names.includes(insensitiveString(value.name)); i++) {
+			for (let i = 2; names.includes(insensitiveString(value.name)); i++) {
 				value.name = `Scene ${i}`;
 			}
 		}
@@ -35,7 +35,7 @@ class DynamicScene {
 			`
 		});
 		(this.element._scene = this).element._label = this.element.querySelector(".label");
-		if(sceneDialog) {
+		if (sceneDialog) {
 			scenes.appendChild(this.element);
 		}
 		value.project.data.scenes.push(this);
@@ -45,7 +45,7 @@ class DynamicScene {
 	}
 	set name(value) {
 		this[_name] = this.element._label.textContent = this.element.title = value;
-		if(this === project.scene) {
+		if (this === project.scene) {
 			sceneChipText.textContent = sceneChip.title = this.name;
 		}
 	}
@@ -65,25 +65,25 @@ const storeScenes = () => {
 };
 const removeScene = sceneElem => {
 	const sibling = sceneElem.previousElementSibling || sceneElem.nextElementSibling;
-	if(sceneElem.classList.contains("selected")) {
+	if (sceneElem.classList.contains("selected")) {
 		sibling.classList.add("selected");
 	}
-	if(project.sceneLoad) {
+	if (project.sceneLoad) {
 		delete project.sceneLoad;
 	}
-	if(project.root === sceneElem._scene) {
+	if (project.root === sceneElem._scene) {
 		setRoot(sibling._scene);
 	}
 	sceneElem.remove();
 	storeScenes();
 };
 const confirmRemoveScene = sceneElem => {
-	if(project.data.scenes.length !== 1) {
+	if (project.data.scenes.length !== 1) {
 		new Miro.Dialog("Remove Scene", html`
 			Are you sure you want to remove <b>$${sceneElem._scene.name}</b>?<br>
 			Objects and other data inside the scene will also be removed.
 		`, ["Yes", "No"]).then(value => {
-			if(value === 0) {
+			if (value === 0) {
 				removeScene(sceneElem);
 			}
 		});
@@ -96,14 +96,14 @@ const removeSelectedScene = () => {
 };
 const selectScene = sceneElem => {
 	const scene = sceneElem._scene;
-	for(const otherScene of project.data.scenes) {
+	for (const otherScene of project.data.scenes) {
 		otherScene.element.classList.remove("focus");
 		otherScene.element.classList[scene === otherScene ? "add" : "remove"]("selected");
 	}
 };
 const renameScene = initialValue => {
 	const scene = scenes.querySelector(".scene.selected")._scene;
-	if(typeof initialValue !== "string") {
+	if (typeof initialValue !== "string") {
 		initialValue = scene.name;
 	}
 	const input = new Miro.Dialog("Rename", html`
@@ -116,11 +116,11 @@ const renameScene = initialValue => {
 		text: "Okay",
 		type: "submit"
 	}, "Cancel"]).then(value => {
-		if(value === 0) {
+		if (value === 0) {
 			const trimmedValue = input.value.trim();
 			const insensitiveValue = trimmedValue.toLowerCase();
-			if(insensitiveString(scene.name) !== insensitiveValue) {
-				if(project.data.scenes.map(byName).map(insensitiveString).includes(insensitiveValue)) {
+			if (insensitiveString(scene.name) !== insensitiveValue) {
+				if (project.data.scenes.map(byName).map(insensitiveString).includes(insensitiveValue)) {
 					new Miro.Dialog("Error", "That name is already taken.").then(renameScene.bind(null, input.value));
 				} else {
 					scene.name = trimmedValue;
@@ -131,14 +131,14 @@ const renameScene = initialValue => {
 };
 let sceneDialog = null;
 const openScenes = () => {
-	for(const scene of project.data.scenes) {
+	for (const scene of project.data.scenes) {
 		scenes.appendChild(scene.element);
 	}
 	sceneDialog = new Miro.Dialog("", sceneBox, ["Select", "Cancel"]).then(value => {
-		if(value === 0) {
+		if (value === 0) {
 			setRoot(scenes.querySelector(".scene.selected")._scene);
 		}
-		while(scenes.lastElementChild) {
+		while (scenes.lastElementChild) {
 			scenes.lastElementChild.remove();
 		}
 		sceneDialog = null;

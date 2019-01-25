@@ -13,7 +13,7 @@ const makeFullPreviewHidden = () => {
 	fullPreviewImage.src = "";
 };
 const hideFullPreview = () => {
-	if(fullPreview.classList.contains("opaque")) {
+	if (fullPreview.classList.contains("opaque")) {
 		fullPreview.classList.remove("opaque");
 		setTimeout(makeFullPreviewHidden, 150);
 		setActive(propertyContainer);
@@ -26,11 +26,11 @@ fullPreview.addEventListener("mousemove", evt => {
 	fullPreview.classList.remove("hoverScrollbar");
 	let targetRect;
 	let setHoverScrollbar = false;
-	if(fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - SCROLLBAR_SIZE) {
+	if (fullPreview.offsetHeight !== fullPreview.scrollHeight && mouseX >= (targetRect = fullPreview.getBoundingClientRect()).left + targetRect.width - SCROLLBAR_SIZE) {
 		setHoverScrollbar = true;
 		fullPreview.classList.add("hoverScrollbar");
 	}
-	if(!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - SCROLLBAR_SIZE) {
+	if (!setHoverScrollbar && fullPreview.offsetWidth !== fullPreview.scrollWidth && mouseY >= (targetRect = fullPreview.getBoundingClientRect()).top + targetRect.height - SCROLLBAR_SIZE) {
 		fullPreview.classList.add("hoverScrollbar");
 	}
 });
@@ -58,28 +58,28 @@ const computeDynamicAudio = (obj, time) => {
 	const volumeValues = [];
 	const loopValues = [];
 	const speedValues = [];
-	for(let i = 0; i <= time; i++) {
+	for (let i = 0; i <= time; i++) {
 		const keyframe = obj.keyframes[i];
 		const prevPlayValue = playValue;
 		const prevLoopValue = loopValue;
-		if(keyframe) {
-			if(keyframe.present && (playValue = keyframe.present.value) && timeValue >= obj.element.duration) {
+		if (keyframe) {
+			if (keyframe.present && (playValue = keyframe.present.value) && timeValue >= obj.element.duration) {
 				timeValue = 0;
 			}
-			if(keyframe.volume) {
+			if (keyframe.volume) {
 				volumeValue = keyframe.volume.value;
 			}
-			if(keyframe.loop) {
+			if (keyframe.loop) {
 				loopValue = keyframe.loop.value;
 			}
-			if(keyframe.speed) {
+			if (keyframe.speed) {
 				speedValue = keyframe.speed.value;
 			}
 		}
-		if(keyframe && keyframe.time) {
+		if (keyframe && keyframe.time) {
 			timeValue = keyframe.time.value;
-		} else if(prevPlayValue && (timeValue += speedValue / project.data.fps) >= obj.element.duration) {
-			if(!prevLoopValue) {
+		} else if (prevPlayValue && (timeValue += speedValue / project.data.fps) >= obj.element.duration) {
+			if (!prevLoopValue) {
 				playValue = false;
 			}
 			timeValue = loopValue ? timeValue % obj.element.duration : obj.element.duration;
@@ -105,18 +105,18 @@ const computeDynamicAudio = (obj, time) => {
 };
 const updateProperties = () => {
 	subject = null;
-	for(const propElem of propElems) {
+	for (const propElem of propElems) {
 		propElem.classList.add("hidden");
 	}
 	previewImage.classList.add("hidden");
 	previewAudio.classList.add("hidden");
 	previewImage.src = previewAudio.src = "";
-	if(activeProperties === assetContainer) {
+	if (activeProperties === assetContainer) {
 		const assetElems = assets.querySelectorAll(".asset.selected");
-		if(assetElems.length) {
+		if (assetElems.length) {
 			const singleSelected = assetElems.length === 1;
 			const nameElement = prop.name.elements[0];
-			if(nameElement.readOnly = !singleSelected) {
+			if (nameElement.readOnly = !singleSelected) {
 				nameElement.value = `< ${assetElems.length} selected >`;
 			} else {
 				nameElement.value = assetElems[0]._asset.name;
@@ -125,28 +125,28 @@ const updateProperties = () => {
 			let typeGroup = false;
 			let typeObj = false;
 			let typeFile = false;
-			for(const assetElem of assetElems) {
-				if(assetElem._asset.type === "group") {
+			for (const assetElem of assetElems) {
+				if (assetElem._asset.type === "group") {
 					typeGroup = true;
-				} else if(assetElem._asset.type === "obj") {
+				} else if (assetElem._asset.type === "obj") {
 					typeObj = true;
-				} else if(assetElem._asset.type === "file") {
+				} else if (assetElem._asset.type === "file") {
 					typeFile = true;
 				}
 			}
-			if(!typeGroup && !typeObj && typeFile) {
+			if (!typeGroup && !typeObj && typeFile) {
 				const firstAsset = assetElems[0]._asset;
 				let mimeType = firstAsset.mime;
-				for(let i = 1; i < assetElems.length; i++) {
-					if(assetElems[i]._asset.mime !== mimeType) {
+				for (let i = 1; i < assetElems.length; i++) {
+					if (assetElems[i]._asset.mime !== mimeType) {
 						mimeType = false;
 						break;
 					}
 				}
-				if(mimeType) {
+				if (mimeType) {
 					prop.mime.classList.remove("hidden");
 					prop.mime.elements[0].value = mimeType;
-					if(singleSelected) {
+					if (singleSelected) {
 						const previewMedia = mimeType.startsWith("image/") ? previewImage : previewAudio;
 						previewMedia.src = firstAsset.url;
 						previewMedia.classList.remove("hidden");
@@ -159,14 +159,14 @@ const updateProperties = () => {
 		}
 	} else {
 		const objElems = activeProperties === timelineContainer || activeProperties === contentContainer ? timelineItems.querySelectorAll(".timelineItem.selected") : (activeProperties === layerContainer ? layers.querySelectorAll(".layer.selected") : []);
-		if(objElems.length) {
+		if (objElems.length) {
 			const singleSelected = objElems.length === 1;
 			const nameElement = prop.name.elements[0];
 			nameElement.readOnly = true;
-			if(singleSelected) {
+			if (singleSelected) {
 				const obj = objElems[0]._obj;
 				nameElement.value = obj.name;
-				if(obj.type === "group") {
+				if (obj.type === "group") {
 					nameElement.readOnly = false;
 				}
 			} else {
@@ -177,18 +177,18 @@ const updateProperties = () => {
 			let typeObj = false;
 			let typeImage = false;
 			let typeAudio = false;
-			for(const objElem of objElems) {
-				if(objElem._obj.type === "group") {
+			for (const objElem of objElems) {
+				if (objElem._obj.type === "group") {
 					typeGroup = true;
-				} else if(objElem._obj.type === "obj") {
+				} else if (objElem._obj.type === "obj") {
 					typeObj = true;
-				} else if(objElem._obj.type === "image") {
+				} else if (objElem._obj.type === "image") {
 					typeImage = true;
-				} else if(objElem._obj.type === "audio") {
+				} else if (objElem._obj.type === "audio") {
 					typeAudio = true;
 				}
 			}
-			if(!typeGroup && !typeObj && !typeImage && typeAudio) {
+			if (!typeGroup && !typeObj && !typeImage && typeAudio) {
 				const firstObj = objElems[0]._obj;
 				let playValue = null;
 				let timeValue = null;
@@ -196,53 +196,53 @@ const updateProperties = () => {
 				let loopValue = null;
 				let speedValue = null;
 				const durations = [];
-				for(const obj of project.root.objs) {
-					if(obj.type === "audio") {
+				for (const obj of project.root.objs) {
+					if (obj.type === "audio") {
 						durations.push(obj.element.duration);
 						const computed = computeDynamicAudio(obj, project.root.duration - 1);
-						for(let i = 0; i < project.root.duration; i++) {
-							if(project.frames[obj.id][i]) {
+						for (let i = 0; i < project.root.duration; i++) {
+							if (project.frames[obj.id][i]) {
 								const playAvailable = playValue !== "";
 								const timeAvailable = timeValue !== "";
-								if(playAvailable || timeAvailable) {
-									if(playAvailable) {
+								if (playAvailable || timeAvailable) {
+									if (playAvailable) {
 										const currentPlayValue = computed.playValues[i];
-										if(playValue === null) {
+										if (playValue === null) {
 											playValue = currentPlayValue;
-										} else if(currentPlayValue !== playValue) {
+										} else if (currentPlayValue !== playValue) {
 											playValue = "";
 										}
 									}
-									if(timeAvailable) {
+									if (timeAvailable) {
 										const currentTimeValue = computed.timeValues[i];
-										if(timeValue === null) {
+										if (timeValue === null) {
 											timeValue = currentTimeValue;
-										} else if(currentTimeValue !== timeValue) {
+										} else if (currentTimeValue !== timeValue) {
 											timeValue = "";
 										}
 									}
 								}
-								if(volumeValue !== "") {
+								if (volumeValue !== "") {
 									const currentVolume = computed.volumeValues[i];
-									if(volumeValue === null) {
+									if (volumeValue === null) {
 										volumeValue = currentVolume;
-									} else if(currentVolume !== volumeValue) {
+									} else if (currentVolume !== volumeValue) {
 										volumeValue = "";
 									}
 								}
-								if(loopValue !== "") {
+								if (loopValue !== "") {
 									const currentLoop = computed.loopValues[i];
-									if(loopValue === null) {
+									if (loopValue === null) {
 										loopValue = currentLoop;
-									} else if(currentLoop !== loopValue) {
+									} else if (currentLoop !== loopValue) {
 										loopValue = "";
 									}
 								}
-								if(speedValue !== "") {
+								if (speedValue !== "") {
 									const currentSpeed = computed.speedValues[i];
-									if(speedValue === null) {
+									if (speedValue === null) {
 										speedValue = currentSpeed;
-									} else if(currentSpeed !== speedValue) {
+									} else if (currentSpeed !== speedValue) {
 										speedValue = "";
 									}
 								}
@@ -251,12 +251,12 @@ const updateProperties = () => {
 					}
 				}
 				const playCheckbox = prop.play.firstElementChild._mdc;
-				if(playValue === "") {
-					if(!playCheckbox.indeterminate) {
+				if (playValue === "") {
+					if (!playCheckbox.indeterminate) {
 						playCheckbox.indeterminate = true;
 					}
 				} else {
-					if(playCheckbox.indeterminate) {
+					if (playCheckbox.indeterminate) {
 						playCheckbox.indeterminate = false;
 					}
 					playCheckbox.checked = playValue;
@@ -270,12 +270,12 @@ const updateProperties = () => {
 				prop.volume.elements[0].value = volumeValue;
 				prop.volume.classList.remove("hidden");
 				const loopCheckbox = prop.loop.firstElementChild._mdc;
-				if(loopValue === "") {
-					if(!loopCheckbox.indeterminate) {
+				if (loopValue === "") {
+					if (!loopCheckbox.indeterminate) {
 						loopCheckbox.indeterminate = true;
 					}
 				} else {
-					if(loopCheckbox.indeterminate) {
+					if (loopCheckbox.indeterminate) {
 						loopCheckbox.indeterminate = false;
 					}
 					loopCheckbox.checked = loopValue;

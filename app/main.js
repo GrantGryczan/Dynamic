@@ -3,16 +3,16 @@ const electron = require("electron");
 let win;
 const filesToOpen = [];
 let addFileToOpen = filesToOpen.push.bind(filesToOpen);
-if(process.argv[1] && process.argv[2] !== "dev") {
+if (process.argv[1] && process.argv[2] !== "dev") {
 	addFileToOpen(process.argv[1]);
 }
-if(electron.app.requestSingleInstanceLock()) {
+if (electron.app.requestSingleInstanceLock()) {
 	electron.app.on("second-instance", (evt, [, fileToOpen]) => {
-		if(fileToOpen) {
+		if (fileToOpen) {
 			addFileToOpen(fileToOpen);
 		}
-		if(win) {
-			if(win.isMinimized()) {
+		if (win) {
+			if (win.isMinimized()) {
 				win.restore();
 			}
 			win.focus();
@@ -39,7 +39,7 @@ electron.app.once("ready", () => {
 	win.once("ready-to-show", () => {
 		win.maximize();
 		win.show();
-		while(filesToOpen.length) {
+		while (filesToOpen.length) {
 			win.webContents.send("argv", filesToOpen.pop());
 		}
 		addFileToOpen = win.webContents.send.bind(win.webContents, "argv");
