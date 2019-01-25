@@ -104,7 +104,7 @@ class DynamicObject {
 		this.project.frames[this.id] = new Array(this.project.root.duration).fill(0);
 		if(this.type === "group") {
 			(this.timelineItem = html`
-				<div id="timelineItem_$${this.id}" class="timelineItem typeGroup" title="$${this.name}">
+				<div class="timelineItem typeGroup" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
@@ -115,7 +115,7 @@ class DynamicObject {
 			`)._label = this.timelineItem.querySelector(".label");
 		} else if(this.type === "audio") {
 			(this.timelineItem = html`
-				<div id="timelineItem_$${this.id}" class="timelineItem typeAudio" title="$${this.name}">
+				<div class="timelineItem typeAudio" title="$${this.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${this.name}</div>
@@ -127,7 +127,7 @@ class DynamicObject {
 			(this.layer = html`
 				<table>
 					<tbody>
-						<tr id="layer_$${this.id}" class="layer" title="$${this.name}">
+						<tr class="layer" title="$${this.name}">
 							<td class="z">${this.get("z")}</td>
 							<td class="barCell">
 								<div class="bar">
@@ -142,7 +142,7 @@ class DynamicObject {
 			this.layer._obj = this;
 			if(this.type === "obj") {
 				(this.timelineItem = html`
-					<div id="timelineItem_$${this.id}" class="timelineItem typeObj" title="$${this.name}">
+					<div class="timelineItem typeObj" title="$${this.name}">
 						<div class="bar">
 							<div class="icon material-icons"></div>
 							<div class="label">$${this.name}</div>
@@ -153,7 +153,7 @@ class DynamicObject {
 				`)._label = this.timelineItem.querySelector(".label");
 			} else if(this.type === "image") {
 				(this.timelineItem = html`
-					<div id="timelineItem_$${this.id}" class="timelineItem typeImage" title="$${this.name}">
+					<div class="timelineItem typeImage" title="$${this.name}">
 						<div class="bar">
 							<div class="icon material-icons"></div>
 							<div class="label">$${this.name}</div>

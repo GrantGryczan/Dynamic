@@ -25,7 +25,7 @@ class DynamicScene {
 			duration: isFinite(value.duration) && value.duration > 0 ? +value.duration : value.project.data.fps * 2,
 			objs: [],
 			element: html`
-				<div id="scene_$${value.id}" class="scene${value.project.data.scenes.length ? "" : " selected"}" title="$${value.name}">
+				<div class="scene${value.project.data.scenes.length ? "" : " selected"}" title="$${value.name}">
 					<div class="bar">
 						<div class="icon material-icons"></div>
 						<div class="label">$${value.name}</div>
