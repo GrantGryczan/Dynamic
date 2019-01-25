@@ -208,6 +208,7 @@ const updateTimelines = () => {
 			}
 			for(let i = 0; i < timeline.children.length; i++) {
 				const frame = timeline.children[i];
+				frame._value = timeUnits.children[i]._value;
 				if(highlight || topFrames[frame._value]) {
 					frame.classList.add("highlight");
 					if(highlight && frames[frame._value]) {
