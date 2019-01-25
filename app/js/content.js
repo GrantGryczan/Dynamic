@@ -40,7 +40,7 @@ const animate = now => {
 							if (playTimeSet) {
 								const promise = obj.element[computed.play ? "play" : "pause"]();
 								if (promise) {
-									promise.catch (console.warn);
+									promise.catch(console.warn);
 								}
 							}
 							obj.element.currentTime = computed.time;
@@ -102,7 +102,7 @@ const updateLiveAudio = () => {
 			const computed = computeDynamicAudio(obj);
 			const promise = obj.element[computed.play ? "play" : "pause"]();
 			if (promise) {
-				promise.catch (console.warn);
+				promise.catch(console.warn);
 			}
 			obj.element.currentTime = computed.time;
 			obj.element.volume = computed.volume;
