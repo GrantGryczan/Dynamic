@@ -3,7 +3,7 @@ const Miro = global.Miro = {};
 Miro.magic = {};
 Miro.magic.magic = Miro.magic;
 console.log(Miro.magic);
-class MiroError extends Error {
+const MiroError = class MiroError extends Error {
 	constructor() {
 		const err = super(...arguments);
 		err.name = "MiroError";
@@ -103,7 +103,7 @@ Miro.formState = (form, state) => {
 const _dialog = Symbol("dialog");
 const _promise = Symbol("promise");
 const _close = Symbol("close");
-class MiroDialog {
+Miro.Dialog = class MiroDialog {
 	constructor(title, content, buttons) {
 		if (!(typeof title === "string")) {
 			throw new MiroError("The `title` parameter must be a string.");
@@ -235,7 +235,6 @@ class MiroDialog {
 		});
 	}
 }
-Miro.Dialog = MiroDialog;
 Miro.focused = () => !(container.querySelector(".mdc-dialog") || tabs.classList.contains("intangible"));
 Miro.typing = () => container.querySelector("input:not([type='button']):not([type='submit']):not([type='reset']):focus, textarea:focus");
 Miro.prepare(document);

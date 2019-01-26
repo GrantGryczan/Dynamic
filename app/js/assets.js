@@ -1,5 +1,5 @@
 "use strict";
-class DynamicAsset {
+const DynamicAsset = class DynamicAsset {
 	constructor(value) {
 		if (!(value instanceof Object)) {
 			throw new MiroError("The `value` parameter must be an object.");

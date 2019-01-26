@@ -18,7 +18,7 @@ const _selectedLayer = Symbol("selectedLayer");
 const _focusedLayer = Symbol("focusedLayer");
 const _selectedTimelineItem = Symbol("selectedTimelineItem");
 const _focusedTimelineItem = Symbol("focusedTimelineItem");
-class DynamicProject {
+const DynamicProject = class DynamicProject {
 	constructor(value) {
 		if (!(value instanceof Object)) {
 			value = {};

@@ -1,5 +1,5 @@
 "use strict";
-class DynamicScene {
+const DynamicScene = class DynamicScene {
 	constructor(value) {
 		if (!(value instanceof Object)) {
 			value = {};

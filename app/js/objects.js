@@ -2,7 +2,7 @@
 const onlyGraphics = obj => obj.type === "obj" || obj.type === "image";
 const byDate = (a, b) => a.date - b.date;
 const byZIndex = (a, b) => b.get("z") - a.get("z");
-class DynamicObject {
+const DynamicObject = class DynamicObject {
 	constructor(value) {
 		this.project = project;
 		if (typeof value === "string") {
