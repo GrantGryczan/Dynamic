@@ -6,63 +6,47 @@ const DynamicAsset = class DynamicAsset {
 		}
 		this.project = value.project instanceof DynamicProject ? value.project : project;
 		this.id = typeof value.id === "string" ? value.id : uid(this.project.data.assets.map(byID));
-		this.type = value.type;
-		this[_name] = value.name;
-		if (this.type === "group") {
-			this.element = html`
-				<div class="asset typeGroup" title="$${this.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${this.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-					<div class="children"></div>
+		((this.element = html`
+			<div class="asset">
+				<div class="bar">
+					<div class="icon material-icons"></div>
+					<div class="label"></div>
+					<div class="close material-icons"></div>
 				</div>
-			`;
+			</div>
+		`)._asset = this).element._label = this.element.querySelector(".label");
+		this.type = value.type;
+		if (this.type === "group") {
+			this.element.classList.add("typeGroup");
+			this.element.appendChild(html`<div class="children"></div>`);
 		} else if (this.type === "file") {
 			const typeImage = value.mime.startsWith("image/");
 			if (!(typeImage || value.mime.startsWith("audio/"))) {
 				throw new MiroError("The `mime` value is invalid.");
 			}
-			this.mime = value.mime;
+			this.element.classList.add("typeFile");
+			this.element.setAttribute("data-mime", this.mime = value.mime);
 			this.data = value.data;
 			(this.preview = new (typeImage ? Image : Audio)()).src = this.url;
-			this.element = html`
-				<div class="asset typeFile" title="$${this.name}" data-mime="$${this.mime}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${this.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-				</div>
-			`;
 		} else if (this.type === "obj") {
+			this.element.classList.add("typeObj");
 			this.objs = [];
 			this.duration = 1;
-			this.element = html`
-				<div class="asset typeObj" title="$${this.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${this.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-				</div>
-			`;
 		} else {
 			throw new MiroError("The `type` value is invalid.");
 		}
-		this.element._label = this.element.querySelector(".label");
+		this.name = value.name;
 		this.project.data.assets.push(this);
 		if (value.parent) {
 			this.parent = this.project.getAsset(value.parent);
 		}
-		appendAsset(this.element._asset = this);
+		appendAsset(this);
 	}
 	get name() {
 		return this[_name];
 	}
 	set name(value) {
-		this[_name] = this.element.title = this.element._label.textContent = value;
+		this.element.title = this.element._label.textContent = this[_name] = value;
 		for (const obj of this.objects) {
 			obj.updateName();
 		}
