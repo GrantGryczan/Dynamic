@@ -4,48 +4,40 @@ const DynamicScene = class DynamicScene {
 		if (!(value instanceof Object)) {
 			value = {};
 		}
-		if (!(value.project instanceof DynamicProject)) {
-			value.project = project;
-		}
-		if (typeof value.id !== "string") {
-			value.id = uid(value.project.data.scenes.map(byID));
-		}
+		this.project = value.project instanceof DynamicProject ? value.project : project;
+		this.id = typeof value.id === "string" ? value.id : uid(this.project.data.scenes.map(byID));
+		((this.element = html`
+			<div class="scene${this.project.data.scenes.length ? "" : " selected"}">
+				<div class="bar">
+					<div class="icon material-icons"></div>
+					<div class="label"></div>
+					<div class="close material-icons"></div>
+				</div>
+			</div>
+		`)._scene = this).element._label = this.element.querySelector(".label");
 		if (typeof value.name === "string") {
 			value.name = value.name.trim();
 		} else {
-			const names = value.project.data.scenes.map(byName).map(insensitiveString);
+			const names = this.project.data.scenes.map(byName).map(insensitiveString);
 			value.name = "Scene";
 			for (let i = 2; names.includes(insensitiveString(value.name)); i++) {
 				value.name = `Scene ${i}`;
 			}
 		}
-		Object.assign(this, {
-			id: value.id,
-			[_name]: value.name,
-			duration: isFinite(value.duration) && value.duration > 0 ? +value.duration : value.project.data.fps * 2,
-			objs: [],
-			element: html`
-				<div class="scene${value.project.data.scenes.length ? "" : " selected"}" title="$${value.name}">
-					<div class="bar">
-						<div class="icon material-icons"></div>
-						<div class="label">$${value.name}</div>
-						<div class="close material-icons"></div>
-					</div>
-				</div>
-			`
-		});
-		(this.element._scene = this).element._label = this.element.querySelector(".label");
+		this.name = value.name;
+		this.duration = isFinite(value.duration) && value.duration > 0 ? +value.duration : this.project.data.fps * 2;
+		this.objs = [];
 		if (sceneDialog) {
 			scenes.appendChild(this.element);
 		}
-		value.project.data.scenes.push(this);
+		this.project.data.scenes.push(this);
 	}
 	get name() {
 		return this[_name];
 	}
 	set name(value) {
 		this[_name] = this.element._label.textContent = this.element.title = value;
-		if (this === project.scene) {
+		if (this === this.project.scene) {
 			sceneChipText.textContent = sceneChip.title = this.name;
 		}
 	}
