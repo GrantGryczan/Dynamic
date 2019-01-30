@@ -1,6 +1,6 @@
 {
 	"name": "Dynamic",
-	"version": "0.22.21",
+	"version": "0.22.22",
 	"description": "Create HTML5 animations with ease!",
 	"main": "app/main.js",
 	"scripts": {
