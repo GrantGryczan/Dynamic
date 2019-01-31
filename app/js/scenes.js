@@ -16,15 +16,15 @@ const DynamicScene = class DynamicScene {
 			</div>
 		`)._scene = this).element._label = this.element.querySelector(".label");
 		if (typeof value.name === "string") {
-			value.name = value.name.trim();
+			this.name = value.name.trim();
 		} else {
 			const names = this.project.data.scenes.map(byName).map(insensitiveString);
 			value.name = "Scene";
 			for (let i = 2; names.includes(insensitiveString(value.name)); i++) {
 				value.name = `Scene ${i}`;
 			}
+			this.name = value.name;
 		}
-		this.name = value.name;
 		this.duration = isFinite(value.duration) && value.duration > 0 ? +value.duration : this.project.data.fps * 2;
 		this.objs = [];
 		if (sceneDialog) {
